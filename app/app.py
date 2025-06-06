@@ -97,8 +97,8 @@ async def resource_not_found_exception_handler(request: Request, exc: ResourceNo
 @app.exception_handler(ValidationException)
 async def validation_exception_handler(request: Request, exc: ValidationException):
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"message": exc.message, "errors": exc.errors},
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": exc.message, "errors": exc.errors},
     )
 
 @app.exception_handler(AuthenticationException)

@@ -22,8 +22,8 @@ class UserHistory(Base):
     # 审计字段快照
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
-    created_by_id = Column(Integer)
-    updated_by_id = Column(Integer)
+    created_by_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    updated_by_id = Column(Integer, ForeignKey('users.id'), nullable=True)
     deleted_at = Column(DateTime)
 
 # --- 主业务表 ---

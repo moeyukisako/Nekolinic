@@ -1,0 +1,142 @@
+{
+  "test_summary": {
+    "execution_date": "2025-06-06",
+    "total_tests": 15,
+    "passed": 15,
+    "failed": 0,
+    "pass_rate": 100,
+    "coverage": 64
+  },
+  "test_results_by_type": {
+    "unit_tests": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "pass_rate": 100
+    },
+    "integration_tests": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "pass_rate": 100
+    },
+    "e2e_tests": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "pass_rate": 100
+    }
+  },
+  "test_details": {
+    "unit_tests": [
+      {
+        "name": "test_create_user",
+        "file": "tests/unit/test_user_service.py",
+        "status": "passed"
+      },
+      {
+        "name": "test_authenticate_user",
+        "file": "tests/unit/test_user_service.py",
+        "status": "passed"
+      },
+      {
+        "name": "test_update_user",
+        "file": "tests/unit/test_user_service.py",
+        "status": "passed"
+      },
+      {
+        "name": "test_get_user",
+        "file": "tests/unit/test_user_service.py",
+        "status": "passed"
+      },
+      {
+        "name": "test_get_user_by_attributes",
+        "file": "tests/unit/test_user_service.py",
+        "status": "passed"
+      },
+      {
+        "name": "test_remove_user",
+        "file": "tests/unit/test_user_service.py",
+        "status": "passed"
+      },
+      {
+        "name": "test_restore_user",
+        "file": "tests/unit/test_user_service.py",
+        "status": "passed"
+      },
+      {
+        "name": "test_audit_create",
+        "file": "tests/unit/test_auditing.py",
+        "status": "passed"
+      },
+      {
+        "name": "test_audit_update",
+        "file": "tests/unit/test_auditing.py",
+        "status": "passed"
+      },
+      {
+        "name": "test_audit_delete",
+        "file": "tests/unit/test_auditing.py",
+        "status": "passed"
+      }
+    ],
+    "integration_tests": [
+      {
+        "name": "test_create_user",
+        "file": "tests/integration/test_user_api.py",
+        "status": "passed"
+      },
+      {
+        "name": "test_create_user_duplicate_username",
+        "file": "tests/integration/test_user_api.py",
+        "status": "passed"
+      },
+      {
+        "name": "test_create_user_duplicate_email",
+        "file": "tests/integration/test_user_api.py",
+        "status": "passed"
+      },
+      {
+        "name": "test_create_user_invalid_data",
+        "file": "tests/integration/test_user_api.py",
+        "status": "passed"
+      }
+    ],
+    "e2e_tests": [
+      {
+        "name": "test_user_registration_workflow",
+        "file": "tests/e2e/test_user_workflow.py",
+        "status": "passed"
+      }
+    ]
+  },
+  "coverage_details": {
+    "app/__init__.py": 100,
+    "app/app.py": 74,
+    "app/routes.py": 100,
+    "app/core/auditing.py": 78,
+    "app/core/context.py": 100,
+    "app/core/database.py": 42,
+    "app/core/exceptions.py": 65,
+    "app/core/security.py": 0,
+    "app/core/service_base.py": 59,
+    "app/user/api.py": 100,
+    "app/user/models.py": 100,
+    "app/user/schemas.py": 100,
+    "app/user/service.py": 100
+  },
+  "issues_fixed": [
+    {
+      "issue": "UserHistory模型缺少审计字段，导致审计功能测试失败",
+      "fix": "在UserHistory模型中添加了created_at、updated_at、created_by_id、updated_by_id和deleted_at字段"
+    },
+    {
+      "issue": "服务器启动时uvicorn命令无法识别",
+      "fix": "安装uvicorn包并使用python -m uvicorn app.app:app --reload启动服务器"
+    },
+    {
+      "issue": "集成测试使用的API路径不正确",
+      "fix": "更改测试中的API路径，从/users/修改为/api/v1/users/"
+    }
+  ]
+} 

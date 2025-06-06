@@ -8,11 +8,11 @@ from alembic import context
 # 导入共享的Base和所有模型
 from app.core.database import Base
 # 随着模块的开发，取消下面的注释以导入相应的模型
-# from app.user import models
-# from app.patient import models
-# from app.clinic import models
-# from app.pharmacy import models
-# from app.finance import models
+from app.user import models
+from app.patient import models
+from app.clinic import models
+from app.pharmacy import models
+from app.finance import models
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

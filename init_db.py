@@ -5,11 +5,11 @@ def init_db():
     
     # 导入所有模型模块，触发模型注册
     # 目前各模块的 models.py 尚未创建，所以此处暂时注释
-    # from app.user import models
-    # from app.clinic import models  
-    # from app.patient import models
-    # from app.pharmacy import models
-    # from app.finance import models
+    from app.user import models
+    from app.clinic import models  
+    from app.patient import models
+    from app.pharmacy import models
+    from app.finance import models
     
     print("模型注册完成。")
     

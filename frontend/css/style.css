@@ -16,6 +16,18 @@
     --font-family-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --spacing-unit: 8px;
     --border-radius: 4px;
+    
+    /* 登录页面背景图片相关变量 */
+    --bg-image: none;
+    --bg-overlay: rgba(238, 238, 238, 0); /* 登录页面不使用遮罩层 */
+    --bg-blur: 1px; /* 登录页面高斯模糊程度为1px */
+    --bg-brightness: 1; /* 登录页面背景亮度100% */
+}
+
+/* 仪表盘页面特定样式 */
+body.dashboard {
+    --bg-blur: 10px; /* 仪表盘页面高斯模糊程度为10px */
+    --bg-brightness: 0.95; /* 仪表盘页面背景亮度95% */
 }
 
 /* 预留的暗色主题，只需添加一个data-theme属性即可切换 */
@@ -28,8 +40,85 @@
     --color-text-on-bar: #222831;
     --color-accent-danger: #f96d80; /* 暗色模式下点缀色可以更亮一些 */
     --color-border: #393e46;
+    
+    /* 暗色主题的背景遮罩 */
+    --bg-overlay: rgba(34, 40, 49, 0);
 }
 
+/* 自定义背景容器 */
+.bg-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -2;
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(var(--bg-brightness)) blur(var(--bg-blur));
+    transform: scale(1.05); /* 避免模糊边缘 */
+}
+
+/* 背景遮罩，保持内容可读性 */
+.bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    background-color: var(--bg-overlay);
+}
+
+/* 为背景设置添加的样式 */
+.bg-settings {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--color-bg-card);
+    border-radius: var(--border-radius);
+    padding: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 99;
+}
+
+.bg-settings-trigger {
+    background-color: var(--color-bar-primary);
+    color: var(--color-text-on-bar);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.bg-settings-panel {
+    display: none;
+    padding: 15px;
+    margin-top: 10px;
+    background-color: var(--color-bg-card);
+    border-radius: var(--border-radius);
+}
+
+.bg-settings-panel.active {
+    display: block;
+}
+
+.bg-preview {
+    width: 100%;
+    height: 80px;
+    margin-bottom: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    background-size: cover;
+    background-position: center;
+}
 
 /* ============================================= */
 /* 2. 全局样式重置与基础定义 (Global Resets & Base) */
@@ -220,4 +309,338 @@ h1, h2, h3 {
 
 #patient-address {
     min-height: 80px;
+}
+
+/* 禁用按钮样式 */
+.btn-disabled {
+    background-color: #d8d8d8 !important;
+    color: #888 !important;
+    cursor: not-allowed !important;
+    border-color: #ccc !important;
+}
+
+.btn-disabled:hover {
+    background-color: #d8d8d8 !important;
+    color: #888 !important;
+}
+
+/* 必填字段标记样式 */
+.required {
+    color: #c03;
+    margin-left: 2px;
+}
+
+/* 小按钮样式 */
+.btn-sm {
+    padding: calc(var(--spacing-unit) * 0.5) calc(var(--spacing-unit) * 1);
+    font-size: 0.85rem;
+}
+
+/* 预设背景按钮容器 */
+.presets-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+/* 预设背景按钮 */
+.preset-btn {
+    background-color: var(--color-bar-secondary);
+    color: var(--color-text-on-bar);
+    border: none;
+    border-radius: var(--border-radius);
+    padding: calc(var(--spacing-unit) * 0.5) calc(var(--spacing-unit) * 0.75);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.preset-btn:hover {
+    background-color: var(--color-bar-primary);
+}
+
+/* 改进的侧边栏样式 - 悬浮圆角效果 */
+body .main-container .sidebar {
+    width: 78px; /* 增加14px (左右各增加7px) */
+    background-color: rgba(255, 255, 255, 0.1); /* 10%透明度的白色 */
+    height: auto !important; /* 自适应高度 */
+    position: fixed;
+    top: 100px !important; /* 下移30px */
+    left: 40px !important; /* 向左10px (从50px调整到40px) */
+    overflow: hidden; /* 防止文本溢出 */
+    z-index: 99;
+    transition: all 0.3s ease;
+    border-radius: 12px !important; /* 圆角效果 */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important; /* 增强阴影 */
+    border-right: none !important;
+    padding: 15px 0; /* 增加上下内边距 */
+}
+
+body .main-container .sidebar:hover {
+    width: 214px; /* 同样增加14px */
+}
+
+body .content {
+    margin-left: 138px !important; /* 调整为侧边栏宽度+左边距(78px + 50px + 10px) */
+    padding: 1rem;
+    min-height: calc(100vh - 60px);
+    background-color: rgba(255, 255, 255, 0); /* 完全透明背景 */
+    transition: margin-left 0.3s ease;
+}
+
+body .sidebar:hover + .content {
+    margin-left: 274px !important; /* 调整为侧边栏悬浮宽度+左边距(214px + 50px + 10px) */
+}
+
+/* 表格内操作链接样式 */
+.action-link {
+    text-decoration: none;
+    margin-right: 15px;
+    font-size: 0.9rem;
+    transition: opacity 0.2s ease;
+}
+
+.action-link:hover {
+    opacity: 0.7;
+}
+
+.action-link.view {
+    color: #39c5bb;
+}
+
+.action-link.edit {
+    color: #4a69bd;
+}
+
+.action-link.delete {
+    color: #8b0000; /* 暗红色 */
+}
+
+/* 患者详情视图样式 */
+.patient-info {
+    padding: 10px;
+}
+
+.patient-info h3 {
+    margin-bottom: 15px;
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 10px;
+}
+
+.patient-info .info-row {
+    display: flex;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.patient-info .info-label {
+    width: 100px;
+    font-weight: bold;
+    color: #555;
+}
+
+.patient-info .info-value {
+    flex: 1;
+}
+
+/* 患者详情表格样式 */
+.patient-detail-view {
+    padding: 10px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.patient-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.patient-detail-table th,
+.patient-detail-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.patient-detail-table th {
+    width: 120px;
+    font-weight: bold;
+    color: var(--color-text-primary);
+    background-color: rgba(57, 197, 187, 0.1);
+}
+
+/* 患者管理区域包装样式 */
+.patient-module-wrapper {
+    margin-top: 80px; /* 增加到距离顶部navbar 80px (原来是40px) */
+    margin-left: 35px;
+    margin-right: 35px;
+    margin-bottom: 35px;
+    background-color: rgba(255, 255, 255, 0.1); /* 10%透明度 */
+    border-radius: var(--border-radius);
+    padding: 35px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    min-height: calc(100vh - 70px - 80px - 100px); /* 视窗高度 - 顶部navbar高度 - 顶部间距 - 底部间距 */
+}
+
+#patient-module-content {
+    background-color: var(--color-bg-card);
+    border-radius: var(--border-radius);
+    padding: 20px;
+}
+
+/* 背景设置样式增强 */
+.local-backgrounds {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.bg-thumbnail {
+    width: 80px;
+    height: 60px;
+    border-radius: var(--border-radius);
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.bg-thumbnail:hover {
+    border-color: var(--color-bar-primary);
+    transform: scale(1.05);
+}
+
+.bg-thumbnail.active {
+    border-color: var(--color-bar-primary);
+}
+
+.loading-backgrounds {
+    padding: 10px;
+    text-align: center;
+    color: #777;
+    font-style: italic;
+}
+
+/* 文件上传按钮样式 */
+.file-upload-btn {
+    display: inline-block;
+    background-color: var(--color-bar-primary);
+    color: var(--color-text-on-bar);
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    margin: 10px 0;
+}
+
+.file-upload-btn:hover {
+    background-color: #2db7ad;
+    transform: translateY(-2px);
+}
+
+.file-upload-container {
+    margin: 10px 0;
+}
+
+/* 加载更多按钮样式 */
+.load-more-container {
+    padding: 20px 0;
+    text-align: center;
+    border-top: 1px solid #eee;
+}
+
+#load-more-btn {
+    padding: 8px 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#load-more-btn:hover {
+    background-color: #ddd;
+}
+
+/* 版权信息栏样式 */
+.copyright-bar {
+    position: relative;
+    margin-top: 30px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.8rem;
+    color: rgba(0, 0, 0, 0.5);
+    padding: 10px 5px;
+    z-index: 90;
+}
+
+[data-theme="dark"] .copyright-bar {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.version-code {
+    font-family: monospace;
+}
+
+/* 分页控件样式 */
+.pagination-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination-info {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pagination-pages {
+    display: flex;
+    align-items: center;
+}
+
+.pagination-btn {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    background-color: white;
+    cursor: pointer;
+    min-width: 30px;
+    border-radius: 3px;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #f5f5f5;
+}
+
+.pagination-btn.active {
+    background-color: var(--color-bar-primary);
+    color: white;
+    border-color: var(--color-bar-primary);
+}
+
+.pagination-btn:disabled {
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+.pagination-ellipsis {
+    padding: 5px;
+    color: #666;
 } 

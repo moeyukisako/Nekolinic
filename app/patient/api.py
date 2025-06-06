@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from . import schemas, service
 from app.core.database import get_db
 from app.core.exceptions import ResourceNotFoundException, ValidationException
 from app.core import security
 from app.user import models as user_models
 
-router = APIRouter()
+# 修改APIRouter配置
+router = APIRouter(redirect_slashes=False)
 
 # --- Patient Endpoints ---
 @router.post("/", response_model=schemas.Patient)
@@ -69,7 +70,7 @@ def update_patient(
         raise HTTPException(status_code=404, detail="患者不存在")
     return service.patient_service.update(db, db_obj=patient, obj_in=patient_in)
 
-@router.delete("/{patient_id}", response_model=schemas.Patient)
+@router.delete("/{patient_id}", response_model=Dict[str, Any])
 def delete_patient(
     patient_id: int,
     db: Session = Depends(get_db),
@@ -79,7 +80,8 @@ def delete_patient(
     patient = service.patient_service.get(db, id=patient_id)
     if not patient:
         raise HTTPException(status_code=404, detail="患者不存在")
-    return service.patient_service.remove(db, id=patient_id)
+    service.patient_service.remove(db, id=patient_id)
+    return {"status": "success", "message": "患者已删除", "id": patient_id}
 
 # --- MedicalRecord Endpoints ---
 @router.post("/{patient_id}/medical-records/", response_model=schemas.MedicalRecord)

@@ -38,6 +38,7 @@ app = FastAPI(
     description="医疗诊所管理系统API",
     version="1.0.0",
     lifespan=lifespan,
+    redirect_slashes=False,  # 禁用尾部斜杠重定向，确保路由严格匹配
 )
 
 # 配置CORS
@@ -99,7 +100,11 @@ class UserContextMiddleware(BaseHTTPMiddleware):
 # 注册中间件
 app.add_middleware(UserContextMiddleware)
 
-# 挂载前端静态文件 - 移至API路由之前
+# 先导入并挂载各模块的路由器
+from .routes import router as api_router
+app.include_router(api_router, prefix="/api/v1")
+
+# 然后挂载前端静态文件 - 放在API路由之后
 frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
 if os.path.exists(frontend_dir):
     app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
@@ -166,7 +171,4 @@ async def nekolic_base_exception_handler(request: Request, exc: NekolicBaseExcep
 @app.get("/")
 def read_root():
     return {"message": "欢迎使用Nekolinic医疗诊所管理系统API"}
-# 导入并挂载各模块的路由器
-from .routes import router as api_router
-app.include_router(api_router, prefix="/api/v1")
 

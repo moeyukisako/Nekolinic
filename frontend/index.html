@@ -35,279 +35,44 @@
             display: flex;
             width: 100%;
             padding: 0 1rem;
-            justify-content: space-between;
+            justify-content: center; /* 居中对齐 */
             align-items: center; /* 确保垂直居中对齐 */
             min-height: 100%; /* 确保内容区域高度填满容器 */
         }
         
-        .welcome-info {
-            flex: 1;
-            padding: 10% 3% 10% 3%;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-width: 200px; /* 确保最小宽度更小 */
-            max-width: 65%; /* 限制最大宽度 */
-        }
-        
-        .welcome-logo {
-            font-size: 3rem;
-            margin-bottom: 2rem;
-            color: var(--color-bar-primary);
-            font-weight: bold;
-        }
-        
-        .welcome-title {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            word-wrap: break-word; /* 允许长单词换行 */
-            hyphens: auto; /* 自动连字符 */
-        }
-        
-        .welcome-description {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            max-width: 600px;
-            line-height: 1.6;
-            word-wrap: break-word; /* 允许长单词换行 */
-        }
-        
         .welcome-auth-container {
-            width: 380px;
-            max-width: 35%;
-            min-width: 280px;
+            width: 400px; /* 增加宽度 */
             display: flex;
             align-items: center;
-            margin-right: 3%;
             z-index: 3;
+            padding: 0 15px;
         }
         
-        /* 响应式调整 - 屏幕宽度在1200px以下时保持左右布局但调整比例 */
-        @media (max-width: 1200px) {
-            .welcome-info {
-                padding: 10% 2% 10% 4%;
-            }
-            
-            .welcome-logo {
-                font-size: 2.5rem;
-                margin-bottom: 1.5rem;
-            }
-            
-            .welcome-title {
-                font-size: 2rem;
-                margin-bottom: 0.75rem;
-            }
-            
-            .welcome-description {
-                font-size: 1rem;
-                margin-bottom: 1.5rem;
-            }
-            
+        /* 响应式调整 */
+        @media (max-width: 500px) {
             .welcome-auth-container {
-                width: 340px;
-                min-width: 260px;
-            }
-        }
-        
-        /* 900px以下进一步缩小和优化 */
-        @media (max-width: 900px) {
-            .welcome-content {
-                padding: 0;
-            }
-            
-            .welcome-info {
-                padding: 8% 1.5% 8% 3%;
-                max-width: 60%;
-            }
-            
-            .welcome-logo {
-                font-size: 2rem;
-                margin-bottom: 1rem;
-            }
-            
-            .welcome-title {
-                font-size: 1.75rem;
-                margin-bottom: 0.5rem;
-            }
-            
-            .welcome-description {
-                font-size: 0.9rem;
-                line-height: 1.4;
-                margin-bottom: 1rem;
-            }
-            
-            .welcome-auth-container {
-                width: 280px;
-                min-width: 230px;
-                max-width: 40%;
-                margin-right: 2%;
-            }
-            
-            .login-box {
-                padding: 1.5rem;
-            }
-            
-            .login-box h2 {
-                font-size: 20px;
-                margin-bottom: 1.5rem;
-            }
-        }
-        
-        /* 600px以下的极小屏幕增强适配，但仍保持左右布局 */
-        @media (max-width: 600px) {
-            .welcome-info {
-                padding: 6% 1% 6% 2%;
-                max-width: 55%;
-                min-width: 150px;
-            }
-            
-            .welcome-logo {
-                font-size: 1.5rem;
-                margin-bottom: 0.75rem;
-            }
-            
-            .welcome-title {
-                font-size: 1.3rem;
-                margin-bottom: 0.5rem;
-            }
-            
-            .welcome-description {
-                font-size: 0.8rem;
-                line-height: 1.3;
-                margin-bottom: 0.75rem;
-            }
-            
-            .welcome-auth-container {
-                width: 210px;
-                min-width: 180px;
-                max-width: 45%;
-                margin-right: 1%;
-            }
-            
-            .login-box {
-                padding: 1rem;
-            }
-            
-            .login-box h2 {
-                font-size: 18px;
-                margin-bottom: 1rem;
-            }
-            
-            .form-group {
-                margin-bottom: 0.75rem;
-            }
-            
-            .form-group label {
-                font-size: 0.8rem;
-                margin-bottom: 0.25rem;
-            }
-            
-            .form-group input {
-                padding: 0.5rem;
-                font-size: 0.8rem;
-            }
-            
-            .btn {
-                padding: 0.5rem;
-                font-size: 0.9rem;
-            }
-        }
-        
-        /* 450px以下的超小屏幕，进一步优化但仍保持左右布局 */
-        @media (max-width: 450px) {
-            .welcome-content {
-                padding: 0;
-            }
-            
-            .welcome-info {
-                padding: 5% 1% 5% 2%;
-                max-width: 52%;
-                min-width: 130px;
-            }
-            
-            .welcome-logo {
-                font-size: 1.2rem;
-                margin-bottom: 0.5rem;
-            }
-            
-            .welcome-title {
-                font-size: 1rem;
-                margin-bottom: 0.4rem;
-            }
-            
-            .welcome-description {
-                font-size: 0.7rem;
-                line-height: 1.2;
-                margin-bottom: 0.5rem;
-            }
-            
-            .welcome-auth-container {
-                width: 160px;
-                min-width: 140px;
-                max-width: 48%;
-                margin-right: 1%;
-            }
-            
-            .login-box {
-                padding: 0.75rem;
-            }
-            
-            .login-box h2 {
-                font-size: 14px;
-                margin-bottom: 0.75rem;
-            }
-            
-            .form-group {
-                margin-bottom: 0.5rem;
-            }
-            
-            .form-group label {
-                font-size: 0.7rem;
-                margin-bottom: 0.2rem;
-            }
-            
-            .form-group input {
-                padding: 0.4rem;
-                font-size: 0.7rem;
-            }
-            
-            .btn {
-                padding: 0.4rem;
-                font-size: 0.8rem;
-            }
-            
-            .user-avatar {
-                width: 50px;
-                height: 50px;
-                font-size: 1.5rem;
-                margin-bottom: 0.4rem;
-            }
-            
-            .user-name {
-                font-size: 1rem;
-                margin-bottom: 0.4rem;
-            }
-            
-            .enter-btn {
-                padding: 0.4rem;
-                font-size: 0.8rem;
-                margin-top: 0.4rem;
-            }
-            
-            .logout-link {
-                font-size: 0.7rem;
+                width: 320px;
+                padding: 0 10px;
             }
         }
         
         /* 登录表单样式 */
         .login-box {
-            background: rgba(255, 255, 255, 0.2); /* 20%透明度 */
+            background: rgba(255, 255, 255, 0.35); /* 35%透明度的白色 */
             border-radius: 10px;
-            padding: 2rem;
+            padding: 3rem 2rem; /* 增加上下内边距 */
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             width: 100%;
+            text-align: center;
+        }
+        
+        .login-logo {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--color-bar-primary);
+            font-weight: bold;
+            text-align: center;
         }
         
         .login-box h2 {
@@ -320,12 +85,22 @@
         /* 已登录用户信息样式 */
         .user-info {
             text-align: center;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.2); /* 20%透明度 */
+            padding: 3rem 2rem; /* 增加上下内边距 */
+            background: rgba(255, 255, 255, 0.35); /* 35%透明度的白色 */
             border-radius: 10px;
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .login-logo {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--color-bar-primary);
+            font-weight: bold;
         }
         
         .user-avatar {
@@ -338,12 +113,12 @@
             align-items: center;
             justify-content: center;
             font-size: 2.5rem;
-            margin: 0 auto 1rem auto;
+            margin: 0 auto 1.5rem auto;
         }
         
         .user-name {
             font-size: 1.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 2rem;
             color: white;
             word-wrap: break-word; /* 允许长用户名换行 */
         }
@@ -357,31 +132,6 @@
             margin-right: auto;
             width: 80%;
             max-width: 240px;
-        }
-        
-        /* 特小屏幕的已登录信息调整 */
-        @media (max-width: 600px) {
-            .user-avatar {
-                width: 70px;
-                height: 70px;
-                font-size: 1.8rem;
-                margin-bottom: 0.5rem;
-            }
-            
-            .user-name {
-                font-size: 1.2rem;
-                margin-bottom: 0.5rem;
-            }
-            
-            .enter-btn {
-                padding: 0.5rem 1.5rem;
-                font-size: 1rem;
-                margin-top: 0.5rem;
-            }
-            
-            .logout-link {
-                font-size: 0.8rem;
-            }
         }
         
         /* 表单内容颜色 */
@@ -424,20 +174,51 @@
     </style>
 </head>
 <body>
+    <!-- 背景图片容器 -->
+    <div class="bg-container"></div>
+    <div class="bg-overlay"></div>
+    
     <div class="welcome-container">
         <div class="welcome-content">
-            <div class="welcome-info">
-                <div class="welcome-logo">Nekolinic</div>
-                <h1 class="welcome-title">诊所管理系统</h1>
-                <p class="welcome-description">
-                    Nekolinic是一个现代化的诊所管理解决方案，帮助医疗机构高效管理患者、预约、药局和财务数据。
-                </p>
-            </div>
             <div class="welcome-auth-container" id="auth-container">
                 <!-- 这里的内容将由JavaScript动态生成 -->
                 <div class="loader" style="text-align: center; color: white;">加载中...</div>
             </div>
         </div>
+    </div>
+
+    <!-- 背景设置按钮 -->
+    <div class="bg-settings">
+        <button class="bg-settings-trigger" id="bg-settings-trigger">
+            <i class="fas fa-image"></i>
+        </button>
+        <div class="bg-settings-panel" id="bg-settings-panel">
+            <h4>背景设置</h4>
+            <div class="bg-preview" id="bg-preview"></div>
+            <div class="form-group">
+                <label>本地图片</label>
+                <div class="file-upload-container">
+                    <label for="bg-file-input" class="file-upload-btn">
+                        选择图片文件
+                        <input type="file" id="bg-file-input" accept="image/*" style="display:none">
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>预设背景</label>
+                <div class="local-backgrounds" id="local-backgrounds">
+                    <div class="loading-backgrounds">加载中...</div>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-secondary btn-sm" id="reset-bg-btn">重置背景</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 版权信息栏 -->
+    <div class="copyright-bar">
+        Nekolinic Version <span class="version-code">&lt;versioncode&gt;</span>, Copyright moeyukisako 2025.
     </div>
 
     <script src="js/apiClient.js"></script>
@@ -453,6 +234,9 @@
                 // 未登录，显示登录表单
                 renderLoginForm(authContainer);
             }
+            
+            // 初始化背景设置
+            initBackgroundSettings();
         });
         
         // 检查认证并渲染用户信息
@@ -475,6 +259,7 @@
             
             container.innerHTML = `
                 <div class="user-info">
+                    <div class="login-logo">Nekolinic</div>
                     <div class="user-avatar">${nameInitial}</div>
                     <div class="user-name">欢迎回来，${userName}</div>
                     <button class="btn btn-primary enter-btn" onclick="enterSystem()">进入系统</button>
@@ -487,6 +272,7 @@
         function renderLoginForm(container) {
             container.innerHTML = `
                 <div class="login-box">
+                    <div class="login-logo">Nekolinic</div>
                     <h2>系统登录</h2>
                     <div id="login-error" class="text-danger" style="display: none; margin-bottom: 1rem; text-align: center;">
                         用户名或密码错误
@@ -534,6 +320,271 @@
         // 退出登录
         function logout() {
             apiClient.auth.logout();
+        }
+        
+        // 初始化背景设置
+        function initBackgroundSettings() {
+            // 获取DOM元素
+            const bgSettingsTrigger = document.getElementById('bg-settings-trigger');
+            const bgSettingsPanel = document.getElementById('bg-settings-panel');
+            const bgPreview = document.getElementById('bg-preview');
+            const resetBgBtn = document.getElementById('reset-bg-btn');
+            const fileInput = document.getElementById('bg-file-input');
+            const localBackgrounds = document.getElementById('local-backgrounds');
+            const bgContainer = document.querySelector('.bg-container');
+            
+            // 从LocalStorage加载保存的背景
+            const savedBgImage = localStorage.getItem('nekolinic-bg-image');
+            if (savedBgImage) {
+                document.documentElement.style.setProperty('--bg-image', `url(${savedBgImage})`);
+                if (bgContainer) {
+                    bgContainer.style.backgroundImage = `url(${savedBgImage})`;
+                }
+                if (bgPreview) bgPreview.style.backgroundImage = `url(${savedBgImage})`;
+            }
+            
+            // 检查是否有保存的背景颜色
+            const savedBgColor = localStorage.getItem('nekolinic-bg-color');
+            if (savedBgColor) {
+                document.documentElement.style.setProperty('--bg-image', 'none');
+                document.documentElement.style.setProperty('--color-bg-primary', savedBgColor);
+                if (bgContainer) {
+                    bgContainer.style.backgroundImage = 'none';
+                }
+                if (bgPreview) {
+                    bgPreview.style.backgroundColor = savedBgColor;
+                    bgPreview.style.backgroundImage = 'none';
+                }
+                
+                // 更新激活状态
+                const thumbnails = document.querySelectorAll('.bg-thumbnail');
+                thumbnails.forEach(thumb => {
+                    if (thumb.getAttribute('data-color') === savedBgColor) {
+                        thumb.classList.add('active');
+                    }
+                });
+            }
+            
+            // 背景设置面板切换
+            if (bgSettingsTrigger) {
+                bgSettingsTrigger.addEventListener('click', function() {
+                    if (bgSettingsPanel) {
+                        bgSettingsPanel.classList.toggle('active');
+                    }
+                });
+            }
+            
+            // 点击其他区域关闭面板
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.bg-settings') && 
+                    bgSettingsPanel && 
+                    bgSettingsPanel.classList.contains('active')) {
+                    bgSettingsPanel.classList.remove('active');
+                }
+            });
+            
+            // 处理文件上传事件
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const imageUrl = event.target.result;
+                            
+                            // 压缩图片
+                            compressImage(imageUrl, function(compressedImageUrl) {
+                                if (bgContainer) {
+                                    bgContainer.style.backgroundImage = `url(${compressedImageUrl})`;
+                                }
+                                
+                                // 更新预览
+                                if (bgPreview) bgPreview.style.backgroundImage = `url(${compressedImageUrl})`;
+                                
+                                // 保存到localStorage
+                                try {
+                                    localStorage.setItem('nekolinic-bg-image', compressedImageUrl);
+                                    document.documentElement.style.setProperty('--bg-image', `url(${compressedImageUrl})`);
+                                    
+                                    // 清除所有缩略图激活状态
+                                    const thumbnails = document.querySelectorAll('.bg-thumbnail');
+                                    thumbnails.forEach(thumb => thumb.classList.remove('active'));
+                                    
+                                    // 清除可能设置的背景颜色
+                                    document.documentElement.style.removeProperty('--bg-color');
+                                    localStorage.removeItem('nekolinic-bg-color');
+                                    
+                                    // 显示上传成功提示
+                                    showNotification ? showNotification('成功', '背景图片已成功应用并保存', 'info') : alert('背景图片已成功应用并保存');
+                                } catch (err) {
+                                    showNotification ? showNotification('错误', '保存背景图片失败: ' + err.message, 'error') : alert('保存背景图片失败: ' + err.message);
+                                    console.error('保存背景图片失败:', err);
+                                }
+                            });
+                        };
+                        
+                        // 读取文件为DataURL
+                        try {
+                            reader.readAsDataURL(file);
+                        } catch (err) {
+                            showNotification ? showNotification('错误', '读取图片失败: ' + err.message, 'error') : alert('读取图片失败: ' + err.message);
+                            console.error('读取图片文件失败:', err);
+                        }
+                    }
+                });
+            }
+            
+            // 重置背景
+            if (resetBgBtn) {
+                resetBgBtn.addEventListener('click', function() {
+                    resetBackground();
+                });
+            }
+            
+            // 加载本地预设背景
+            loadLocalBackgrounds();
+            
+            // 应用背景函数
+            function applyBackground(imageUrl) {
+                if (bgContainer) {
+                    bgContainer.style.backgroundImage = `url(${imageUrl})`;
+                }
+                document.documentElement.style.setProperty('--bg-image', `url(${imageUrl})`);
+                localStorage.setItem('nekolinic-bg-image', imageUrl);
+                if (bgPreview) bgPreview.style.backgroundImage = `url(${imageUrl})`;
+                
+                // 更新所有缩略图激活状态
+                const thumbnails = document.querySelectorAll('.bg-thumbnail');
+                thumbnails.forEach(thumb => {
+                    if (thumb.getAttribute('data-img') === imageUrl) {
+                        thumb.classList.add('active');
+                    } else {
+                        thumb.classList.remove('active');
+                    }
+                });
+            }
+            
+            // 重置背景函数
+            function resetBackground() {
+                if (bgContainer) {
+                    bgContainer.style.backgroundImage = 'none';
+                }
+                document.documentElement.style.setProperty('--bg-image', 'none');
+                localStorage.removeItem('nekolinic-bg-image');
+                if (bgPreview) bgPreview.style.backgroundImage = 'none';
+                
+                // 清除所有缩略图激活状态
+                const thumbnails = document.querySelectorAll('.bg-thumbnail');
+                thumbnails.forEach(thumb => thumb.classList.remove('active'));
+                
+                // 清除文件输入
+                if (fileInput) fileInput.value = '';
+                
+                alert('背景已重置');
+            }
+            
+            // 加载本地预设背景
+            function loadLocalBackgrounds() {
+                if (!localBackgrounds) return;
+                
+                // 预设的本地背景路径
+                const backgrounds = [
+                    {name: '浅色背景', color: '#f5f5f5'},
+                    {name: '深色背景', color: '#333333'},
+                    {name: '蓝色背景', color: '#3498db'},
+                    {name: '绿色背景', color: '#2ecc71'},
+                    {name: '粉色背景', color: '#e91e63'}
+                ];
+                
+                let html = '';
+                const savedBgColor = localStorage.getItem('nekolinic-bg-color');
+                
+                backgrounds.forEach(bg => {
+                    const isActive = savedBgColor === bg.color ? 'active' : '';
+                    html += `
+                        <div class="bg-thumbnail ${isActive}" 
+                            style="background-color: ${bg.color}" 
+                            data-color="${bg.color}"
+                            title="${bg.name}">
+                        </div>
+                    `;
+                });
+                
+                localBackgrounds.innerHTML = html || '<div class="no-backgrounds">暂无预设背景</div>';
+                
+                // 添加点击事件
+                document.querySelectorAll('.bg-thumbnail').forEach(thumb => {
+                    thumb.addEventListener('click', function() {
+                        const color = this.getAttribute('data-color');
+                        document.documentElement.style.setProperty('--bg-image', 'none');
+                        document.documentElement.style.setProperty('--color-bg-primary', color);
+                        if (bgContainer) bgContainer.style.backgroundImage = 'none';
+                        if (bgPreview) bgPreview.style.backgroundColor = color;
+                        if (bgPreview) bgPreview.style.backgroundImage = 'none';
+                        
+                        try {
+                            localStorage.setItem('nekolinic-bg-color', color);
+                            localStorage.removeItem('nekolinic-bg-image');
+                            
+                            // 更新激活状态
+                            document.querySelectorAll('.bg-thumbnail').forEach(t => t.classList.remove('active'));
+                            this.classList.add('active');
+                            
+                            alert('背景颜色已成功应用并保存');
+                        } catch (err) {
+                            alert('保存背景颜色失败: ' + err.message);
+                            console.error('保存背景颜色失败:', err);
+                        }
+                    });
+                });
+            }
+            
+            // 图片压缩函数
+            function compressImage(dataUrl, callback, maxWidth = 8000, maxHeight = 6000, quality = 0.7) {
+                const img = new Image();
+                img.onload = function() {
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // 如果图片尺寸已经小于最大尺寸，直接返回
+                    if (width <= maxWidth && height <= maxHeight && dataUrl.length < 5242880) {
+                        callback(dataUrl);
+                        return;
+                    }
+                    
+                    // 计算新的尺寸，保持宽高比
+                    if (width > maxWidth) {
+                        height = Math.round(height * (maxWidth / width));
+                        width = maxWidth;
+                    }
+                    
+                    if (height > maxHeight) {
+                        width = Math.round(width * (maxHeight / height));
+                        height = maxHeight;
+                    }
+                    
+                    // 创建canvas绘制压缩后的图片
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // 转换为DataURL
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    
+                    // 如果压缩后仍然过大，继续压缩
+                    if (compressedDataUrl.length > 5242880) {
+                        compressImage(compressedDataUrl, callback, maxWidth, maxHeight, quality * 0.8);
+                    } else {
+                        callback(compressedDataUrl);
+                    }
+                };
+                img.onerror = function() {
+                    callback(dataUrl); // 加载失败时使用原始数据
+                };
+                img.src = dataUrl;
+            }
         }
     </script>
 </body>

@@ -60,8 +60,7 @@ class PatientBase(BaseModel):
     name: str
     birth_date: Optional[date] = None
     gender: Optional[str] = None
-    phone: Optional[str] = None
-    email: Optional[str] = None
+    contact_number: Optional[str] = None
     address: Optional[str] = None
 
 class PatientCreate(PatientBase):
@@ -71,8 +70,7 @@ class PatientUpdate(BaseModel):
     name: Optional[str] = None
     birth_date: Optional[date] = None
     gender: Optional[str] = None
-    phone: Optional[str] = None
-    email: Optional[str] = None
+    contact_number: Optional[str] = None
     address: Optional[str] = None
 
 class Patient(PatientBase):

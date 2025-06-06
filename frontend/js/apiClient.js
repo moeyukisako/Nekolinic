@@ -57,13 +57,16 @@ const apiClient = {
     auth: {
         // 登录
         login: async (username, password) => {
-            const formData = new FormData();
-            formData.append('username', username);
-            formData.append('password', password);
-            
-            const response = await fetch(`${API_BASE_URL}/users/token`, {
+            // 使用JSON格式请求体
+            const response = await fetch(`${API_BASE_URL}/users/login`, {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
             });
 
             if (!response.ok) {
@@ -94,9 +97,15 @@ const apiClient = {
 
     // 患者相关
     patients: {
-        getAll: () => authorizedFetch('/patients'),
+        getAll: (skip = 0, limit = 15, includeCount = true) => 
+            authorizedFetch(`/patients/?skip=${skip}&limit=${limit}${includeCount ? '&count=true' : ''}`),
+        
+        search: (name, skip = 0, limit = 15, includeCount = true) => 
+            authorizedFetch(`/patients/?name=${encodeURIComponent(name)}&skip=${skip}&limit=${limit}${includeCount ? '&count=true' : ''}`),
+        
         getById: (id) => authorizedFetch(`/patients/${id}`),
-        create: (data) => authorizedFetch('/patients', { 
+        
+        create: (data) => authorizedFetch('/patients/', { 
             method: 'POST', 
             body: JSON.stringify(data) 
         }),
@@ -107,8 +116,8 @@ const apiClient = {
         delete: (id) => authorizedFetch(`/patients/${id}`, { method: 'DELETE' }),
         
         // 患者病历相关
-        getMedicalRecords: (patientId) => authorizedFetch(`/patients/${patientId}/medical-records`),
-        createMedicalRecord: (patientId, data) => authorizedFetch(`/patients/${patientId}/medical-records`, {
+        getMedicalRecords: (patientId) => authorizedFetch(`/patients/${patientId}/medical-records/`),
+        createMedicalRecord: (patientId, data) => authorizedFetch(`/patients/${patientId}/medical-records/`, {
             method: 'POST',
             body: JSON.stringify(data)
         })

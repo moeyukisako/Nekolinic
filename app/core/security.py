@@ -10,7 +10,7 @@ from .database import get_db
 from .config import settings
 
 # OAuth2密码流的token URL (将是我们的登录端点)
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/user/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/token")
 
 def create_access_token(
     data: Dict[str, Any], expires_delta: Optional[timedelta] = None

@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 from contextlib import asynccontextmanager
 from jose import JWTError, jwt
@@ -17,12 +18,16 @@ from .core.exceptions import (
 )
 from .core.auditing import register_audit_listeners
 from .core.context import current_user_id
+from .user.init_data import init_admin_user
+import os
 
 # 定义lifespan上下文管理器
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 应用启动时执行
     register_audit_listeners()
+    # 初始化测试账号
+    init_admin_user()
     yield
     # 应用关闭时执行
     # 此处可以添加资源清理代码
@@ -94,6 +99,11 @@ class UserContextMiddleware(BaseHTTPMiddleware):
 # 注册中间件
 app.add_middleware(UserContextMiddleware)
 
+# 挂载前端静态文件 - 移至API路由之前
+frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
+if os.path.exists(frontend_dir):
+    app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+
 # 注册全局异常处理器
 @app.exception_handler(PatientNotFoundException)
 async def patient_not_found_exception_handler(request: Request, exc: PatientNotFoundException):
@@ -152,11 +162,11 @@ async def nekolic_base_exception_handler(request: Request, exc: NekolicBaseExcep
         content={"message": exc.message},
     )
 
-# 根路由
+# 根路由 - 如果前端文件挂载失败才会到达这里
 @app.get("/")
 def read_root():
     return {"message": "欢迎使用Nekolinic医疗诊所管理系统API"}
-
 # 导入并挂载各模块的路由器
 from .routes import router as api_router
 app.include_router(api_router, prefix="/api/v1")
+

@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Body
+from fastapi import APIRouter, Depends, HTTPException, status, Body, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
+from pydantic import BaseModel
 
 from . import schemas, service
 from app.core.database import get_db
@@ -22,13 +23,39 @@ def create_user(
     """
     return service.user_service.create_user(db=db, user_in=user_in)
 
+# JSON登录请求模型
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+@router.post("/login", response_model=schemas.Token)
+async def json_login(
+    login_data: LoginRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    JSON格式登录API
+    """
+    # 验证用户
+    user = service.user_service.authenticate(
+        db, username=login_data.username, password=login_data.password
+    )
+    
+    # 生成访问令牌
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    
+    return {"access_token": access_token, "token_type": "bearer"}
+
 @router.post("/token", response_model=schemas.Token)
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
     """
-    用户登录获取访问令牌
+    用户登录获取访问令牌 (OAuth2)
     
     使用用户名和密码进行身份验证，返回JWT令牌
     """

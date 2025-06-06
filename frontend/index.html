@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欢迎使用 Nekolinic 诊所管理系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* 欢迎页特有样式 */
+        .welcome-container {
+            height: 100vh;
+            display: flex;
+            background-image: url('https://source.unsplash.com/random/1920x1080/?hospital,clinic');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            min-width: 320px; /* 设置最小宽度 */
+            overflow-x: hidden; /* 防止在极小屏幕上出现水平滚动条 */
+        }
+        
+        .welcome-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+        
+        .welcome-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            width: 100%;
+            padding: 0 1rem;
+            justify-content: space-between;
+            align-items: center; /* 确保垂直居中对齐 */
+            min-height: 100%; /* 确保内容区域高度填满容器 */
+        }
+        
+        .welcome-info {
+            flex: 1;
+            padding: 10% 3% 10% 3%;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 200px; /* 确保最小宽度更小 */
+            max-width: 65%; /* 限制最大宽度 */
+        }
+        
+        .welcome-logo {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            color: var(--color-bar-primary);
+            font-weight: bold;
+        }
+        
+        .welcome-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            word-wrap: break-word; /* 允许长单词换行 */
+            hyphens: auto; /* 自动连字符 */
+        }
+        
+        .welcome-description {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            line-height: 1.6;
+            word-wrap: break-word; /* 允许长单词换行 */
+        }
+        
+        .welcome-auth-container {
+            width: 380px;
+            max-width: 35%;
+            min-width: 280px;
+            display: flex;
+            align-items: center;
+            margin-right: 3%;
+            z-index: 3;
+        }
+        
+        /* 响应式调整 - 屏幕宽度在1200px以下时保持左右布局但调整比例 */
+        @media (max-width: 1200px) {
+            .welcome-info {
+                padding: 10% 2% 10% 4%;
+            }
+            
+            .welcome-logo {
+                font-size: 2.5rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .welcome-title {
+                font-size: 2rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .welcome-description {
+                font-size: 1rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .welcome-auth-container {
+                width: 340px;
+                min-width: 260px;
+            }
+        }
+        
+        /* 900px以下进一步缩小和优化 */
+        @media (max-width: 900px) {
+            .welcome-content {
+                padding: 0;
+            }
+            
+            .welcome-info {
+                padding: 8% 1.5% 8% 3%;
+                max-width: 60%;
+            }
+            
+            .welcome-logo {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+            }
+            
+            .welcome-title {
+                font-size: 1.75rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .welcome-description {
+                font-size: 0.9rem;
+                line-height: 1.4;
+                margin-bottom: 1rem;
+            }
+            
+            .welcome-auth-container {
+                width: 280px;
+                min-width: 230px;
+                max-width: 40%;
+                margin-right: 2%;
+            }
+            
+            .login-box {
+                padding: 1.5rem;
+            }
+            
+            .login-box h2 {
+                font-size: 20px;
+                margin-bottom: 1.5rem;
+            }
+        }
+        
+        /* 600px以下的极小屏幕增强适配，但仍保持左右布局 */
+        @media (max-width: 600px) {
+            .welcome-info {
+                padding: 6% 1% 6% 2%;
+                max-width: 55%;
+                min-width: 150px;
+            }
+            
+            .welcome-logo {
+                font-size: 1.5rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .welcome-title {
+                font-size: 1.3rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .welcome-description {
+                font-size: 0.8rem;
+                line-height: 1.3;
+                margin-bottom: 0.75rem;
+            }
+            
+            .welcome-auth-container {
+                width: 210px;
+                min-width: 180px;
+                max-width: 45%;
+                margin-right: 1%;
+            }
+            
+            .login-box {
+                padding: 1rem;
+            }
+            
+            .login-box h2 {
+                font-size: 18px;
+                margin-bottom: 1rem;
+            }
+            
+            .form-group {
+                margin-bottom: 0.75rem;
+            }
+            
+            .form-group label {
+                font-size: 0.8rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .form-group input {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+            
+            .btn {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* 450px以下的超小屏幕，进一步优化但仍保持左右布局 */
+        @media (max-width: 450px) {
+            .welcome-content {
+                padding: 0;
+            }
+            
+            .welcome-info {
+                padding: 5% 1% 5% 2%;
+                max-width: 52%;
+                min-width: 130px;
+            }
+            
+            .welcome-logo {
+                font-size: 1.2rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .welcome-title {
+                font-size: 1rem;
+                margin-bottom: 0.4rem;
+            }
+            
+            .welcome-description {
+                font-size: 0.7rem;
+                line-height: 1.2;
+                margin-bottom: 0.5rem;
+            }
+            
+            .welcome-auth-container {
+                width: 160px;
+                min-width: 140px;
+                max-width: 48%;
+                margin-right: 1%;
+            }
+            
+            .login-box {
+                padding: 0.75rem;
+            }
+            
+            .login-box h2 {
+                font-size: 14px;
+                margin-bottom: 0.75rem;
+            }
+            
+            .form-group {
+                margin-bottom: 0.5rem;
+            }
+            
+            .form-group label {
+                font-size: 0.7rem;
+                margin-bottom: 0.2rem;
+            }
+            
+            .form-group input {
+                padding: 0.4rem;
+                font-size: 0.7rem;
+            }
+            
+            .btn {
+                padding: 0.4rem;
+                font-size: 0.8rem;
+            }
+            
+            .user-avatar {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+                margin-bottom: 0.4rem;
+            }
+            
+            .user-name {
+                font-size: 1rem;
+                margin-bottom: 0.4rem;
+            }
+            
+            .enter-btn {
+                padding: 0.4rem;
+                font-size: 0.8rem;
+                margin-top: 0.4rem;
+            }
+            
+            .logout-link {
+                font-size: 0.7rem;
+            }
+        }
+        
+        /* 登录表单样式 */
+        .login-box {
+            background: rgba(255, 255, 255, 0.2); /* 20%透明度 */
+            border-radius: 10px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            width: 100%;
+        }
+        
+        .login-box h2 {
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #39c5bb; /* 修改为指定颜色 */
+            font-size: 24px; /* 增大字体 */
+        }
+        
+        /* 已登录用户信息样式 */
+        .user-info {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.2); /* 20%透明度 */
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            width: 100%;
+        }
+        
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--color-bar-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 1rem auto;
+        }
+        
+        .user-name {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: white;
+            word-wrap: break-word; /* 允许长用户名换行 */
+        }
+        
+        .enter-btn {
+            margin-top: 1rem;
+            padding: 0.75rem 2rem;
+            font-size: 1.2rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            width: 80%;
+            max-width: 240px;
+        }
+        
+        /* 特小屏幕的已登录信息调整 */
+        @media (max-width: 600px) {
+            .user-avatar {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .user-name {
+                font-size: 1.2rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .enter-btn {
+                padding: 0.5rem 1.5rem;
+                font-size: 1rem;
+                margin-top: 0.5rem;
+            }
+            
+            .logout-link {
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* 表单内容颜色 */
+        .form-group label {
+            color: white;
+            font-weight: bold;
+        }
+        
+        .welcome-auth-container input[type="text"],
+        .welcome-auth-container input[type="password"] {
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+        }
+        
+        .welcome-auth-container input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .text-danger {
+            color: #ff6b6b !important;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .logout-link {
+            display: block;
+            margin-top: 0.75rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        
+        .logout-link:hover {
+            color: white;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <div class="welcome-content">
+            <div class="welcome-info">
+                <div class="welcome-logo">Nekolinic</div>
+                <h1 class="welcome-title">诊所管理系统</h1>
+                <p class="welcome-description">
+                    Nekolinic是一个现代化的诊所管理解决方案，帮助医疗机构高效管理患者、预约、药局和财务数据。
+                </p>
+            </div>
+            <div class="welcome-auth-container" id="auth-container">
+                <!-- 这里的内容将由JavaScript动态生成 -->
+                <div class="loader" style="text-align: center; color: white;">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/apiClient.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const authContainer = document.getElementById('auth-container');
+            const token = localStorage.getItem('accessToken');
+            
+            if (token) {
+                // 已登录，获取用户信息
+                checkAuthAndRenderUserInfo(authContainer);
+            } else {
+                // 未登录，显示登录表单
+                renderLoginForm(authContainer);
+            }
+        });
+        
+        // 检查认证并渲染用户信息
+        async function checkAuthAndRenderUserInfo(container) {
+            try {
+                const user = await apiClient.auth.getCurrentUser();
+                renderUserInfo(container, user);
+            } catch (error) {
+                // 认证失效，显示登录表单
+                localStorage.removeItem('accessToken');
+                renderLoginForm(container);
+            }
+        }
+        
+        // 渲染用户信息
+        function renderUserInfo(container, user) {
+            // 使用用户名或全名，如果都不存在则使用默认值
+            const userName = user.full_name || user.username || 'User';
+            const nameInitial = userName.charAt(0).toUpperCase();
+            
+            container.innerHTML = `
+                <div class="user-info">
+                    <div class="user-avatar">${nameInitial}</div>
+                    <div class="user-name">欢迎回来，${userName}</div>
+                    <button class="btn btn-primary enter-btn" onclick="enterSystem()">进入系统</button>
+                    <a href="#" onclick="logout(); return false;" class="logout-link">退出登录</a>
+                </div>
+            `;
+        }
+        
+        // 渲染登录表单
+        function renderLoginForm(container) {
+            container.innerHTML = `
+                <div class="login-box">
+                    <h2>系统登录</h2>
+                    <div id="login-error" class="text-danger" style="display: none; margin-bottom: 1rem; text-align: center;">
+                        用户名或密码错误
+                    </div>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="username">用户名</label>
+                            <input type="text" id="username" name="username" required placeholder="请输入用户名 (测试账号: admin)">
+                        </div>
+                        <div class="form-group">
+                            <label for="password">密码</label>
+                            <input type="password" id="password" name="password" required placeholder="请输入密码 (测试密码: password)">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">登录</button>
+                    </form>
+                </div>
+            `;
+            
+            // 添加表单提交事件监听
+            document.getElementById('login-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const loginError = document.getElementById('login-error');
+                
+                try {
+                    loginError.style.display = 'none';
+                    await apiClient.auth.login(username, password);
+                    // 登录成功，获取用户信息
+                    checkAuthAndRenderUserInfo(container);
+                } catch (error) {
+                    // 显示错误信息
+                    loginError.textContent = error.message || '用户名或密码错误';
+                    loginError.style.display = 'block';
+                }
+            });
+        }
+        
+        // 进入系统主界面
+        function enterSystem() {
+            window.location.href = 'dashboard.html';
+        }
+        
+        // 退出登录
+        function logout() {
+            apiClient.auth.logout();
+        }
+    </script>
+</body>
+</html> 

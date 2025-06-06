@@ -44,6 +44,44 @@ class MedicalRecordNotFoundException(ResourceNotFoundException):
         self.record_id = record_id
 
 
+class DrugNotFoundException(ResourceNotFoundException):
+    """
+    药品未找到异常
+    """
+    def __init__(self, drug_id: int):
+        super().__init__("Drug", drug_id)
+        self.drug_id = drug_id
+
+
+class DrugCategoryNotFoundException(ResourceNotFoundException):
+    """
+    药品类别未找到异常
+    """
+    def __init__(self, category_id: int):
+        super().__init__("Drug Category", category_id)
+        self.category_id = category_id
+
+
+class PrescriptionNotFoundException(ResourceNotFoundException):
+    """
+    处方未找到异常
+    """
+    def __init__(self, prescription_id: int):
+        super().__init__("Prescription", prescription_id)
+        self.prescription_id = prescription_id
+
+
+class InsufficientStockException(NekolicBaseException):
+    """
+    库存不足异常
+    """
+    def __init__(self, drug_name: str, requested: int, current_stock: int):
+        self.drug_name = drug_name
+        self.current_stock = current_stock
+        self.requested = requested
+        super().__init__(f"库存不足：药品 {drug_name} 当前库存 {current_stock}，需求数量 {requested}")
+
+
 class ValidationException(NekolicBaseException):
     """
     数据验证异常

@@ -17,7 +17,8 @@ class PatientHistory(Base):
     name = Column(String(100))
     birth_date = Column(Date)
     gender = Column(String(10))
-    contact_number = Column(String(20))
+    phone = Column(String(20))
+    email = Column(String(100))
     address = Column(String(200))
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
@@ -35,6 +36,7 @@ class MedicalRecordHistory(Base):
     # Snapshot of MedicalRecord fields
     id = Column(Integer, index=True)
     record_date = Column(DateTime)
+    symptoms = Column(Text)
     diagnosis = Column(Text)
     treatment_plan = Column(Text)
     notes = Column(Text)
@@ -77,7 +79,8 @@ class Patient(Base, Auditable):
     name = Column(String(100), nullable=False)
     birth_date = Column(Date)
     gender = Column(String(10))
-    contact_number = Column(String(20))
+    phone = Column(String(20))
+    email = Column(String(100))
     address = Column(String(200))
     
     created_at = Column(DateTime)
@@ -94,6 +97,7 @@ class MedicalRecord(Base, Auditable):
     __tablename__ = 'medical_records'
     id = Column(Integer, primary_key=True, index=True)
     record_date = Column(DateTime, nullable=False)
+    symptoms = Column(Text)  # 症状描述
     diagnosis = Column(Text)
     treatment_plan = Column(Text)
     notes = Column(Text)

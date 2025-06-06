@@ -1,10 +1,12 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import DeclarativeBase
 from functools import wraps
 
-# 配置数据库连接，可从配置文件加载参数
-SQLALCHEMY_DATABASE_URL = "sqlite:///./nekolinic.db"
+from .config import settings
+
+# 配置数据库连接，从配置文件加载参数
+SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
 
 # 创建数据库引擎
 engine = create_engine(
@@ -15,8 +17,9 @@ engine = create_engine(
 # 创建会话本地对象
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# 创建作为所有模型基类的Base
-Base = declarative_base()
+# 创建作为所有模型基类的Base类
+class Base(DeclarativeBase):
+    pass
 
 # 依赖函数，用于注入数据库会话
 def get_db():

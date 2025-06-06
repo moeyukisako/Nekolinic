@@ -2,6 +2,9 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
+from contextlib import asynccontextmanager
+from jose import JWTError, jwt
+from .core.config import settings
 from .core.exceptions import (
     NekolicBaseException,
     ResourceNotFoundException,
@@ -15,17 +18,27 @@ from .core.exceptions import (
 from .core.auditing import register_audit_listeners
 from .core.context import current_user_id
 
+# 定义lifespan上下文管理器
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 应用启动时执行
+    register_audit_listeners()
+    yield
+    # 应用关闭时执行
+    # 此处可以添加资源清理代码
+
 # 创建FastAPI应用
 app = FastAPI(
     title="Nekolinic API",
     description="医疗诊所管理系统API",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # 配置CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 在生产环境中应该限制来源
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -35,17 +48,33 @@ app.add_middleware(
 class UserContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # 从认证头中获取用户ID
-        # 注意：这是一个简化实现，实际使用时需要从JWT或会话中解析用户ID
         user_id = None
         auth_header = request.headers.get("Authorization")
         
         if auth_header and auth_header.startswith("Bearer "):
-            # 假设令牌中包含用户ID
-            # 在实际实现中，此处需要解析JWT令牌
+            # 获取令牌
+            token = auth_header.split("Bearer ")[1]
             try:
-                # 这里只是一个假设，实际实现会更复杂
-                user_id = int(auth_header.split("Bearer ")[1])
-            except (ValueError, IndexError):
+                # 解析JWT令牌
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+                username: str = payload.get("sub")
+                
+                if username:
+                    # 如果令牌有效，查询数据库获取用户ID
+                    # 注意：这是一个简化实现，理想情况下应该将用户ID直接存储在令牌中
+                    from app.user import service as user_service
+                    from sqlalchemy.orm import Session
+                    from app.core.database import SessionLocal
+                    
+                    db = SessionLocal()
+                    try:
+                        user = user_service.user_service.get_by_attributes(db, username=username)
+                        if user:
+                            user_id = user.id
+                    finally:
+                        db.close()
+            except JWTError:
+                # 令牌无效，不设置用户ID
                 pass
         
         # 设置上下文变量
@@ -127,12 +156,6 @@ async def nekolic_base_exception_handler(request: Request, exc: NekolicBaseExcep
 @app.get("/")
 def read_root():
     return {"message": "欢迎使用Nekolinic医疗诊所管理系统API"}
-
-# 应用启动事件
-@app.on_event("startup")
-def startup_event():
-    # 注册所有审计监听器
-    register_audit_listeners()
 
 # 导入并挂载各模块的路由器
 from .routes import router as api_router

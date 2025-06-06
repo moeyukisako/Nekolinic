@@ -16,7 +16,10 @@ class DoctorHistory(Base):
     # Snapshot of Doctor fields
     id = Column(Integer, index=True)
     name = Column(String(100))
+    title = Column(String(50))
     specialty = Column(String(100))
+    phone = Column(String(20))
+    email = Column(String(100))
     user_id = Column(Integer)
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
@@ -50,7 +53,10 @@ class Doctor(Base, Auditable):
     __tablename__ = 'doctors'
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
+    title = Column(String(50))  # 职称
     specialty = Column(String(100), nullable=False)
+    phone = Column(String(20))
+    email = Column(String(100))
     user_id = Column(Integer, ForeignKey('users.id'), unique=True)
 
     created_at = Column(DateTime)

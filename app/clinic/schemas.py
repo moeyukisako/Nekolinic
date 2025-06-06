@@ -6,6 +6,9 @@ from typing import Optional, List
 class DoctorBase(BaseModel):
     name: str
     specialty: str
+    title: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
     user_id: int
 
 class DoctorCreate(DoctorBase):
@@ -14,6 +17,9 @@ class DoctorCreate(DoctorBase):
 class DoctorUpdate(BaseModel):
     name: Optional[str] = None
     specialty: Optional[str] = None
+    title: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
 
 class Doctor(DoctorBase):
     id: int

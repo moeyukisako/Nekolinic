@@ -30,6 +30,7 @@ class VitalSign(VitalSignBase):
 # --- MedicalRecord Schemas ---
 class MedicalRecordBase(BaseModel):
     record_date: datetime
+    symptoms: Optional[str] = None
     diagnosis: Optional[str] = None
     treatment_plan: Optional[str] = None
     notes: Optional[str] = None
@@ -42,6 +43,7 @@ class MedicalRecordCreate(MedicalRecordBase):
 
 class MedicalRecordUpdate(BaseModel):
     record_date: Optional[datetime] = None
+    symptoms: Optional[str] = None
     diagnosis: Optional[str] = None
     treatment_plan: Optional[str] = None
     notes: Optional[str] = None
@@ -58,7 +60,8 @@ class PatientBase(BaseModel):
     name: str
     birth_date: Optional[date] = None
     gender: Optional[str] = None
-    contact_number: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
     address: Optional[str] = None
 
 class PatientCreate(PatientBase):
@@ -68,7 +71,8 @@ class PatientUpdate(BaseModel):
     name: Optional[str] = None
     birth_date: Optional[date] = None
     gender: Optional[str] = None
-    contact_number: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
     address: Optional[str] = None
 
 class Patient(PatientBase):

@@ -11,7 +11,7 @@ def test_create_patient(db: Session):
         name="测试患者",
         birth_date=date(1990, 1, 1),
         gender="男",
-        contact_number="13800138000",
+        phone="13800138000",
         address="测试地址",
     )
     patient = patient_service.create(db, obj_in=patient_in)
@@ -20,7 +20,7 @@ def test_create_patient(db: Session):
     assert patient.name == "测试患者"
     assert patient.birth_date == date(1990, 1, 1)
     assert patient.gender == "男"
-    assert patient.contact_number == "13800138000"
+    assert patient.phone == "13800138000"
     assert patient.address == "测试地址"
 
 def test_get_patient(db: Session):
@@ -30,7 +30,7 @@ def test_get_patient(db: Session):
         name="测试患者2",
         birth_date=date(1992, 2, 2),
         gender="女",
-        contact_number="13900139000",
+        phone="13900139000",
         address="测试地址2",
     )
     created_patient = patient_service.create(db, obj_in=patient_in)
@@ -42,7 +42,7 @@ def test_get_patient(db: Session):
     assert patient.name == "测试患者2"
     assert patient.birth_date == date(1992, 2, 2)
     assert patient.gender == "女"
-    assert patient.contact_number == "13900139000"
+    assert patient.phone == "13900139000"
     assert patient.address == "测试地址2"
 
 def test_search_patients(db: Session):
@@ -71,20 +71,20 @@ def test_update_patient(db: Session):
     # 先创建一个患者
     patient_in = PatientCreate(
         name="旧名称",
-        contact_number="旧电话",
+        phone="旧电话",
     )
     patient = patient_service.create(db, obj_in=patient_in)
     
     # 更新患者信息
     patient_update = PatientUpdate(
         name="新名称",
-        contact_number="新电话",
+        phone="新电话",
     )
     updated_patient = patient_service.update(db, db_obj=patient, obj_in=patient_update)
     
     assert updated_patient.id == patient.id
     assert updated_patient.name == "新名称"
-    assert updated_patient.contact_number == "新电话"
+    assert updated_patient.phone == "新电话"
 
 def test_delete_patient(db: Session):
     """测试删除患者"""

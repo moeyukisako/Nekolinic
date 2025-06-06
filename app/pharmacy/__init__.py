@@ -1,1 +1,1 @@
-# 药局模块初始化文件 
+# Pharmacy module

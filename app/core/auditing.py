@@ -1,6 +1,6 @@
 from sqlalchemy import event
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Dict, Type, Any
 from .context import current_user_id
 
@@ -79,7 +79,7 @@ def before_flush_listener(session: Session, flush_context, instances):
                 **snapshot,
                 action_type=action_type,
                 action_by_id=action_by_id,
-                action_timestamp=datetime.utcnow()
+                action_timestamp=datetime.now(UTC)
             )
             
             history_to_add.append(history_record)
@@ -101,7 +101,7 @@ def before_flush_listener(session: Session, flush_context, instances):
                 **snapshot,
                 action_type='DELETE',
                 action_by_id=action_by_id,
-                action_timestamp=datetime.utcnow()
+                action_timestamp=datetime.now(UTC)
             )
             
             history_to_add.append(history_record)

@@ -1,7 +1,7 @@
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, UTC
 from .database import Base
 from .context import current_user_id
 
@@ -130,10 +130,10 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         
         # 添加审计信息
         if hasattr(self.model, "created_at"):
-            obj_in_data["created_at"] = datetime.utcnow()
+            obj_in_data["created_at"] = datetime.now(UTC)
             
         if hasattr(self.model, "updated_at"):
-            obj_in_data["updated_at"] = datetime.utcnow()
+            obj_in_data["updated_at"] = datetime.now(UTC)
             
         if hasattr(self.model, "created_by_id"):
             try:
@@ -196,7 +196,7 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         
         # 更新审计信息
         if hasattr(db_obj, "updated_at"):
-            setattr(db_obj, "updated_at", datetime.utcnow())
+            setattr(db_obj, "updated_at", datetime.now(UTC))
             
         if hasattr(db_obj, "updated_by_id"):
             try:
@@ -232,11 +232,11 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             
         if hasattr(obj, "deleted_at"):
             # 软删除
-            setattr(obj, "deleted_at", datetime.utcnow())
+            setattr(obj, "deleted_at", datetime.now(UTC))
             
             # 更新最后修改信息
             if hasattr(obj, "updated_at"):
-                setattr(obj, "updated_at", datetime.utcnow())
+                setattr(obj, "updated_at", datetime.now(UTC))
                 
             if hasattr(obj, "updated_by_id"):
                 try:
@@ -281,7 +281,7 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         
         # 更新最后修改信息
         if hasattr(obj, "updated_at"):
-            setattr(obj, "updated_at", datetime.utcnow())
+            setattr(obj, "updated_at", datetime.now(UTC))
             
         if hasattr(obj, "updated_by_id"):
             try:

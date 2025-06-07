@@ -149,11 +149,34 @@ def update_medical_record(
     db: Session = Depends(get_db),
     current_user: user_models.User = Depends(security.get_current_active_user)
 ):
-    """更新病历 (需要认证)"""
+    """
+    Update a medical record.
+    """
     record = service.medical_record_service.get(db, id=record_id)
     if not record:
-        raise HTTPException(status_code=404, detail="病历不存在")
-    return service.medical_record_service.update(db, db_obj=record, obj_in=record_in)
+        raise HTTPException(status_code=404, detail="Medical record not found")
+
+    # --- 【最终修正】使用不会导致程序崩溃的、安全的权限检查 ---
+    
+    # 1. 首先检查当前用户是否拥有医生身份。如果没有，直接拒绝，而不是崩溃。
+    if not current_user.doctor:
+        raise HTTPException(
+            status_code=403, 
+            detail="Forbidden: The current user is not registered as a doctor."
+        )
+    
+    # 2. 在确保用户是医生后，再安全地比较ID。
+    if record.doctor_id != current_user.doctor.id:
+         raise HTTPException(
+             status_code=403, 
+             detail="Forbidden: You are not authorized to update this specific record."
+        )
+    # --- 修正结束 ---
+
+    updated_record = service.medical_record_service.update(
+        db=db, db_obj=record, obj_in=record_in
+    )
+    return updated_record
 
 # --- VitalSign Endpoints ---
 @router.post("/medical-records/{record_id}/vital-signs/", response_model=schemas.VitalSign)

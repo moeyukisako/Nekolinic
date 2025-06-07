@@ -1,8 +1,9 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from passlib.context import CryptContext
 from . import models, schemas
 from app.core.service_base import BaseService
 from app.core.exceptions import AuthenticationException, ValidationException
+from typing import Optional
 
 # 密码处理
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -59,6 +60,17 @@ class UserService(BaseService[models.User, schemas.UserCreate, schemas.UserUpdat
         update_data = preferences.model_dump(exclude_unset=True)
         # 调用基类的update方法来更新用户对象
         return super().update(db, db_obj=user, obj_in=update_data)
+    
+    def get_with_doctor(self, db: Session, *, user_id: int) -> Optional[models.User]:
+        """
+        根据用户ID获取用户，并预先加载其关联的医生信息。
+        """
+        return (
+            db.query(self.model)
+            .options(joinedload(self.model.doctor)) # 核心：强制加载doctor关系
+            .filter(self.model.id == user_id)
+            .first()
+        )
 
 # 创建 service 实例供 api 层使用
 user_service = UserService(models.User) 

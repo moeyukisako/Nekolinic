@@ -218,22 +218,16 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         Returns:
             更新后的对象
         """
-        # 获取原对象的字典表示
-        obj_data = {
-            column.name: getattr(db_obj, column.name)
-            for column in db_obj.__table__.columns
-        }
-        
         # 准备更新数据
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
             update_data = obj_in.model_dump(exclude_unset=True)
         
-        # 更新字段
-        for field in obj_data:
-            if field in update_data:
-                setattr(db_obj, field, update_data[field])
+        # 【核心修正】: 直接遍历传入的更新数据，而不是数据库对象的字段
+        # 这样可以确保每一个从API传入的有效字段都被设置到模型上
+        for field, value in update_data.items():
+            setattr(db_obj, field, value)
         
         # 更新审计信息
         if hasattr(db_obj, "updated_at"):

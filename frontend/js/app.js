@@ -1,5 +1,14 @@
 // frontend/js/app.js (最终正确版本)
 
+// debounce 工具函数，用于限制函数调用频率
+function debounce(func, delay = 1500) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const mainContent = document.querySelector('.main-content');
     const sidebarNav = document.querySelector('.sidebar-nav');
@@ -72,7 +81,7 @@ async function mainContentHandler(e) {
     let action;
     if(e.type === 'submit') {
         if(e.target.id === 'patient-form') action = 'submit-patient-form';
-        else if(e.target.id === 'medical-record-form') action = 'submit-medical-record-form';
+        // 移除旧的表单提交处理，因为现在使用自动保存
         else return;
         e.preventDefault();
     } else {
@@ -113,15 +122,7 @@ async function mainContentHandler(e) {
 
         // --- 病历管理 (病历详情) ---
         case 'back-to-patient-selection': renderMedicalRecordsModule(mainContent); break;
-        case 'add-medical-record': showAddMedicalRecordModal(); break;
-        case 'edit-medical-record': editMedicalRecord(id); break;
-        case 'delete-medical-record': deleteMedicalRecord(id, patientId); break;
-        case 'close-medical-record-modal': hideMedicalRecordModal(); break;
-        case 'change-medical-record-page': loadMedicalRecords(patientId, page); break;
-        case 'submit-medical-record-form':
-            const mrPatientId = e.target.querySelector('#medical-record-patient-id').value;
-            saveMedicalRecord(mrPatientId);
-            break;
+        // 移除不再需要的旧版病历模态框相关操作
     }
 }
 
@@ -203,57 +204,190 @@ async function renderMedicalRecordsModule(container) {
             <div id="medical-records-patient-pagination-container"></div>
         </div>`;
     await renderMedicalRecordsPatientList(1, '');
-            }
+}
 
 async function renderMedicalRecordModule(container, patientId) {
-    container.innerHTML = `<div class="patient-module-wrapper"><p>正在加载...</p></div>`;
+    container.innerHTML = `<div class="patient-module-wrapper"><p>正在加载病历...</p></div>`;
+    let patient;
     try {
-        const patient = await apiClient.patients.getById(patientId);
-        container.innerHTML = `
-            <div class="patient-module-wrapper">
-                <div class="header-bar"><h1>病历管理: ${patient.name}</h1><div><button data-action="add-medical-record" class="btn btn-primary">添加新病历</button><button data-action="back-to-patient-selection" class="btn btn-secondary">返回患者选择</button></div></div>
-                <div id="medical-record-list-container"></div>
-                <div id="medical-record-pagination-container"></div>
-                <div id="medical-record-modal" class="modal">
-                    <div class="modal-content large">
-                        <span class="close-btn" data-action="close-medical-record-modal">&times;</span>
-                        <h2 id="medical-record-modal-title">添加新病历</h2>
-                        <form id="medical-record-form">
-                            <input type="hidden" id="medical-record-id">
-                            <input type="hidden" id="medical-record-patient-id" value="${patientId}">
-                            <fieldset>
-                                <legend>基本信息</legend>
-                                <div class="form-group">
-                                    <label for="medical-record-date">就诊日期</label>
-                                    <input type="datetime-local" id="medical-record-date" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="medical-record-symptoms">主诉症状</label>
-                                    <textarea id="medical-record-symptoms" rows="3"></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label for="medical-record-diagnosis">诊断结果</label>
-                                    <textarea id="medical-record-diagnosis" rows="3"></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label for="medical-record-treatment">治疗方案</label>
-                                    <textarea id="medical-record-treatment" rows="3"></textarea>
-                                </div>
-                            </fieldset>
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">保存</button>
-                                <button type="button" class="btn btn-secondary" data-action="close-medical-record-modal">取消</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>`;
-        await loadMedicalRecords(patientId, 1);
+        patient = await apiClient.patients.getById(patientId);
     } catch (error) {
-        container.innerHTML = `<div class="error-message"><h2>加载失败</h2><p>${error.message}</p></div>`;
-}
+        container.innerHTML = `<div class="error-message"><h2>加载患者信息失败</h2><p>${error.message}</p></div>`;
+        return;
+    }
+
+    // 计算年龄
+    const calculateAge = (birthDate) => {
+        if (!birthDate) return '未知';
+        const birth = new Date(birthDate);
+        const ageDifMs = Date.now() - birth.getTime();
+        const ageDate = new Date(ageDifMs);
+        return Math.abs(ageDate.getUTCFullYear() - 1970);
+    };
+
+    const patientAge = calculateAge(patient.birth_date);
+
+    // 渲染可直接编辑的表单UI，将患者基本信息改为横排只读文本
+    container.innerHTML = `
+        <div class="patient-module-wrapper">
+            <div class="header-bar">
+                <h1>电子病历</h1>
+                <div>
+                    <span id="save-status" style="margin-right: 20px; color: #888; font-style: italic;"></span>
+                    <button data-action="back-to-patient-selection" class="btn btn-secondary">返回患者列表</button>
+                </div>
+            </div>
+            <div class="card">
+                <form id="medical-record-form" data-patient-id="${patient.id}">
+                    <input type="hidden" id="medical-record-id">
+                    
+                    <fieldset>
+                        <legend>患者基本信息</legend>
+                        <div class="patient-info-row">
+                            <span class="patient-info-item">姓名：${patient.name}</span>
+                            <span class="patient-info-item">性别：${patient.gender || '未填写'}</span>
+                            <span class="patient-info-item">年龄：${patientAge}岁</span>
+                        </div>
+                    </fieldset>
+                    
+                    <fieldset>
+                        <legend>临床记录</legend>
+                        <div class="form-group">
+                            <label for="record-date">就诊时间</label>
+                            <input type="datetime-local" id="record-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="past-history">既往病史 (Past Medical History)</label>
+                            <textarea id="past-history" rows="2" placeholder="请输入患者既往病史..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="symptoms">主诉与病症 (Symptoms)</label>
+                            <textarea id="symptoms" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="diagnosis">诊断 (Diagnosis)</label>
+                            <textarea id="diagnosis" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="treatment-plan">处置意见 (Treatment Plan)</label>
+                            <textarea id="treatment-plan" rows="4"></textarea>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    `;
+
+    // 加载并填充最新病历数据和既往病史
+    loadAndPopulateLatestRecord(patient);
+
+    // 绑定自动保存事件
+    const form = document.getElementById('medical-record-form');
+    const debouncedSave = debounce(saveMedicalRecordChanges);
+    form.addEventListener('input', debouncedSave);
 }
 
+async function loadAndPopulateLatestRecord(patient) {
+    const form = document.getElementById('medical-record-form');
+    
+    // 填充既往病史字段
+    form.querySelector('#past-history').value = patient.past_medical_history || '';
+    
+    try {
+        const response = await apiClient.medicalRecords.getByPatientId(patient.id, 1, 1); // 获取第一页的第一条，即最新的
+        let latestRecord;
+
+        if (response.items && response.items.length > 0) {
+            latestRecord = response.items[0];
+        } else {
+            // 如果没有记录，可能需要创建一个新的（或者后端已经创建了空白的）
+            console.log("该患者没有病历，将显示空白表单。");
+            latestRecord = { record_date: new Date().toISOString() }; // 默认值
+        }
+
+        // 填充表单
+        form.querySelector('#medical-record-id').value = latestRecord.id || '';
+        form.querySelector('#record-date').value = new Date(latestRecord.record_date).toISOString().slice(0, 16);
+        form.querySelector('#symptoms').value = latestRecord.symptoms || '';
+        form.querySelector('#diagnosis').value = latestRecord.diagnosis || '';
+        form.querySelector('#treatment-plan').value = latestRecord.treatment_plan || '';
+        
+    } catch (error) {
+        console.error("加载最新病历失败:", error);
+        document.getElementById('save-status').textContent = '加载病历失败!';
+        document.getElementById('save-status').style.color = '#b83b51';
+    }
+}
+
+async function saveMedicalRecordChanges() {
+    const form = document.getElementById('medical-record-form');
+    if (!form) return;
+
+    const statusEl = document.getElementById('save-status');
+    statusEl.textContent = '正在保存...';
+    statusEl.style.color = '#888';
+
+    const recordId = form.querySelector('#medical-record-id').value;
+    const patientId = form.dataset.patientId;
+
+    // 1. 准备患者数据（只包含既往病史）
+    const patientUpdateData = {
+        past_medical_history: form.querySelector('#past-history').value
+    };
+    
+    // 2. 准备病历数据
+    const recordData = {
+        record_date: new Date(form.querySelector('#record-date').value).toISOString(),
+        symptoms: form.querySelector('#symptoms').value,
+        diagnosis: form.querySelector('#diagnosis').value,
+        treatment_plan: form.querySelector('#treatment-plan').value,
+        notes: '' // notes字段暂时未在UI上体现，给个默认值
+    };
+    
+    console.log('准备保存病历数据:', recordData);
+    
+    try {
+        // 创建两个独立的保存任务
+        const patientUpdatePromise = apiClient.patients.update(patientId, patientUpdateData);
+        
+        let recordUpdatePromise;
+        if (recordId) {
+            console.log('更新已有病历记录, ID:', recordId);
+            recordUpdatePromise = apiClient.medicalRecords.update(recordId, recordData);
+        } else {
+            console.log('创建新病历记录');
+            const recordCreateData = {
+                ...recordData,
+                patient_id: parseInt(patientId, 10),
+                doctor_id: 1 // 临时医生ID
+            };
+            recordUpdatePromise = apiClient.medicalRecords.create(recordCreateData);
+        }
+        
+        // 并行执行两个API请求
+        const [patientResult, recordResult] = await Promise.all([
+            patientUpdatePromise, 
+            recordUpdatePromise
+        ]);
+        
+        console.log('患者信息更新成功:', patientResult);
+        console.log('病历保存成功:', recordResult);
+        
+        // 如果是新创建的病历，保存ID以便下次更新
+        if (!recordId && recordResult && recordResult.id) {
+            form.querySelector('#medical-record-id').value = recordResult.id;
+            console.log('已将新病历ID写回表单:', recordResult.id);
+        }
+        
+        statusEl.textContent = `已于 ${new Date().toLocaleTimeString()} 保存`;
+        statusEl.style.color = 'green';
+        
+    } catch (error) {
+        console.error("保存失败:", error);
+        statusEl.textContent = `保存失败: ${error.message}`;
+        statusEl.style.color = '#b83b51';
+    }
+}
 
 // --- 数据加载与辅助函数 ---
 
@@ -268,8 +402,8 @@ async function loadAndDisplayPatients(page = 1, query = '') {
         const response = await apiClient.patients.getAll(page, 15, query);
         if (!response.items.length) {
             tableBody.innerHTML = '<tr><td colspan="6">未找到患者记录</td></tr>';
-            return;
-        }
+        return;
+    }
         tableBody.innerHTML = response.items.map(p => `
             <tr>
                 <td>${p.id}</td>
@@ -339,62 +473,6 @@ async function renderMedicalRecordsPatientList(page = 1, query = '') {
         listContainer.innerHTML = `<p class="error">加载患者列表失败: ${error.message}</p>`;
     }
 }
-
-async function loadMedicalRecords(patientId, page = 1) {
-    const listContainer = document.getElementById('medical-record-list-container');
-    const paginationContainer = document.getElementById('medical-record-pagination-container');
-    if (!listContainer || !paginationContainer) return;
-
-    listContainer.innerHTML = `<p>正在加载病历...</p>`;
-    paginationContainer.innerHTML = '';
-
-    try {
-        const response = await apiClient.medicalRecords.getByPatientId(patientId, page, 10);
-
-        if (!response.items || !response.items.length) {
-            listContainer.innerHTML = '<div class="card"><p style="padding: 1rem;">该患者暂无病历记录。</p></div>';
-            return;
-        }
-
-        listContainer.innerHTML = `
-            <div class="card">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>就诊日期</th>
-                            <th>主诉</th>
-                            <th>诊断</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${response.items.map(rec => `
-                            <tr>
-                                <td>${rec.id}</td>
-                                <td>${new Date(rec.record_date).toLocaleString()}</td>
-                                <td>${(rec.symptoms || '').substring(0, 30)}${rec.symptoms && rec.symptoms.length > 30 ? '...' : ''}</td>
-                                <td>${(rec.diagnosis || '').substring(0, 30)}${rec.diagnosis && rec.diagnosis.length > 30 ? '...' : ''}</td>
-                                <td>
-                                    <button class="btn btn-sm" data-action="edit-medical-record" data-id="${rec.id}">编辑</button>
-                                    <button class="btn btn-sm btn-danger" data-action="delete-medical-record" data-id="${rec.id}" data-patient-id="${patientId}">删除</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-                <div id="medical-record-pagination-container"></div>
-            </div>
-        `;
-        
-        const totalPages = Math.ceil(response.total / 10);
-        renderPagination(document.getElementById('medical-record-pagination-container'), page, totalPages, '', 'change-medical-record-page', patientId);
-        
-    } catch (error) {
-        console.error('加载病历失败:', error);
-        listContainer.innerHTML = `<p class="error">加载病历失败: ${error.message}</p>`;
-        }
-    }
 
 function renderPagination(container, currentPage, totalPages, query, action, patientId = null) {
     if (!container || totalPages <= 1) {
@@ -544,79 +622,5 @@ async function viewPatient(id) {
     } catch (error) {
         console.error('加载患者数据失败:', error);
         alert(`加载患者数据失败: ${error.message}`);
-    }
-}
-
-// 显示添加病历模态框
-function showAddMedicalRecordModal() {
-    const modal = document.getElementById('medical-record-modal');
-    if (modal) {
-        document.getElementById('medical-record-form').reset();
-        document.getElementById('medical-record-id').value = '';
-        document.getElementById('medical-record-modal-title').textContent = '添加新病历';
-        document.getElementById('medical-record-date').value = new Date().toISOString().slice(0, 16);
-        modal.style.display = 'block';
-    }
-}
-
-function hideMedicalRecordModal() {
-    const modal = document.getElementById('medical-record-modal');
-    if (modal) modal.style.display = 'none';
-}
-
-async function editMedicalRecord(recordId) {
-    try {
-        const record = await apiClient.medicalRecords.getById(recordId);
-        const modal = document.getElementById('medical-record-modal');
-        if(modal) {
-            document.getElementById('medical-record-id').value = record.id;
-            document.getElementById('medical-record-date').value = new Date(record.record_date).toISOString().slice(0, 16);
-            document.getElementById('medical-record-symptoms').value = record.symptoms || '';
-            document.getElementById('medical-record-diagnosis').value = record.diagnosis || '';
-            document.getElementById('medical-record-treatment').value = record.treatment_plan || '';
-            document.getElementById('medical-record-modal-title').textContent = '编辑病历';
-            modal.style.display = 'block';
-        }
-    } catch(error) {
-        alert('加载病历数据失败: ' + error.message);
-    }
-}
-
-async function saveMedicalRecord(patientId) {
-    const recordId = document.getElementById('medical-record-id').value;
-    const recordData = {
-        patient_id: parseInt(patientId, 10),
-        doctor_id: 1, // 临时
-        record_date: new Date(document.getElementById('medical-record-date').value).toISOString(),
-        symptoms: document.getElementById('medical-record-symptoms').value,
-        diagnosis: document.getElementById('medical-record-diagnosis').value,
-        treatment_plan: document.getElementById('medical-record-treatment').value,
-        notes: '' // 确保所有字段都存在
-    };
-
-    try {
-        if (recordId) {
-            await apiClient.medicalRecords.update(recordId, recordData);
-            alert('病历更新成功');
-        } else {
-            await apiClient.medicalRecords.create(recordData);
-            alert('病历创建成功');
-        }
-        hideMedicalRecordModal();
-        loadMedicalRecords(patientId, 1);
-    } catch (error) {
-        alert('保存失败: ' + error.message);
-    }
-}
-
-async function deleteMedicalRecord(recordId, patientId) {
-    if (confirm('确定要删除这条病历吗？此操作不可恢复。')) {
-        try {
-            await apiClient.medicalRecords.delete(recordId);
-            alert('删除成功');
-            loadMedicalRecords(patientId, 1);
-        } catch (error) {
-            alert('删除失败: ' + error.message);
-        }
     }
 } 

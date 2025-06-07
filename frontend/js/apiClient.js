@@ -188,17 +188,23 @@ const apiClient = {
 
             const params = new URLSearchParams({ page, per_page });
 
-            return apiRequest(`/clinics/patients/${patientId}/medical_records/?${params.toString()}`);
+            return apiRequest(`/patients/${patientId}/medical-records/?${params.toString()}`);
 
         },
 
-        getById: (recordId) => apiRequest(`/clinics/medical_records/${recordId}`),
+        getById: (recordId) => apiRequest(`/patients/medical-records/${recordId}`),
 
         create: (recordData) => {
 
-            const clinicId = 1; // 临时方案
+            const patientId = recordData.patient_id;
 
-            return apiRequest(`/clinics/${clinicId}/medical_records/`, {
+            if (!patientId) {
+
+                throw new Error("创建病历时必须提供 patient_id");
+
+            }
+
+            return apiRequest(`/patients/${patientId}/medical-records/`, {
 
                 method: 'POST',
 
@@ -208,9 +214,19 @@ const apiClient = {
 
         },
 
-        update: (recordId, data) => apiRequest(`/clinics/medical_records/${recordId}`, { method: 'PUT', body: JSON.stringify(data) }),
+        update: (recordId, data) => apiRequest(`/patients/medical-records/${recordId}`, { 
 
-        delete: (recordId) => apiRequest(`/clinics/medical_records/${recordId}`, { method: 'DELETE' })
+            method: 'PUT', 
+
+            body: JSON.stringify(data) 
+
+        }),
+
+        delete: (recordId) => apiRequest(`/patients/medical-records/${recordId}`, { 
+
+            method: 'DELETE' 
+
+        })
 
     },
 

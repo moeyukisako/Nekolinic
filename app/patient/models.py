@@ -19,6 +19,7 @@ class PatientHistory(Base):
     gender = Column(String(10))
     contact_number = Column(String(20))
     address = Column(String(200))
+    past_medical_history = Column(Text)  # 添加既往病史字段
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
     created_by_id = Column(Integer, ForeignKey('users.id'), nullable=True)
@@ -80,6 +81,7 @@ class Patient(Base, Auditable):
     gender = Column(String(10))
     contact_number = Column(String(20))
     address = Column(String(200))
+    past_medical_history = Column(Text, nullable=True)  # 添加既往病史字段
     
     created_at = Column(DateTime)
     updated_at = Column(DateTime)

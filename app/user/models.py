@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 from app.core.auditing import Auditable, register_audit_model
 
@@ -47,3 +48,6 @@ class User(Base, Auditable):
     created_by_id = Column(Integer, ForeignKey('users.id'), nullable=True)
     updated_by_id = Column(Integer, ForeignKey('users.id'), nullable=True)
     deleted_at = Column(DateTime, nullable=True)  # 为了软删除 
+    
+    # 添加与Doctor的关联关系，指定正确的外键路径，并设置为一对一关系
+    doctor = relationship("Doctor", back_populates="user", foreign_keys="Doctor.user_id", uselist=False) 

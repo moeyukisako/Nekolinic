@@ -682,4 +682,40 @@ legend {
 /* 病历模块的返回按钮样式 */
 [data-action="back-to-patients"] {
     margin-left: 1rem;
+}
+
+/* 保存状态显示样式 */
+#save-status {
+    display: inline-block;
+    transition: color 0.3s ease;
+    font-size: 0.9rem;
+}
+
+#save-status.saving {
+    color: #888;
+}
+
+#save-status.saved {
+    color: #4CAF50;
+}
+
+#save-status.error {
+    color: var(--color-accent-danger);
+}
+
+/* 添加患者信息横排显示样式 */
+.patient-info-row {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px 15px;
+    background-color: #f7f9fc;
+    border-radius: 4px;
+}
+
+.patient-info-item {
+    flex: 1;
+    min-width: 150px;
+    font-size: 16px;
+    padding: 5px 10px;
+    font-weight: 500;
 } 

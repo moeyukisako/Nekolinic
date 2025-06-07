@@ -4,43 +4,41 @@ from typing import Optional, List, Dict, Any
 
 # --- VitalSign Schemas ---
 class VitalSignBase(BaseModel):
-    temperature: Optional[float] = None
+    patient_id: int
+    record_date: datetime
     heart_rate: Optional[int] = None
     blood_pressure: Optional[str] = None
+    temperature: Optional[float] = None
     respiratory_rate: Optional[int] = None
-    oxygen_saturation: Optional[float] = None
-    medical_record_id: int
 
 class VitalSignCreate(VitalSignBase):
     pass
 
 class VitalSignUpdate(BaseModel):
-    temperature: Optional[float] = None
+    record_date: Optional[datetime] = None
     heart_rate: Optional[int] = None
     blood_pressure: Optional[str] = None
+    temperature: Optional[float] = None
     respiratory_rate: Optional[int] = None
-    oxygen_saturation: Optional[float] = None
 
 class VitalSign(VitalSignBase):
     id: int
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
 
 # --- MedicalRecord Schemas ---
 class MedicalRecordBase(BaseModel):
+    patient_id: int
+    doctor_id: int
+
+class MedicalRecordCreate(MedicalRecordBase):
     record_date: datetime
     symptoms: Optional[str] = None
     diagnosis: Optional[str] = None
     treatment_plan: Optional[str] = None
     notes: Optional[str] = None
-    patient_id: int
-    doctor_id: int
-    appointment_id: Optional[int] = None
 
-class MedicalRecordCreate(MedicalRecordBase):
-    pass
-
+# 只包含可更新的表单字段，不包含关系字段如patient_id和doctor_id
+# 这些关系字段不应该在更新记录时被修改
 class MedicalRecordUpdate(BaseModel):
     record_date: Optional[datetime] = None
     symptoms: Optional[str] = None
@@ -50,8 +48,11 @@ class MedicalRecordUpdate(BaseModel):
 
 class MedicalRecord(MedicalRecordBase):
     id: int
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    record_date: datetime
+    symptoms: Optional[str] = None
+    diagnosis: Optional[str] = None
+    treatment_plan: Optional[str] = None
+    notes: Optional[str] = None
     vital_sign: Optional[VitalSign] = None
     model_config = ConfigDict(from_attributes=True)
 
@@ -62,21 +63,18 @@ class PatientBase(BaseModel):
     gender: Optional[str] = None
     contact_number: Optional[str] = None
     address: Optional[str] = None
+    past_medical_history: Optional[str] = None
 
 class PatientCreate(PatientBase):
     pass
 
-class PatientUpdate(BaseModel):
+class PatientUpdate(PatientBase):
     name: Optional[str] = None
-    birth_date: Optional[date] = None
-    gender: Optional[str] = None
-    contact_number: Optional[str] = None
-    address: Optional[str] = None
 
 class Patient(PatientBase):
     id: int
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    medical_records: List[MedicalRecord] = []
+    vital_signs: List[VitalSign] = []
     model_config = ConfigDict(from_attributes=True)
 
 class PatientWithMedicalRecords(Patient):

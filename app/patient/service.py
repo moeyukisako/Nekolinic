@@ -1,10 +1,37 @@
 from sqlalchemy.orm import Session, joinedload
 from typing import Dict, Any
+from datetime import datetime, timezone
 from . import models, schemas
 from app.core.service_base import BaseService
 from app.core.exceptions import ResourceNotFoundException, ValidationException
 
 class PatientService(BaseService[models.Patient, schemas.PatientCreate, schemas.PatientUpdate]):
+    def create(self, db: Session, *, obj_in: schemas.PatientCreate) -> models.Patient:
+        """
+        重写创建方法，在创建患者后，自动为其生成一个空白病历。
+        """
+        # 首先，使用父类的方法创建患者
+        new_patient = super().create(db=db, obj_in=obj_in)
+        
+        # 接着，为这位新患者创建一个空白病历
+        # 注意：这里我们假设医生ID为1，作为默认或系统医生
+        # 在实际应用中，这个ID应来自当前登录的医生用户
+        blank_record_data = schemas.MedicalRecordCreate(
+            patient_id=new_patient.id,
+            doctor_id=1, 
+            record_date=datetime.now(timezone.utc),
+            symptoms="首次建档",
+            diagnosis="暂无",
+            treatment_plan="待定",
+            notes="系统自动创建的空白病历"
+        )
+        
+        # 使用 medical_record_service 创建病历
+        medical_record_service.create(db=db, obj_in=blank_record_data)
+        
+        db.refresh(new_patient)
+        return new_patient
+
     def get_multi(self, db: Session, *, skip: int = 0, limit: int = 15) -> Dict[str, Any]:
         """
         获取患者列表（分页），通过调用基类的 get_paginated 来实现。

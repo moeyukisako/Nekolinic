@@ -61,6 +61,7 @@ async def get_current_user(
         
         # 从数据库获取用户
         from app.user.service import user_service
+        # 先获取用户基本信息
         user = user_service.get_by_attributes(db, username=username)
         
         if user is None:
@@ -69,7 +70,10 @@ async def get_current_user(
         if not user.is_active:
             raise AuthenticationException("用户已被禁用")
         
-        return user
+        # 使用新方法预加载医生信息
+        user_with_doctor = user_service.get_with_doctor(db, user_id=user.id)
+        
+        return user_with_doctor
     except JWTError:
         raise AuthenticationException("无效的认证凭据")
 

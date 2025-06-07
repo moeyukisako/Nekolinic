@@ -422,35 +422,35 @@
             <div class="sidebar-menu sidebar-nav">
                 <a href="#dashboard" class="sidebar-item active" data-section="dashboard">
                     <i class="fas fa-chart-line"></i>
-                    <span>系统概览</span>
+                    <span>状态</span>
                 </a>
                 <a href="#patients" class="sidebar-item" data-section="patients">
                     <i class="fas fa-user-md"></i>
-                    <span>患者管理</span>
+                    <span>患者</span>
                 </a>
                 <a href="#appointments" class="sidebar-item" data-section="appointments">
                     <i class="fas fa-calendar-check"></i>
-                    <span>预约管理</span>
+                    <span>预约</span>
                 </a>
                 <a href="#medical-records" class="sidebar-item" data-section="medical-records">
                     <i class="fas fa-notes-medical"></i>
-                    <span>病历管理</span>
+                    <span>病历</span>
                 </a>
-                <a href="#pharmacy" class="sidebar-item" data-section="pharmacy">
+                <a href="#pharmacy" class="sidebar-item" data-section="pharmacy" id="medicine-management-link">
                     <i class="fas fa-capsules"></i>
-                    <span>药房管理</span>
+                    <span>药品</span>
                 </a>
                 <a href="#finance" class="sidebar-item" data-section="finance">
                     <i class="fas fa-coins"></i>
-                    <span>财务管理</span>
+                    <span>财务</span>
                 </a>
                 <a href="#reports" class="sidebar-item" data-section="reports">
                     <i class="fas fa-chart-pie"></i>
-                    <span>报表分析</span>
+                    <span>报表</span>
                 </a>
                 <a href="#settings" class="sidebar-item" data-section="settings">
                     <i class="fas fa-sliders-h"></i>
-                    <span>系统设置</span>
+                    <span>设置</span>
                 </a>
             </div>
         </div>
@@ -459,7 +459,7 @@
         <div class="content main-content" id="content">
             <!-- 默认显示仪表盘 -->
             <div id="dashboard-section" class="content-section active">
-                <h1>系统概览</h1>
+                <h1>状态</h1>
                 <p>欢迎使用 Nekolinic 诊所管理系统！</p>
                 <div class="dashboard-cards">
                     <!-- 这里将来会显示统计卡片 -->
@@ -476,7 +476,7 @@
             
             <!-- 其他内容区域，默认隐藏 -->
             <div id="appointments-section" class="content-section" style="display: none;">
-                <h1>预约管理</h1>
+                <h1>预约</h1>
                 <p>此功能正在开发中...</p>
             </div>
             
@@ -487,22 +487,22 @@
             </div>
             
             <div id="pharmacy-section" class="content-section" style="display: none;">
-                <h1>药房管理</h1>
+                <h1>药品</h1>
                 <p>此功能正在开发中...</p>
             </div>
             
             <div id="finance-section" class="content-section" style="display: none;">
-                <h1>财务管理</h1>
+                <h1>财务</h1>
                 <p>此功能正在开发中...</p>
             </div>
             
             <div id="reports-section" class="content-section" style="display: none;">
-                <h1>报表分析</h1>
+                <h1>报表</h1>
                 <p>此功能正在开发中...</p>
             </div>
             
             <div id="settings-section" class="content-section" style="display: none;">
-                <h1>系统设置</h1>
+                <h1>设置</h1>
                 <p>此功能正在开发中...</p>
             </div>
         </div>
@@ -555,7 +555,7 @@
     </div>
 
     <script src="js/apiClient.js"></script>
-    <script src="js/app.js"></script>
+    <script type="module" src="js/main.js"></script>
     <script>
         // 检查是否已登录，未登录则重定向到首页
         document.addEventListener('DOMContentLoaded', async function() {

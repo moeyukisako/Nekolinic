@@ -249,27 +249,88 @@ const apiClient = {
 
     // 药房相关
 
-    pharmacy: {
+    medicines: {
+        /**
+         * 获取药品列表（支持搜索）
+         * @param {string} [searchTerm=''] - 搜索关键词
+         * @returns {Promise<Array>} 药品对象数组
+         */
+        list: (searchTerm = '') => apiRequest(`/pharmacy/medicines/?search=${encodeURIComponent(searchTerm)}`),
+        
+        /**
+         * 根据ID获取单个药品信息
+         * @param {number} id - 药品ID
+         * @returns {Promise<object>} 单个药品对象
+         */
+        getById: (id) => apiRequest(`/pharmacy/medicines/${id}`),
 
-        getMedicines: () => apiRequest('/pharmacy/medicines'),
-
-        getMedicineById: (id) => apiRequest(`/pharmacy/medicines/${id}`),
-
-        getPrescriptions: () => apiRequest('/pharmacy/prescriptions'),
-
-        getPrescriptionById: (id) => apiRequest(`/pharmacy/prescriptions/${id}`),
-
-        createPrescription: (data) => apiRequest('/pharmacy/prescriptions', {
-
+        /**
+         * 创建新药品
+         * @param {object} medicineData - { name, specification, manufacturer, stock }
+         * @returns {Promise<object>} 创建成功的药品对象
+         */
+        create: (medicineData) => apiRequest('/pharmacy/medicines/', {
             method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(medicineData)
+        }),
 
-            body: JSON.stringify(data)
+        /**
+         * 更新药品信息
+         * @param {number} id - 药品ID
+         * @param {object} medicineData - 更新的药品数据
+         * @returns {Promise<object>} 更新成功的药品对象
+         */
+        update: (id, medicineData) => apiRequest(`/pharmacy/medicines/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(medicineData)
+        }),
 
-        })
-
+        /**
+         * 删除药品
+         * @param {number} id - 药品ID
+         * @returns {Promise<object>} 成功删除的响应
+         */
+        delete: (id) => apiRequest(`/pharmacy/medicines/${id}`, { method: 'DELETE' })
     },
 
-    
+    /**
+     * @namespace apiClient.prescriptions
+     * @description 用于与处方相关的API交互
+     */
+    prescriptions: {
+        /**
+         * 为指定病历创建一条处方记录
+         * @param {object} prescriptionData - { medical_record_id, medicine_id, dosage, frequency, notes }
+         * @returns {Promise<object>} 创建成功的处方对象
+         */
+        create: (prescriptionData) => apiRequest('/pharmacy/prescriptions/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(prescriptionData)
+        }),
+        
+        /**
+         * 根据病历ID获取其所有处方记录
+         * @param {number} medicalRecordId - 病历ID
+         * @returns {Promise<Array>} 该病历的处方对象数组
+         */
+        getByMedicalRecordId: (medicalRecordId) => apiRequest(`/pharmacy/prescriptions/medical_record/${medicalRecordId}`),
+        
+        /**
+         * 获取所有处方
+         * @returns {Promise<Array>} 处方对象数组
+         */
+        getAll: () => apiRequest('/pharmacy/prescriptions/'),
+        
+        /**
+         * 删除指定处方
+         * @param {number} id - 处方ID
+         * @returns {Promise<object>} 成功删除的响应
+         */
+        delete: (id) => apiRequest(`/pharmacy/prescriptions/${id}`, { method: 'DELETE' })
+    },
 
     // 报告相关
 

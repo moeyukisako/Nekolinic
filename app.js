@@ -144,9 +144,10 @@ function initializeDashboard() {
     
     // 页面内容渲染函数的映射表
     const contentRenderers = {
-        '仪表盘': renderDashboard,
-        '患者管理': renderPatientModule,
-        '病历管理': renderMedicalRecordsModule,
+        '状态': renderDashboard,
+        '患者': renderPatientModule,
+        '病历': renderMedicalRecordsModule,
+        '药品': renderMedicineModule,
     };
 
     // 单一的主导航事件监听器
@@ -516,13 +517,79 @@ async function renderMedicalRecordModule(container, patientId) {
                             <textarea id="treatment-plan" rows="4"></textarea>
                         </div>
                     </fieldset>
+                    
+                    <!-- 添加处方区域 -->
+                    <fieldset>
+                        <legend style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span>处方信息</span>
+                            <button type="button" id="print-prescription-btn" class="btn btn-secondary btn-sm">打印/输出处方</button>
+                        </legend>
+                        <div class="content-header" style="padding:0; margin-bottom: 1rem;">
+                            <h4>处方药品列表</h4>
+                            <button type="button" id="add-prescription-item-btn" class="btn btn-secondary btn-sm">添加药品到处方</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>药品名称</th>
+                                    <th>单次用量</th>
+                                    <th>用法频率</th>
+                                    <th>备注</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prescription-items-body">
+                            </tbody>
+                        </table>
+                    </fieldset>
                 </form>
+                <div class="form-actions">
+                    <button id="print-record-btn" class="btn btn-secondary">打印/输出病历</button>
+                    <button id="save-record-btn" class="btn btn-primary">保存病历</button>
+                </div>
             </div>
         </div>
     `;
 
+    // 初始化处方项目临时数组
+    window.tempPrescriptionItems = [];
+
     // 加载并填充最新病历数据和既往病史
     loadAndPopulateLatestRecord(patient);
+
+    // 绑定按钮事件
+    document.getElementById('add-prescription-item-btn').addEventListener('click', () => {
+        showAddPrescriptionModal();
+    });
+
+    document.getElementById('print-prescription-btn').addEventListener('click', () => {
+        const recordId = document.getElementById('medical-record-id').value;
+        if (recordId) {
+            handlePrintPrescription(recordId);
+        } else {
+            alert('请先保存病历记录');
+        }
+    });
+
+    document.getElementById('print-record-btn').addEventListener('click', () => {
+        const recordId = document.getElementById('medical-record-id').value;
+        if (recordId) {
+            handlePrintMedicalRecord(recordId);
+        } else {
+            alert('请先保存病历记录');
+        }
+    });
+
+    document.getElementById('save-record-btn').addEventListener('click', async () => {
+        const recordId = document.getElementById('medical-record-id').value;
+        if (recordId) {
+            // 先保存病历主信息
+            await saveMedicalRecordChanges();
+            // 然后保存处方信息
+            await savePrescriptions(recordId);
+            alert('病历及处方已成功保存！');
+        }
+    });
 
     // 绑定自动保存事件
     const form = document.getElementById('medical-record-form');
@@ -541,6 +608,11 @@ async function loadAndPopulateLatestRecord(patient) {
             document.getElementById('symptoms').value = record.symptoms || '';
             document.getElementById('diagnosis').value = record.diagnosis || '';
             document.getElementById('treatment-plan').value = record.treatment_plan || '';
+            
+            // 加载处方数据
+            if (record.id) {
+                loadPrescriptions(record.id);
+            }
         };
 
         const recordsResponse = await apiClient.medicalRecords.getByPatientId(patient.id, 1, 1);
@@ -854,5 +926,738 @@ async function viewPatient(id) {
         // TODO: 实现患者详情页
     } catch (error) {
         alert(`获取患者信息失败: ${error.message}`);
+    }
+}
+
+/**
+ * 渲染药品管理模块的主函数
+ */
+async function renderMedicineModule() {
+    const mainContent = document.querySelector('.main-content');
+    mainContent.innerHTML = `
+        <div class="content-header">
+            <h2>药品管理</h2>
+            <button id="add-medicine-btn" class="btn btn-primary">添加新药品</button>
+        </div>
+        <div class="search-bar">
+            <input type="text" id="medicine-search-input" placeholder="按药品名称、厂家搜索...">
+            <button id="medicine-search-btn" class="btn">搜索</button>
+        </div>
+        <div class="data-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>药品名称</th>
+                        <th>规格</th>
+                        <th>生产厂家</th>
+                        <th>当前库存</th>
+                        <th class="actions-column">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="medicine-table-body"></tbody>
+            </table>
+        </div>
+    `;
+
+    // 初始加载数据
+    await loadAndDisplayMedicines();
+
+    // --- 事件监听 ---
+    // 使用事件委托来处理表格中的按钮点击，性能更佳
+    document.getElementById('add-medicine-btn').addEventListener('click', () => {
+        showMedicineFormModal();
+    });
+
+    document.getElementById('medicine-search-btn').addEventListener('click', () => {
+        const searchTerm = document.getElementById('medicine-search-input').value;
+        loadAndDisplayMedicines(searchTerm);
+    });
+    
+    // 搜索框回车事件
+    document.getElementById('medicine-search-input').addEventListener('keypress', e => {
+        if (e.key === 'Enter') {
+            loadAndDisplayMedicines(e.target.value);
+        }
+    });
+
+    // 使用事件委托处理表格操作按钮
+    document.getElementById('medicine-table-body').addEventListener('click', e => {
+        const target = e.target;
+        if (target.classList.contains('btn-edit')) {
+            const id = target.dataset.id;
+            handleEditMedicine(id);
+        } else if (target.classList.contains('btn-delete')) {
+            const id = target.dataset.id;
+            handleDeleteMedicine(id);
+        }
+    });
+}
+
+/**
+ * 加载并显示药品列表
+ * @param {string} searchTerm - 搜索关键词
+ */
+async function loadAndDisplayMedicines(searchTerm = '') {
+    const tableBody = document.getElementById('medicine-table-body');
+    
+    // 显示加载动画
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="5" class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">加载中...</span>
+                </div>
+            </td>
+        </tr>
+    `;
+    
+    try {
+        const medicines = await apiClient.medicines.list(searchTerm);
+        tableBody.innerHTML = ''; // 清空旧数据
+        
+        if (medicines.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center">未找到相关药品信息</td></tr>';
+            return;
+        }
+        
+        medicines.forEach(med => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${med.name}</td>
+                <td>${med.specification || 'N/A'}</td>
+                <td>${med.manufacturer || 'N/A'}</td>
+                <td>${med.stock}</td>
+                <td class="action-buttons">
+                    <button class="btn btn-sm btn-edit" data-id="${med.id}">编辑</button>
+                    <button class="btn btn-sm btn-danger btn-delete" data-id="${med.id}">删除</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('加载药品列表失败:', error);
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center">加载失败: ${error.message}</td></tr>`;
+    }
+}
+
+/**
+ * 显示药品表单对话框
+ * @param {object} [medicine=null] - 当编辑时提供药品数据
+ */
+function showMedicineFormModal(medicine = null) {
+    const title = medicine ? '编辑药品' : '添加新药品';
+    
+    // 创建模态框
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'medicine-form-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>${title}</h3>
+                <span class="close" id="close-medicine-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="medicine-form">
+                    <input type="hidden" id="medicine-id" value="${medicine?.id || ''}">
+                    <div class="form-group">
+                        <label for="medicine-name">药品名称</label>
+                        <input type="text" id="medicine-name" value="${medicine?.name || ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="medicine-specification">规格</label>
+                        <input type="text" id="medicine-specification" value="${medicine?.specification || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label for="medicine-manufacturer">生产厂家</label>
+                        <input type="text" id="medicine-manufacturer" value="${medicine?.manufacturer || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label for="medicine-stock">初始库存</label>
+                        <input type="number" id="medicine-stock" value="${medicine?.stock || 0}" required ${medicine ? 'disabled' : ''}>
+                        ${medicine ? '<small>库存管理请在入库模块操作。</small>' : ''}
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-medicine-form">取消</button>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'block';
+    
+    // 添加关闭模态框的事件
+    document.getElementById('close-medicine-modal').addEventListener('click', closeMedicineModal);
+    document.getElementById('cancel-medicine-form').addEventListener('click', closeMedicineModal);
+    
+    // 添加表单提交事件
+    document.getElementById('medicine-form').addEventListener('submit', handleMedicineFormSubmit);
+}
+
+/**
+ * 关闭药品表单模态框
+ */
+function closeMedicineModal() {
+    const modal = document.getElementById('medicine-form-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.removeChild(modal);
+    }
+}
+
+/**
+ * 处理药品表单提交
+ * @param {Event} e - 表单提交事件
+ */
+async function handleMedicineFormSubmit(e) {
+    e.preventDefault();
+    
+    const id = document.getElementById('medicine-id').value;
+    const medicineData = {
+        name: document.getElementById('medicine-name').value,
+        specification: document.getElementById('medicine-specification').value,
+        manufacturer: document.getElementById('medicine-manufacturer').value,
+        stock: parseInt(document.getElementById('medicine-stock').value, 10) || 0
+    };
+    
+    try {
+        if (id) {
+            // 编辑现有药品
+            await apiClient.medicines.update(id, medicineData);
+        } else {
+            // 创建新药品
+            await apiClient.medicines.create(medicineData);
+        }
+        
+        closeMedicineModal();
+        loadAndDisplayMedicines(); // 刷新列表
+    } catch (error) {
+        console.error('保存药品失败:', error);
+        alert(`保存失败: ${error.message}`);
+    }
+}
+
+/**
+ * 处理编辑药品
+ * @param {number} id - 药品ID
+ */
+async function handleEditMedicine(id) {
+    try {
+        const medicine = await apiClient.medicines.getById(id);
+        showMedicineFormModal(medicine);
+    } catch (error) {
+        console.error('获取药品数据失败:', error);
+        alert(`获取药品信息失败: ${error.message}`);
+    }
+}
+
+/**
+ * 处理删除药品
+ * @param {number} id - 药品ID
+ */
+async function handleDeleteMedicine(id) {
+    if (confirm('确定要删除此药品吗？此操作不可撤销。')) {
+        try {
+            await apiClient.medicines.delete(id);
+            loadAndDisplayMedicines(); // 刷新列表
+        } catch (error) {
+            console.error('删除药品失败:', error);
+            alert(`删除失败: ${error.message}`);
+        }
+    }
+}
+
+/**
+ * 加载处方数据
+ * @param {number} recordId - 病历ID
+ */
+async function loadPrescriptions(recordId) {
+    try {
+        const prescriptions = await apiClient.prescriptions.getByMedicalRecordId(recordId);
+        window.tempPrescriptionItems = prescriptions.map(p => ({
+            id: p.id,
+            medicineId: p.medicine_id,
+            medicineName: p.medicine_name,
+            dosage: p.dosage,
+            frequency: p.frequency,
+            notes: p.notes || ''
+        }));
+        renderPrescriptionTable();
+    } catch (error) {
+        console.error('加载处方失败:', error);
+    }
+}
+
+/**
+ * 渲染处方表格
+ */
+function renderPrescriptionTable() {
+    const tbody = document.getElementById('prescription-items-body');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (!window.tempPrescriptionItems || window.tempPrescriptionItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center">暂无处方记录</td></tr>';
+        return;
+    }
+    
+    window.tempPrescriptionItems.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.medicineName}</td>
+            <td>${item.dosage}</td>
+            <td>${item.frequency}</td>
+            <td>${item.notes || ''}</td>
+            <td>
+                <button class="btn btn-sm btn-danger remove-prescription-item" data-index="${index}">移除</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    // 绑定移除按钮事件
+    document.querySelectorAll('.remove-prescription-item').forEach(button => {
+        button.addEventListener('click', function() {
+            const index = parseInt(this.dataset.index);
+            removePrescriptionItem(index);
+        });
+    });
+}
+
+/**
+ * 移除处方项目
+ * @param {number} index - 处方项目索引
+ */
+function removePrescriptionItem(index) {
+    window.tempPrescriptionItems.splice(index, 1);
+    renderPrescriptionTable();
+}
+
+/**
+ * 显示添加处方项目模态框
+ */
+function showAddPrescriptionModal() {
+    // 创建模态框
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'add-prescription-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加药品到处方</h3>
+                <span class="close" id="close-prescription-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="medicine-search">搜索药品</label>
+                    <input type="text" id="medicine-search" placeholder="输入药品名称搜索...">
+                </div>
+                <div id="medicine-search-results" class="search-results" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+                    <p>请输入药品名称进行搜索</p>
+                </div>
+                <form id="prescription-form">
+                    <input type="hidden" id="selected-medicine-id">
+                    <input type="hidden" id="selected-medicine-name">
+                    <div class="form-group">
+                        <label for="dosage">单次用量</label>
+                        <input type="text" id="dosage" required placeholder="例如：1片、5ml等">
+                    </div>
+                    <div class="form-group">
+                        <label for="frequency">服用频率</label>
+                        <input type="text" id="frequency" required placeholder="例如：每日三次、睡前服用等">
+                    </div>
+                    <div class="form-group">
+                        <label for="notes">备注</label>
+                        <textarea id="notes" rows="2" placeholder="可选：用药注意事项等"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancel-prescription">取消</button>
+                        <button type="submit" class="btn btn-primary" id="add-prescription" disabled>添加到处方</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.style.display = 'block';
+    
+    // 绑定关闭事件
+    document.getElementById('close-prescription-modal').addEventListener('click', closePrescriptionModal);
+    document.getElementById('cancel-prescription').addEventListener('click', closePrescriptionModal);
+    
+    // 绑定搜索事件
+    const searchInput = document.getElementById('medicine-search');
+    searchInput.addEventListener('input', debounce(async function() {
+        await searchMedicines(this.value);
+    }, 500));
+    
+    // 绑定表单提交事件
+    document.getElementById('prescription-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        addPrescriptionItem();
+    });
+}
+
+/**
+ * 关闭处方模态框
+ */
+function closePrescriptionModal() {
+    const modal = document.getElementById('add-prescription-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.removeChild(modal);
+    }
+}
+
+/**
+ * 搜索药品
+ * @param {string} query - 搜索关键词
+ */
+async function searchMedicines(query) {
+    const resultsContainer = document.getElementById('medicine-search-results');
+    
+    if (!query || query.length < 2) {
+        resultsContainer.innerHTML = '<p>请输入至少2个字符进行搜索</p>';
+        return;
+    }
+    
+    resultsContainer.innerHTML = '<p>搜索中...</p>';
+    
+    try {
+        const medicines = await apiClient.medicines.list(query);
+        
+        if (medicines.length === 0) {
+            resultsContainer.innerHTML = '<p>未找到相关药品</p>';
+            return;
+        }
+        
+        resultsContainer.innerHTML = '';
+        medicines.forEach(medicine => {
+            const item = document.createElement('div');
+            item.className = 'search-result-item';
+            item.innerHTML = `
+                <span>${medicine.name} (${medicine.specification || 'N/A'}) - ${medicine.manufacturer || 'N/A'}</span>
+            `;
+            item.addEventListener('click', () => selectMedicine(medicine.id, medicine.name));
+            resultsContainer.appendChild(item);
+        });
+    } catch (error) {
+        console.error('搜索药品失败:', error);
+        resultsContainer.innerHTML = `<p>搜索失败: ${error.message}</p>`;
+    }
+}
+
+/**
+ * 选择药品
+ * @param {number} id - 药品ID
+ * @param {string} name - 药品名称
+ */
+function selectMedicine(id, name) {
+    document.getElementById('selected-medicine-id').value = id;
+    document.getElementById('selected-medicine-name').value = name;
+    document.getElementById('medicine-search').value = name;
+    document.getElementById('add-prescription').disabled = false;
+    document.getElementById('medicine-search-results').innerHTML = `<p>已选择: ${name}</p>`;
+}
+
+/**
+ * 添加处方项目
+ */
+function addPrescriptionItem() {
+    const medicineId = document.getElementById('selected-medicine-id').value;
+    const medicineName = document.getElementById('selected-medicine-name').value;
+    const dosage = document.getElementById('dosage').value;
+    const frequency = document.getElementById('frequency').value;
+    const notes = document.getElementById('notes').value;
+    
+    if (!medicineId || !medicineName || !dosage || !frequency) {
+        alert('请完善药品信息');
+        return;
+    }
+    
+    // 将处方项目添加到临时数组
+    window.tempPrescriptionItems.push({
+        medicineId,
+        medicineName,
+        dosage,
+        frequency,
+        notes
+    });
+    
+    // 刷新表格
+    renderPrescriptionTable();
+    
+    // 关闭模态框
+    closePrescriptionModal();
+}
+
+/**
+ * 保存处方
+ * @param {number} recordId - 病历ID
+ */
+async function savePrescriptions(recordId) {
+    try {
+        // 为每个处方项目创建处方记录
+        const prescriptionPromises = window.tempPrescriptionItems.map(item => {
+            // 如果已经有ID，则不需要创建
+            if (item.id) return Promise.resolve();
+            
+            return apiClient.prescriptions.create({
+                medical_record_id: recordId,
+                medicine_id: item.medicineId,
+                dosage: item.dosage,
+                frequency: item.frequency,
+                notes: item.notes
+            });
+        });
+        
+        await Promise.all(prescriptionPromises);
+        
+        // 重新加载处方列表
+        await loadPrescriptions(recordId);
+        
+        return true;
+    } catch (error) {
+        console.error('保存处方失败:', error);
+        alert(`保存处方失败: ${error.message}`);
+        return false;
+    }
+}
+
+/**
+ * 打印病历
+ * @param {string} recordId - 病历ID
+ */
+async function handlePrintMedicalRecord(recordId) {
+    if (!recordId) {
+        alert('缺少病历ID');
+        return;
+    }
+    
+    try {
+        // 并行获取所有需要的数据
+        const [record, prescriptions] = await Promise.all([
+            apiClient.medicalRecords.getById(recordId),
+            apiClient.prescriptions.getByMedicalRecordId(recordId)
+        ]);
+        
+        const patient = await apiClient.patients.getById(record.patient_id);
+        
+        // 计算年龄
+        const calculateAge = (birthDate) => {
+            if (!birthDate) return '未知';
+            const birth = new Date(birthDate);
+            const ageDifMs = Date.now() - birth.getTime();
+            const ageDate = new Date(ageDifMs);
+            return Math.abs(ageDate.getUTCFullYear() - 1970);
+        };
+        
+        const patientAge = calculateAge(patient.birth_date);
+        
+        // 构建打印用的HTML
+        const printHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>病历记录 - ${patient.name}</title>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+                    .header { text-align: center; margin-bottom: 20px; }
+                    .title { font-size: 24px; font-weight: bold; }
+                    .section { margin-bottom: 15px; }
+                    .section-title { font-weight: bold; margin-bottom: 5px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+                    table, th, td { border: 1px solid #ddd; }
+                    th, td { padding: 8px; text-align: left; }
+                    .footer { margin-top: 30px; display: flex; justify-content: space-between; }
+                    @media print {
+                        body { margin: 0; padding: 15px; }
+                        button { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div class="title">Nekolinic诊所 - 病历记录</div>
+                    <p>就诊时间: ${new Date(record.record_date).toLocaleString()}</p>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">患者信息</div>
+                    <p>姓名: ${patient.name} | 性别: ${patient.gender || '未记录'} | 年龄: ${patientAge}岁</p>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">既往病史</div>
+                    <p>${patient.past_medical_history || '无'}</p>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">主诉与症状</div>
+                    <p>${record.symptoms || '无记录'}</p>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">诊断</div>
+                    <p>${record.diagnosis || '无记录'}</p>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">处置意见</div>
+                    <p>${record.treatment_plan || '无记录'}</p>
+                </div>
+                
+                ${prescriptions.length > 0 ? `
+                <div class="section">
+                    <div class="section-title">处方信息</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>药品名称</th>
+                                <th>用量</th>
+                                <th>频率</th>
+                                <th>备注</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${prescriptions.map(p => `
+                                <tr>
+                                    <td>${p.medicine_name}</td>
+                                    <td>${p.dosage}</td>
+                                    <td>${p.frequency}</td>
+                                    <td>${p.notes || ''}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                ` : ''}
+                
+                <div class="footer">
+                    <div>医师签名: _________________</div>
+                    <div>日期: ${new Date().toLocaleDateString()}</div>
+                </div>
+                
+                <button onclick="window.print();" style="margin-top: 20px;">打印</button>
+            </body>
+            </html>
+        `;
+        
+        // 打开新窗口并打印
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(printHtml);
+        printWindow.document.close();
+        printWindow.focus();
+        
+    } catch (error) {
+        console.error('准备打印病历失败:', error);
+        alert(`获取病历信息失败: ${error.message}`);
+    }
+}
+
+/**
+ * 打印处方
+ * @param {string} recordId - 病历ID
+ */
+async function handlePrintPrescription(recordId) {
+    if (!recordId) {
+        alert('缺少病历ID');
+        return;
+    }
+    
+    try {
+        // 获取数据
+        const prescriptions = await apiClient.prescriptions.getByMedicalRecordId(recordId);
+        
+        if (prescriptions.length === 0) {
+            alert('此病历没有处方信息可打印');
+            return;
+        }
+        
+        const record = await apiClient.medicalRecords.getById(recordId);
+        const patient = await apiClient.patients.getById(record.patient_id);
+        
+        // 计算年龄
+        const calculateAge = (birthDate) => {
+            if (!birthDate) return '未知';
+            const birth = new Date(birthDate);
+            const ageDifMs = Date.now() - birth.getTime();
+            const ageDate = new Date(ageDifMs);
+            return Math.abs(ageDate.getUTCFullYear() - 1970);
+        };
+        
+        const patientAge = calculateAge(patient.birth_date);
+        
+        // 构建处方笺格式的HTML
+        const printHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>处方笺 - ${patient.name}</title>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+                    .header { text-align: center; margin-bottom: 20px; }
+                    .title { font-size: 24px; font-weight: bold; }
+                    .info-section { margin-bottom: 15px; }
+                    .prescription-list { margin: 20px 0; }
+                    .prescription-item { margin-bottom: 10px; }
+                    .footer { margin-top: 30px; display: flex; justify-content: space-between; }
+                    .line { border-bottom: 1px solid #000; margin: 5px 0; }
+                    @media print {
+                        body { margin: 0; padding: 15px; }
+                        button { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div class="title">Nekolinic 诊所 - 处方笺</div>
+                    <div class="line"></div>
+                </div>
+                
+                <div class="info-section">
+                    <p><strong>患者:</strong> ${patient.name} &nbsp;&nbsp; <strong>性别:</strong> ${patient.gender || '未记录'} &nbsp;&nbsp; <strong>年龄:</strong> ${patientAge}岁</p>
+                    <p><strong>诊断:</strong> ${record.diagnosis || '无记录'}</p>
+                    <p><strong>日期:</strong> ${new Date(record.record_date).toLocaleDateString()}</p>
+                </div>
+                
+                <h2>Rp.</h2>
+                <ol class="prescription-list">
+                    ${prescriptions.map(p => `
+                        <li class="prescription-item">
+                            ${p.medicine_name} ${p.medicine_specification ? `(${p.medicine_specification})` : ''}
+                            <br>
+                            用法: ${p.dosage}, ${p.frequency}
+                            ${p.notes ? `<br>备注: ${p.notes}` : ''}
+                        </li>
+                    `).join('')}
+                </ol>
+                
+                <div class="footer">
+                    <div><strong>医师签名:</strong> __________________</div>
+                    <div><strong>日期:</strong> ${new Date().toLocaleDateString()}</div>
+                </div>
+                
+                <button onclick="window.print();" style="margin-top: 20px;">打印</button>
+            </body>
+            </html>
+        `;
+        
+        // 打开新窗口并打印
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(printHtml);
+        printWindow.document.close();
+        printWindow.focus();
+        
+    } catch (error) {
+        console.error('准备打印处方失败:', error);
+        alert(`获取处方信息失败: ${error.message}`);
     }
 } 

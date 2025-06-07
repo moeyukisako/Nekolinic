@@ -1660,4 +1660,4 @@ async function handlePrintPrescription(recordId) {
         console.error('准备打印处方失败:', error);
         alert(`获取处方信息失败: ${error.message}`);
     }
-} 
+}

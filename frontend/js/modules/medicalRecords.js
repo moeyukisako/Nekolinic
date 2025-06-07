@@ -36,7 +36,6 @@ function calculateAge(birthDate) {
     <div class="patient-module-wrapper">
       <div class="header-bar">
         <h1>病历管理</h1>
-        <button id="add-record-btn" class="btn btn-primary">新建病历</button>
       </div>
       <div class="search-bar">
         <input type="text" id="medical-records-search-input" placeholder="按患者姓名、主诉搜索病历...">

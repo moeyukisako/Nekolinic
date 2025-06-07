@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>欢迎使用 Nekolinic 诊所管理系统</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* 欢迎页特有样式 */
         .welcome-container {
             height: 100vh;
             display: flex;
             position: relative;
-            min-width: 320px; /* 设置最小宽度 */
-            overflow-x: hidden; /* 防止在极小屏幕上出现水平滚动条 */
+            min-width: 320px;
+            overflow-x: hidden;
         }
         
         .welcome-container::before {
@@ -32,19 +33,19 @@
             display: flex;
             width: 100%;
             padding: 0 1rem;
-            justify-content: center; /* 居中对齐 */
-            align-items: center; /* 确保垂直居中对齐 */
-            min-height: 100%; /* 确保内容区域高度填满容器 */
+            justify-content: center;
+            align-items: center;
+            min-height: 100%;
         }
         
         .welcome-auth-container {
-            width: 400px; /* 增加宽度 */
+            width: 400px;
             display: flex;
             align-items: center;
             z-index: 3;
             padding: 0 15px;
         }
-        
+
         /* 响应式调整 */
         @media (max-width: 500px) {
             .welcome-auth-container {
@@ -53,11 +54,11 @@
             }
         }
         
-        /* 登录表单样式 */
-        .login-box {
-            background: rgba(255, 255, 255, 0.35); /* 35%透明度的白色 */
+        /* 登录表单和用户信息共享样式 */
+        .login-box, .user-info {
+            background: rgba(255, 255, 255, 0.35);
             border-radius: 10px;
-            padding: 3rem 2rem; /* 增加上下内边距 */
+            padding: 3rem 2rem;
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             width: 100%;
@@ -69,21 +70,11 @@
             margin-bottom: calc(1.5rem + 30px);
             color: var(--color-bar-primary);
             font-weight: bold;
-            text-align: center;
         }
         
-        .login-box h2 {
-            margin-bottom: 2rem;
-            text-align: center;
-            color: #39c5bb; /* 修改为指定颜色 */
-            font-size: 24px; /* 增大字体 */
-        }
-        
-        /* 表单内容颜色 */
         .form-group label {
             color: white;
             font-weight: bold;
-            text-align: center;
             display: block;
             font-size: calc(1rem - 3px);
         }
@@ -92,41 +83,24 @@
             margin-bottom: 1rem;
             width: 100%;
         }
-        
+
         .welcome-auth-container input[type="text"],
         .welcome-auth-container input[type="password"] {
             background: rgba(255, 255, 255, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.5);
             color: white;
-            width: 66.7%; /* 减少到原来的2/3 */
+            width: 100%; /* 宽度调整为100% */
         }
         
-        .login-button {
-            width: 33.3% !important; /* 缩小到原来的1/3 */
+        .welcome-auth-container input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .login-button, .enter-btn {
+            width: 50%; /* 按钮宽度调整 */
             margin: 30px auto 0;
-            height: calc(2.4rem * 1.3); /* 放大到原来的1.3倍 */
+            height: calc(2.4rem * 1.3);
             display: block;
-        }
-        
-        /* 已登录用户信息样式 */
-        .user-info {
-            text-align: center;
-            padding: 3rem 2rem; /* 增加上下内边距 */
-            background: rgba(255, 255, 255, 0.35); /* 35%透明度的白色 */
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .login-logo {
-            font-size: 2.5rem;
-            margin-bottom: calc(1.5rem + 30px);
-            color: var(--color-bar-primary);
-            font-weight: bold;
         }
         
         .user-avatar {
@@ -146,18 +120,7 @@
             font-size: calc(1.5rem - 5px);
             margin-bottom: 2rem;
             color: white;
-            word-wrap: break-word; /* 允许长用户名换行 */
-        }
-        
-        .enter-btn {
-            width: 33.3% !important; /* 与登录按钮相同 */
-            margin: 30px auto 0;
-            height: calc(2.4rem * 1.3); /* 与登录按钮相同 */
-            display: block;
-        }
-        
-        .welcome-auth-container input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+            word-wrap: break-word;
         }
         
         .text-danger {
@@ -173,7 +136,6 @@
             font-size: 0.9rem;
             text-decoration: none;
             transition: all 0.2s ease;
-            text-align: center;
         }
         
         .logout-link:hover {
@@ -183,20 +145,17 @@
     </style>
 </head>
 <body>
-    <!-- 背景图片容器 -->
     <div class="bg-container"></div>
     <div class="bg-overlay"></div>
     
     <div class="welcome-container">
         <div class="welcome-content">
             <div class="welcome-auth-container" id="auth-container">
-                <!-- 这里的内容将由JavaScript动态生成 -->
                 <div class="loader" style="text-align: center; color: white;">加载中...</div>
             </div>
         </div>
     </div>
 
-    <!-- 背景设置按钮 -->
     <div class="bg-settings">
         <button class="bg-settings-trigger" id="bg-settings-trigger">
             <i class="fas fa-image"></i>
@@ -207,17 +166,13 @@
             <div class="form-group">
                 <label>本地图片</label>
                 <div class="file-upload-container">
-                    <label for="bg-file-input" class="file-upload-btn">
-                        选择图片文件
-                        <input type="file" id="bg-file-input" accept="image/*" style="display:none">
-                    </label>
+                    <label for="bg-file-input" class="file-upload-btn">选择图片文件</label>
+                    <input type="file" id="bg-file-input" accept="image/*" style="display:none">
                 </div>
             </div>
             <div class="form-group">
                 <label>预设背景</label>
-                <div class="local-backgrounds" id="local-backgrounds">
-                    <div class="loading-backgrounds">加载中...</div>
-                </div>
+                <div class="local-backgrounds" id="local-backgrounds"><div class="loading-backgrounds">加载中...</div></div>
             </div>
             <div class="form-actions">
                 <button class="btn btn-secondary btn-sm" id="reset-bg-btn">重置背景</button>
@@ -225,615 +180,11 @@
         </div>
     </div>
 
-    <!-- 版权信息栏 -->
     <div class="copyright-bar">
         Nekolinic Version <span class="version-code">&lt;versioncode&gt;</span>, Copyright moeyukisako 2025.
     </div>
 
     <script src="js/apiClient.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const authContainer = document.getElementById('auth-container');
-            const token = localStorage.getItem('accessToken');
-            
-            if (token) {
-                // 已登录，获取用户信息
-                checkAuthAndRenderUserInfo(authContainer);
-            } else {
-                // 未登录，显示登录表单
-                renderLoginForm(authContainer);
-            }
-            
-            // 初始化背景设置
-            initBackgroundSettings();
-        });
-        
-        // 检查认证并渲染用户信息
-        async function checkAuthAndRenderUserInfo(container) {
-            try {
-                const user = await apiClient.auth.getCurrentUser();
-                renderUserInfo(container, user);
-            } catch (error) {
-                // 认证失效，显示登录表单
-                localStorage.removeItem('accessToken');
-                renderLoginForm(container);
-            }
-        }
-        
-        // 渲染用户信息
-        function renderUserInfo(container, user) {
-            // 使用用户名或全名，如果都不存在则使用默认值
-            const userName = user.full_name || user.username || 'User';
-            const nameInitial = userName.charAt(0).toUpperCase();
-            
-            container.innerHTML = `
-                <div class="user-info">
-                    <div class="login-logo">Nekolinic.</div>
-                    <div class="user-avatar">${nameInitial}</div>
-                    <div class="user-name">欢迎回来，${userName}</div>
-                    <button class="btn btn-primary enter-btn" onclick="enterSystem()">进入系统</button>
-                    <a href="#" onclick="logout(); return false;" class="logout-link">退出登录</a>
-                </div>
-            `;
-        }
-        
-        // 渲染登录表单
-        function renderLoginForm(container) {
-            container.innerHTML = `
-                <div class="login-box">
-                    <div class="login-logo">Nekolinic.</div>
-                    <div id="login-error" class="text-danger" style="display: none; margin-bottom: 1rem; text-align: center;">
-                        用户名或密码错误
-                    </div>
-                    <form id="login-form">
-                        <div class="form-group">
-                            <label for="username">用户名</label>
-                            <input type="text" id="username" name="username" required placeholder="请输入用户名 (测试账号: admin)">
-                        </div>
-                        <div class="form-group">
-                            <label for="password">密码</label>
-                            <input type="password" id="password" name="password" required placeholder="请输入密码 (测试密码: password)">
-                        </div>
-                        <button type="submit" class="btn btn-primary login-button">登录</button>
-                    </form>
-                </div>
-            `;
-            
-            // 添加表单提交事件监听
-            document.getElementById('login-form').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                const loginError = document.getElementById('login-error');
-                
-                try {
-                    loginError.style.display = 'none';
-                    await apiClient.auth.login(username, password);
-                    // 登录成功，获取用户信息
-                    checkAuthAndRenderUserInfo(container);
-                } catch (error) {
-                    // 显示错误信息
-                    loginError.textContent = error.message || '用户名或密码错误';
-                    loginError.style.display = 'block';
-                }
-            });
-        }
-        
-        // 进入系统主界面
-        function enterSystem() {
-            window.location.href = 'dashboard.html';
-        }
-        
-        // 退出登录
-        function logout() {
-            apiClient.auth.logout();
-        }
-        
-        // 初始化背景设置
-        function initBackgroundSettings() {
-            // 获取DOM元素
-            const bgSettingsTrigger = document.getElementById('bg-settings-trigger');
-            const bgSettingsPanel = document.getElementById('bg-settings-panel');
-            const bgPreview = document.getElementById('bg-preview');
-            const resetBgBtn = document.getElementById('reset-bg-btn');
-            const fileInput = document.getElementById('bg-file-input');
-            const localBackgrounds = document.getElementById('local-backgrounds');
-            const bgContainer = document.querySelector('.bg-container');
-            
-            // 检查是否已登录
-            const token = localStorage.getItem('accessToken');
-            if (token) {
-                // 已登录，尝试从用户账户获取背景设置
-                loadUserBackgroundSetting();
-            } else {
-                // 未登录，加载本地存储或默认背景
-                loadLocalOrDefaultBackground();
-            }
-            
-            // 背景设置面板切换
-            if (bgSettingsTrigger) {
-                bgSettingsTrigger.addEventListener('click', function() {
-                    if (bgSettingsPanel) {
-                        bgSettingsPanel.classList.toggle('active');
-                    }
-                });
-            }
-            
-            // 点击其他区域关闭面板
-            document.addEventListener('click', function(event) {
-                if (!event.target.closest('.bg-settings') && 
-                    bgSettingsPanel && 
-                    bgSettingsPanel.classList.contains('active')) {
-                    bgSettingsPanel.classList.remove('active');
-                }
-            });
-            
-            // 处理文件上传事件
-            if (fileInput) {
-                fileInput.addEventListener('change', function(e) {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function(event) {
-                            const imageUrl = event.target.result;
-                            
-                            // 压缩图片
-                            compressImage(imageUrl, function(compressedImageUrl) {
-                                if (bgContainer) {
-                                    bgContainer.style.backgroundImage = `url(${compressedImageUrl})`;
-                                }
-                                
-                                // 更新预览
-                                if (bgPreview) bgPreview.style.backgroundImage = `url(${compressedImageUrl})`;
-                                
-                                // 判断是否已登录
-                                const token = localStorage.getItem('accessToken');
-                                if (token) {
-                                    // 已登录，保存到用户账户
-                                    saveBackgroundToUserAccount(compressedImageUrl);
-                                } else {
-                                    // 未登录，保存到localStorage
-                                    saveBackgroundToLocalStorage(compressedImageUrl);
-                                }
-                            });
-                        };
-                        
-                        // 读取文件为DataURL
-                        try {
-                            reader.readAsDataURL(file);
-                        } catch (err) {
-                            showNotification ? showNotification('错误', '读取图片失败: ' + err.message, 'error') : alert('读取图片失败: ' + err.message);
-                            console.error('读取图片文件失败:', err);
-                        }
-                    }
-                });
-            }
-            
-            // 重置背景
-            if (resetBgBtn) {
-                resetBgBtn.addEventListener('click', function() {
-                    resetBackground();
-                });
-            }
-            
-            // 加载本地预设背景
-            loadLocalBackgrounds();
-            
-            // 从用户账户加载背景设置
-            async function loadUserBackgroundSetting() {
-                try {
-                    // 获取当前用户信息
-                    const user = await apiClient.auth.getCurrentUser();
-                    
-                    // 检查用户是否有保存的背景
-                    if (user && user.background_preference) {
-                        // 判断是否是颜色设置
-                        if (user.background_preference.startsWith('color:')) {
-                            const color = user.background_preference.substring(6);
-                            document.documentElement.style.setProperty('--bg-image', 'none');
-                            document.documentElement.style.setProperty('--color-bg-primary', color);
-                            if (bgContainer) {
-                                bgContainer.style.backgroundImage = 'none';
-                                bgContainer.style.backgroundColor = color;
-                            }
-                            if (bgPreview) {
-                                bgPreview.style.backgroundColor = color;
-                                bgPreview.style.backgroundImage = 'none';
-                            }
-                            
-                            // 更新缩略图激活状态
-                            const thumbnails = document.querySelectorAll('.bg-thumbnail');
-                            thumbnails.forEach(thumb => {
-                                if (thumb.getAttribute('data-color') === color) {
-                                    thumb.classList.add('active');
-                                }
-                            });
-                        } else {
-                            // 应用图片背景
-                            const backgroundUrl = user.background_preference;
-                            document.documentElement.style.setProperty('--bg-image', `url(${backgroundUrl})`);
-                            if (bgContainer) {
-                                bgContainer.style.backgroundImage = `url(${backgroundUrl})`;
-                            }
-                            if (bgPreview) bgPreview.style.backgroundImage = `url(${backgroundUrl})`;
-                        }
-                    } else {
-                        // 用户没有设置背景，加载本地存储或默认背景
-                        loadLocalOrDefaultBackground();
-                    }
-                } catch (err) {
-                    console.error('加载用户背景设置失败:', err);
-                    // 加载失败，使用本地存储或默认背景
-                    loadLocalOrDefaultBackground();
-                }
-            }
-            
-            // 加载本地存储或默认背景
-            function loadLocalOrDefaultBackground() {
-                // 从LocalStorage加载保存的背景
-                const savedBgImage = localStorage.getItem('nekolinic-bg-image');
-                if (savedBgImage) {
-                    document.documentElement.style.setProperty('--bg-image', `url(${savedBgImage})`);
-                    if (bgContainer) {
-                        bgContainer.style.backgroundImage = `url(${savedBgImage})`;
-                    }
-                    if (bgPreview) bgPreview.style.backgroundImage = `url(${savedBgImage})`;
-                    return;
-                }
-                
-                // 检查是否有保存的背景颜色
-                const savedBgColor = localStorage.getItem('nekolinic-bg-color');
-                if (savedBgColor) {
-                    document.documentElement.style.setProperty('--bg-image', 'none');
-                    document.documentElement.style.setProperty('--color-bg-primary', savedBgColor);
-                    if (bgContainer) {
-                        bgContainer.style.backgroundImage = 'none';
-                    }
-                    if (bgPreview) {
-                        bgPreview.style.backgroundColor = savedBgColor;
-                        bgPreview.style.backgroundImage = 'none';
-                    }
-                    
-                    // 更新激活状态
-                    const thumbnails = document.querySelectorAll('.bg-thumbnail');
-                    thumbnails.forEach(thumb => {
-                        if (thumb.getAttribute('data-color') === savedBgColor) {
-                            thumb.classList.add('active');
-                        }
-                    });
-                    return;
-                }
-                
-                // 没有本地设置，直接应用默认背景
-                const defaultBg = '/assets/backgrounds/default_background.jpg';
-                document.documentElement.style.setProperty('--bg-image', `url(${defaultBg})`);
-                if (bgContainer) {
-                    bgContainer.style.backgroundImage = `url(${defaultBg})`;
-                }
-                if (bgPreview) bgPreview.style.backgroundImage = `url(${defaultBg})`;
-                
-                // 后台检查默认背景是否存在，不影响用户体验
-                fetch(defaultBg)
-                    .catch(() => {
-                        console.warn('默认背景图片不存在，使用内置浅色背景');
-                        // 默认背景不存在，使用内置浅色背景
-                        const defaultColor = '#f5f5f5';
-                        document.documentElement.style.setProperty('--bg-image', 'none');
-                        document.documentElement.style.setProperty('--color-bg-primary', defaultColor);
-                        if (bgContainer) {
-                            bgContainer.style.backgroundImage = 'none';
-                        }
-                        if (bgPreview) {
-                            bgPreview.style.backgroundColor = defaultColor;
-                            bgPreview.style.backgroundImage = 'none';
-                        }
-                    });
-            }
-            
-            // 保存背景到用户账户
-            async function saveBackgroundToUserAccount(imageDataUrl) {
-                try {
-                    // 获取文件名
-                    const fileName = `bg_${Date.now()}.jpg`;
-                    
-                    // 将图片数据发送到服务器
-                    fetch(`${API_BASE_URL}/users/me/background-image`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                        },
-                        body: JSON.stringify({
-                            image_data: imageDataUrl,
-                            filename: fileName
-                        })
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`服务器响应错误: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(user => {
-                        // 应用新的背景URL
-                        document.documentElement.style.setProperty('--bg-image', `url(${user.background_preference})`);
-                        
-                        // 清除所有缩略图激活状态
-                        const thumbnails = document.querySelectorAll('.bg-thumbnail');
-                        thumbnails.forEach(thumb => thumb.classList.remove('active'));
-                        
-                        // 从localStorage移除背景设置（已保存到用户账户）
-                        localStorage.removeItem('nekolinic-bg-image');
-                        localStorage.removeItem('nekolinic-bg-color');
-                        
-                        showNotification ? showNotification('成功', '背景图片已成功应用并保存到您的帐户', 'info') : alert('背景图片已成功应用并保存到您的帐户');
-                    })
-                    .catch(err => {
-                        showNotification ? showNotification('错误', '保存背景图片失败: ' + err.message, 'error') : alert('保存背景图片失败: ' + err.message);
-                        console.error('保存背景图片失败:', err);
-                        
-                        // 保存失败，回退到本地存储
-                        saveBackgroundToLocalStorage(imageDataUrl);
-                    });
-                } catch (err) {
-                    showNotification ? showNotification('错误', '保存背景图片失败: ' + err.message, 'error') : alert('保存背景图片失败: ' + err.message);
-                    console.error('保存背景图片失败:', err);
-                    
-                    // 出错，回退到本地存储
-                    saveBackgroundToLocalStorage(imageDataUrl);
-                }
-            }
-            
-            // 保存背景到本地存储
-            function saveBackgroundToLocalStorage(imageDataUrl) {
-                try {
-                    localStorage.setItem('nekolinic-bg-image', imageDataUrl);
-                    document.documentElement.style.setProperty('--bg-image', `url(${imageDataUrl})`);
-                    
-                    // 清除所有缩略图激活状态
-                    const thumbnails = document.querySelectorAll('.bg-thumbnail');
-                    thumbnails.forEach(thumb => thumb.classList.remove('active'));
-                    
-                    // 清除可能设置的背景颜色
-                    document.documentElement.style.removeProperty('--bg-color');
-                    localStorage.removeItem('nekolinic-bg-color');
-                    
-                    showNotification ? showNotification('成功', '背景图片已成功应用并保存', 'info') : alert('背景图片已成功应用并保存');
-                } catch (err) {
-                    showNotification ? showNotification('错误', '保存背景图片失败: ' + err.message, 'error') : alert('保存背景图片失败: ' + err.message);
-                    console.error('保存背景图片失败:', err);
-                }
-            }
-            
-            // 应用背景函数
-            function applyBackground(imageUrl) {
-                if (bgContainer) {
-                    bgContainer.style.backgroundImage = `url(${imageUrl})`;
-                }
-                document.documentElement.style.setProperty('--bg-image', `url(${imageUrl})`);
-                if (bgPreview) bgPreview.style.backgroundImage = `url(${imageUrl})`;
-                
-                // 判断是否已登录
-                const token = localStorage.getItem('accessToken');
-                if (token) {
-                    // 已登录，保存到用户账户
-                    apiClient.auth.updatePreferences({
-                        background_preference: imageUrl
-                    }).then(() => {
-                        // 更新所有缩略图激活状态
-                        const thumbnails = document.querySelectorAll('.bg-thumbnail');
-                        thumbnails.forEach(thumb => {
-                            if (thumb.getAttribute('data-img') === imageUrl) {
-                                thumb.classList.add('active');
-                            } else {
-                                thumb.classList.remove('active');
-                            }
-                        });
-                        
-                        // 清除本地存储（已保存到用户账户）
-                        localStorage.removeItem('nekolinic-bg-image');
-                        localStorage.removeItem('nekolinic-bg-color');
-                        
-                        showNotification ? showNotification('成功', '背景图片已成功应用并保存', 'info') : alert('背景图片已成功应用并保存');
-                    }).catch(err => {
-                        showNotification ? showNotification('错误', '保存背景设置失败: ' + err.message, 'error') : alert('保存背景设置失败: ' + err.message);
-                        console.error('保存背景设置失败:', err);
-                        
-                        // 保存失败，回退到本地存储
-                        localStorage.setItem('nekolinic-bg-image', imageUrl);
-                    });
-                } else {
-                    // 未登录，保存到本地存储
-                    localStorage.setItem('nekolinic-bg-image', imageUrl);
-                    
-                    // 更新所有缩略图激活状态
-                    const thumbnails = document.querySelectorAll('.bg-thumbnail');
-                    thumbnails.forEach(thumb => {
-                        if (thumb.getAttribute('data-img') === imageUrl) {
-                            thumb.classList.add('active');
-                        } else {
-                            thumb.classList.remove('active');
-                        }
-                    });
-                    
-                    showNotification ? showNotification('成功', '背景图片已成功应用并保存', 'info') : alert('背景图片已成功应用并保存');
-                }
-            }
-            
-            // 重置背景函数
-            function resetBackground() {
-                if (bgContainer) {
-                    bgContainer.style.backgroundImage = 'none';
-                }
-                document.documentElement.style.setProperty('--bg-image', 'none');
-                if (bgPreview) bgPreview.style.backgroundImage = 'none';
-                
-                // 清除所有缩略图激活状态
-                const thumbnails = document.querySelectorAll('.bg-thumbnail');
-                thumbnails.forEach(thumb => thumb.classList.remove('active'));
-                
-                // 清除文件输入
-                if (fileInput) fileInput.value = '';
-                
-                // 判断是否已登录
-                const token = localStorage.getItem('accessToken');
-                if (token) {
-                    // 已登录，更新用户账户
-                    apiClient.auth.updatePreferences({
-                        background_preference: null
-                    }).then(() => {
-                        showNotification ? showNotification('成功', '背景已重置', 'info') : alert('背景已重置');
-                        
-                        // 清除本地存储
-                        localStorage.removeItem('nekolinic-bg-image');
-                        localStorage.removeItem('nekolinic-bg-color');
-                        
-                        // 重新加载默认背景
-                        loadLocalOrDefaultBackground();
-                    }).catch(err => {
-                        showNotification ? showNotification('错误', '重置背景设置失败: ' + err.message, 'error') : alert('重置背景设置失败: ' + err.message);
-                        console.error('重置背景设置失败:', err);
-                    });
-                } else {
-                    // 未登录，清除本地存储
-                    localStorage.removeItem('nekolinic-bg-image');
-                    localStorage.removeItem('nekolinic-bg-color');
-                    
-                    showNotification ? showNotification('成功', '背景已重置', 'info') : alert('背景已重置');
-                    
-                    // 重新加载默认背景
-                    loadLocalOrDefaultBackground();
-                }
-            }
-            
-            // 加载本地预设背景
-            function loadLocalBackgrounds() {
-                if (!localBackgrounds) return;
-                
-                // 预设的本地背景
-                const backgrounds = [
-                    {name: '浅色背景', color: '#f5f5f5'},
-                    {name: '深色背景', color: '#333333'},
-                    {name: '蓝色背景', color: '#3498db'},
-                    {name: '绿色背景', color: '#2ecc71'},
-                    {name: '粉色背景', color: '#e91e63'}
-                ];
-                
-                let html = '';
-                
-                backgrounds.forEach(bg => {
-                    html += `
-                        <div class="bg-thumbnail"
-                            style="background-color: ${bg.color}" 
-                            data-color="${bg.color}"
-                            title="${bg.name}">
-                        </div>
-                    `;
-                });
-                
-                localBackgrounds.innerHTML = html || '<div class="no-backgrounds">暂无预设背景</div>';
-                
-                // 添加点击事件
-                document.querySelectorAll('.bg-thumbnail').forEach(thumb => {
-                    thumb.addEventListener('click', function() {
-                        const color = this.getAttribute('data-color');
-                        document.documentElement.style.setProperty('--bg-image', 'none');
-                        document.documentElement.style.setProperty('--color-bg-primary', color);
-                        if (bgContainer) bgContainer.style.backgroundImage = 'none';
-                        if (bgPreview) bgPreview.style.backgroundColor = color;
-                        if (bgPreview) bgPreview.style.backgroundImage = 'none';
-                        
-                        // 判断是否已登录
-                        const token = localStorage.getItem('accessToken');
-                        if (token) {
-                            // 已登录，保存到用户账户
-                            apiClient.auth.updatePreferences({
-                                background_preference: `color:${color}`
-                            }).then(() => {
-                                // 更新激活状态
-                                document.querySelectorAll('.bg-thumbnail').forEach(t => t.classList.remove('active'));
-                                this.classList.add('active');
-                                
-                                // 清除本地存储
-                                localStorage.removeItem('nekolinic-bg-image');
-                                localStorage.removeItem('nekolinic-bg-color');
-                                
-                                showNotification ? showNotification('成功', '背景颜色已成功应用并保存', 'info') : alert('背景颜色已成功应用并保存');
-                            }).catch(err => {
-                                showNotification ? showNotification('错误', '保存背景颜色失败: ' + err.message, 'error') : alert('保存背景颜色失败: ' + err.message);
-                                console.error('保存背景颜色失败:', err);
-                                
-                                // 保存失败，回退到本地存储
-                                localStorage.setItem('nekolinic-bg-color', color);
-                            });
-                        } else {
-                            // 未登录，保存到本地存储
-                            try {
-                                localStorage.setItem('nekolinic-bg-color', color);
-                                localStorage.removeItem('nekolinic-bg-image');
-                                
-                                // 更新激活状态
-                                document.querySelectorAll('.bg-thumbnail').forEach(t => t.classList.remove('active'));
-                                this.classList.add('active');
-                                
-                                showNotification ? showNotification('成功', '背景颜色已成功应用并保存', 'info') : alert('背景颜色已成功应用并保存');
-                            } catch (err) {
-                                showNotification ? showNotification('错误', '保存背景颜色失败: ' + err.message, 'error') : alert('保存背景颜色失败: ' + err.message);
-                                console.error('保存背景颜色失败:', err);
-                            }
-                        }
-                    });
-                });
-            }
-            
-            // 图片压缩函数
-            function compressImage(dataUrl, callback, maxWidth = 8000, maxHeight = 6000, quality = 0.7) {
-                const img = new Image();
-                img.onload = function() {
-                    let width = img.width;
-                    let height = img.height;
-                    
-                    // 如果图片尺寸已经小于最大尺寸，直接返回
-                    if (width <= maxWidth && height <= maxHeight && dataUrl.length < 5242880) {
-                        callback(dataUrl);
-                        return;
-                    }
-                    
-                    // 计算新的尺寸，保持宽高比
-                    if (width > maxWidth) {
-                        height = Math.round(height * (maxWidth / width));
-                        width = maxWidth;
-                    }
-                    
-                    if (height > maxHeight) {
-                        width = Math.round(width * (maxHeight / height));
-                        height = maxHeight;
-                    }
-                    
-                    // 创建canvas绘制压缩后的图片
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // 转换为DataURL
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                    
-                    // 如果压缩后仍然过大，继续压缩
-                    if (compressedDataUrl.length > 5242880) {
-                        compressImage(compressedDataUrl, callback, maxWidth, maxHeight, quality * 0.8);
-                    } else {
-                        callback(compressedDataUrl);
-                    }
-                };
-                img.onerror = function() {
-                    callback(dataUrl); // 加载失败时使用原始数据
-                };
-                img.src = dataUrl;
-            }
-        }
-    </script>
+    <script src="js/app.js"></script>
 </body>
 </html> 

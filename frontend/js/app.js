@@ -1,15 +1,142 @@
-// frontend/js/app.js (最终正确版本)
-
-// debounce 工具函数，用于限制函数调用频率
-function debounce(func, delay = 1500) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), delay);
-    };
-}
+// frontend/js/app.js
 
 document.addEventListener('DOMContentLoaded', function() {
+    // 仅在 dashboard.html 页面执行主应用逻辑
+    if (window.location.pathname.endsWith('dashboard.html')) {
+        initializeDashboard();
+    } 
+    // 在 index.html 页面执行认证和欢迎页逻辑
+    else if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
+        initializeAppAuth();
+    }
+});
+
+
+/**
+ * 初始化认证和欢迎页 (index.html)
+ */
+function initializeAppAuth() {
+    const authContainer = document.getElementById('auth-container');
+    const token = localStorage.getItem('accessToken');
+
+    if (token) {
+        checkAuthAndRenderUserInfo(authContainer);
+    } else {
+        renderLoginForm(authContainer);
+    }
+    
+    // 背景设置初始化总是执行
+    initBackgroundSettings();
+}
+
+/**
+ * 检查认证并渲染用户信息
+ * @param {HTMLElement} container 
+ */
+async function checkAuthAndRenderUserInfo(container) {
+    if (!container) return;
+    try {
+        const user = await apiClient.auth.getCurrentUser();
+        renderUserInfo(container, user);
+    } catch (error) {
+        localStorage.removeItem('accessToken');
+        renderLoginForm(container);
+    }
+}
+
+/**
+ * 渲染用户信息
+ * @param {HTMLElement} container 
+ * @param {object} user 
+ */
+function renderUserInfo(container, user) {
+    if (!container) return;
+    const userName = user.full_name || user.username || 'User';
+    const nameInitial = userName.charAt(0).toUpperCase();
+    
+    container.innerHTML = `
+        <div class="user-info">
+            <div class="login-logo">Nekolinic.</div>
+            <div class="user-avatar">${nameInitial}</div>
+            <div class="user-name">欢迎回来，${userName}</div>
+            <button class="btn btn-primary enter-btn" onclick="enterSystem()">进入系统</button>
+            <a href="#" onclick="logout(); return false;" class="logout-link">退出登录</a>
+        </div>
+    `;
+}
+
+/**
+ * 渲染登录表单
+ * @param {HTMLElement} container 
+ */
+function renderLoginForm(container) {
+    if (!container) return;
+    container.innerHTML = `
+        <div class="login-box">
+            <div class="login-logo">Nekolinic.</div>
+            <div id="login-error" class="text-danger" style="display: none; margin-bottom: 1rem;"></div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" name="username" required placeholder="请输入用户名 (测试账号: admin)">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" required placeholder="请输入密码 (测试密码: password)">
+                </div>
+                <button type="submit" class="btn btn-primary login-button">登录</button>
+            </form>
+        </div>
+    `;
+    
+    const loginForm = document.getElementById('login-form');
+    if(loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+}
+
+/**
+ * 处理登录逻辑
+ * @param {Event} e 
+ */
+async function handleLogin(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const loginError = document.getElementById('login-error');
+    
+    try {
+        loginError.style.display = 'none';
+        await apiClient.auth.login(username, password);
+        checkAuthAndRenderUserInfo(document.getElementById('auth-container'));
+    } catch (error) {
+        loginError.textContent = error.message || '用户名或密码错误';
+        loginError.style.display = 'block';
+    }
+}
+
+/**
+ * 进入系统
+ */
+function enterSystem() {
+    window.location.href = 'dashboard.html';
+}
+
+/**
+ * 退出登录
+ */
+function logout() {
+    apiClient.auth.logout();
+}
+
+/**
+ * 初始化主操作界面 (dashboard.html)
+ */
+function initializeDashboard() {
+    // 原有的 dashboard.html 的所有 JS 逻辑都放在这里
+    // 例如：菜单切换、加载患者数据、模态框事件等
+    console.log("Dashboard Initialized");
+    
     const mainContent = document.querySelector('.main-content');
     const sidebarNav = document.querySelector('.sidebar-nav');
 
@@ -23,13 +150,13 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // 单一的主导航事件监听器
-        sidebarNav.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetLink = e.target.closest('a');
-            if (!targetLink) return;
+    sidebarNav.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetLink = e.target.closest('a');
+        if (!targetLink) return;
 
         sidebarNav.querySelectorAll('a').forEach(link => link.classList.remove('active'));
-            targetLink.classList.add('active');
+        targetLink.classList.add('active');
 
         const moduleName = targetLink.textContent.trim();
         
@@ -69,9 +196,127 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 默认加载仪表盘
-        renderDashboard(mainContent);
-});
+    renderDashboard(mainContent);
+}
 
+
+/**
+ * 背景图片设置相关功能
+ */
+function initBackgroundSettings() {
+    const bgContainer = document.querySelector('.bg-container');
+    const bgPreview = document.getElementById('bg-preview');
+    const bgSettingsTrigger = document.getElementById('bg-settings-trigger');
+    const bgSettingsPanel = document.getElementById('bg-settings-panel');
+    const fileInput = document.getElementById('bg-file-input');
+    const resetBgBtn = document.getElementById('reset-bg-btn');
+    
+    // 从LocalStorage加载保存的背景
+    const savedBgImage = localStorage.getItem('nekolinic-bg-image');
+    if (savedBgImage) {
+        bgContainer.style.backgroundImage = `url(${savedBgImage})`;
+    } else {
+        bgContainer.style.backgroundImage = 'url(assets/backgrounds/bg_1_20250607103706.jpg)';
+    }
+    
+    // 背景设置面板切换
+    if (bgSettingsTrigger) {
+        bgSettingsTrigger.addEventListener('click', function() {
+            if (bgSettingsPanel) {
+                bgSettingsPanel.classList.toggle('active');
+            }
+        });
+    }
+    
+    // 点击其他区域关闭面板
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.bg-settings') && 
+            bgSettingsPanel && 
+            bgSettingsPanel.classList.contains('active')) {
+            bgSettingsPanel.classList.remove('active');
+        }
+    });
+    
+    // 处理文件上传事件
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const imageUrl = event.target.result;
+                    if (bgContainer) {
+                        bgContainer.style.backgroundImage = `url(${imageUrl})`;
+                    }
+                    
+                    if (bgPreview) {
+                        bgPreview.style.backgroundImage = `url(${imageUrl})`;
+                    }
+                    
+                    localStorage.setItem('nekolinic-bg-image', imageUrl);
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // 重置背景
+    if (resetBgBtn) {
+        resetBgBtn.addEventListener('click', function() {
+            if (bgContainer) {
+                bgContainer.style.backgroundImage = 'url(assets/backgrounds/bg_1_20250607103706.jpg)';
+            }
+            
+            if (bgPreview) {
+                bgPreview.style.backgroundImage = 'url(assets/backgrounds/bg_1_20250607103706.jpg)';
+            }
+            
+            localStorage.removeItem('nekolinic-bg-image');
+        });
+    }
+    
+    // 加载预设背景
+    const localBackgrounds = document.getElementById('local-backgrounds');
+    if (localBackgrounds) {
+        const backgrounds = [
+            { name: '背景1', url: 'assets/backgrounds/bg_1_20250607103706.jpg' },
+            { name: '背景2', url: 'assets/backgrounds/bg_2_20250607103707.jpg' },
+            { name: '背景3', url: 'assets/backgrounds/bg_3_20250607103708.jpg' }
+        ];
+        
+        let html = '';
+        backgrounds.forEach(bg => {
+            html += `
+                <div class="bg-thumbnail" style="background-image: url(${bg.url})" data-img="${bg.url}" title="${bg.name}"></div>
+            `;
+        });
+        
+        localBackgrounds.innerHTML = html;
+        
+        // 添加点击事件
+        document.querySelectorAll('.bg-thumbnail').forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                const imgUrl = this.getAttribute('data-img');
+                if (bgContainer) bgContainer.style.backgroundImage = `url(${imgUrl})`;
+                if (bgPreview) bgPreview.style.backgroundImage = `url(${imgUrl})`;
+                
+                localStorage.setItem('nekolinic-bg-image', imgUrl);
+            });
+        });
+    }
+}
+
+// 下面是仪表盘页面的其余函数，保持原样
+
+// debounce 工具函数，用于限制函数调用频率
+function debounce(func, delay = 1500) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+}
 
 // 全局唯一的事件处理器
 async function mainContentHandler(e) {
@@ -122,10 +367,8 @@ async function mainContentHandler(e) {
 
         // --- 病历管理 (病历详情) ---
         case 'back-to-patient-selection': renderMedicalRecordsModule(mainContent); break;
-        // 移除不再需要的旧版病历模态框相关操作
     }
 }
-
 
 // --- 渲染函数 ---
 
@@ -288,157 +531,174 @@ async function renderMedicalRecordModule(container, patientId) {
 }
 
 async function loadAndPopulateLatestRecord(patient) {
-    const form = document.getElementById('medical-record-form');
-    
-    // 填充既往病史字段
-    form.querySelector('#past-history').value = patient.past_medical_history || '';
-    
+    const statusElement = document.getElementById('save-status');
     try {
-        const response = await apiClient.medicalRecords.getByPatientId(patient.id, 1, 1); // 获取第一页的第一条，即最新的
-        let latestRecord;
+        // 在新函数里统一处理表单填充
+        const populateForm = (record) => {
+            document.getElementById('medical-record-id').value = record.id || '';
+            document.getElementById('record-date').value = record.record_date ? record.record_date.slice(0, 16) : new Date().toISOString().slice(0, 16);
+            document.getElementById('past-history').value = patient.past_medical_history || ''; // 既往史来自患者信息
+            document.getElementById('symptoms').value = record.symptoms || '';
+            document.getElementById('diagnosis').value = record.diagnosis || '';
+            document.getElementById('treatment-plan').value = record.treatment_plan || '';
+        };
 
-        if (response.items && response.items.length > 0) {
-            latestRecord = response.items[0];
-        } else {
-            // 如果没有记录，可能需要创建一个新的（或者后端已经创建了空白的）
-            console.log("该患者没有病历，将显示空白表单。");
-            latestRecord = { record_date: new Date().toISOString() }; // 默认值
-        }
-
-        // 填充表单
-        form.querySelector('#medical-record-id').value = latestRecord.id || '';
-        form.querySelector('#record-date').value = new Date(latestRecord.record_date).toISOString().slice(0, 16);
-        form.querySelector('#symptoms').value = latestRecord.symptoms || '';
-        form.querySelector('#diagnosis').value = latestRecord.diagnosis || '';
-        form.querySelector('#treatment-plan').value = latestRecord.treatment_plan || '';
+        const recordsResponse = await apiClient.medicalRecords.getByPatientId(patient.id, 1, 1);
+        const records = recordsResponse.items || [];
         
+        if (records.length > 0) {
+            // 如果有记录，使用最新的一条填充表单
+            populateForm(records[0]);
+        } else {
+            // 如果没有记录，创建一个新的空记录
+            if (statusElement) statusElement.textContent = '正在创建新病历...';
+
+            // 【关键修复】构造完全符合后端 MedicalRecordCreate 要求的对象
+            const newRecordData = {
+                patient_id: patient.id,
+                doctor_id: 1, // 临时硬编码为1。未来应从当前登录用户获取
+                record_date: new Date().toISOString(), // 提供当前时间
+                symptoms: "首次就诊",
+                diagnosis: "待查",
+                treatment_plan: "",
+                notes: "系统自动创建"
+            };
+            
+            const newRecord = await apiClient.medicalRecords.create(newRecordData);
+            
+            // 用后端返回的新记录来填充表单
+            populateForm(newRecord);
+            
+            if (statusElement) statusElement.textContent = '新病历已创建，可以开始编辑。';
+        }
     } catch (error) {
-        console.error("加载最新病历失败:", error);
-        document.getElementById('save-status').textContent = '加载病历失败!';
-        document.getElementById('save-status').style.color = '#b83b51';
+        console.error('加载或创建病历失败:', error);
+        if (statusElement) {
+            statusElement.textContent = '操作失败: ' + error.message;
+            statusElement.style.color = 'red';
+        }
     }
 }
 
 async function saveMedicalRecordChanges() {
-    const form = document.getElementById('medical-record-form');
-    if (!form) return;
+    const recordId = document.getElementById('medical-record-id').value;
+    const patientId = document.getElementById('medical-record-form').dataset.patientId;
 
-    const statusEl = document.getElementById('save-status');
-    statusEl.textContent = '正在保存...';
-    statusEl.style.color = '#888';
-
-    const recordId = form.querySelector('#medical-record-id').value;
-    const patientId = form.dataset.patientId;
-
-    // 1. 准备患者数据（只包含既往病史）
-    const patientUpdateData = {
-        past_medical_history: form.querySelector('#past-history').value
-    };
+    if (!recordId) {
+        console.error("无法保存，病历ID丢失。");
+        return;
+    }
     
-    // 2. 准备病历数据
+    const statusElement = document.getElementById('save-status');
+    if (statusElement) statusElement.textContent = '正在保存...';
+
+    // 构造符合后端 MedicalRecordUpdate 模型的对象
     const recordData = {
-        record_date: new Date(form.querySelector('#record-date').value).toISOString(),
-        symptoms: form.querySelector('#symptoms').value,
-        diagnosis: form.querySelector('#diagnosis').value,
-        treatment_plan: form.querySelector('#treatment-plan').value,
-        notes: '' // notes字段暂时未在UI上体现，给个默认值
+        record_date: document.getElementById('record-date').value ? new Date(document.getElementById('record-date').value).toISOString() : new Date().toISOString(),
+        symptoms: document.getElementById('symptoms').value,
+        diagnosis: document.getElementById('diagnosis').value,
+        treatment_plan: document.getElementById('treatment-plan').value,
+        notes: "" // notes 字段暂无UI，给一个默认值
     };
-    
-    console.log('准备保存病历数据:', recordData);
-    
+
+    // 构造符合后端 PatientUpdate 模型的对象
+    const patientData = {
+        past_medical_history: document.getElementById('past-history').value
+    };
+
     try {
-        // 创建两个独立的保存任务
-        const patientUpdatePromise = apiClient.patients.update(patientId, patientUpdateData);
-        
-        let recordUpdatePromise;
-        if (recordId) {
-            console.log('更新已有病历记录, ID:', recordId);
-            recordUpdatePromise = apiClient.medicalRecords.update(recordId, recordData);
-        } else {
-            console.log('创建新病历记录');
-            const recordCreateData = {
-                ...recordData,
-                patient_id: parseInt(patientId, 10),
-                doctor_id: 1 // 临时医生ID
-            };
-            recordUpdatePromise = apiClient.medicalRecords.create(recordCreateData);
-        }
-        
-        // 并行执行两个API请求
-        const [patientResult, recordResult] = await Promise.all([
-            patientUpdatePromise, 
-            recordUpdatePromise
+        // 并行发起两个更新请求
+        await Promise.all([
+            apiClient.medicalRecords.update(recordId, recordData),
+            apiClient.patients.update(patientId, patientData) 
         ]);
-        
-        console.log('患者信息更新成功:', patientResult);
-        console.log('病历保存成功:', recordResult);
-        
-        // 如果是新创建的病历，保存ID以便下次更新
-        if (!recordId && recordResult && recordResult.id) {
-            form.querySelector('#medical-record-id').value = recordResult.id;
-            console.log('已将新病历ID写回表单:', recordResult.id);
+
+        if (statusElement) {
+            statusElement.textContent = '已保存';
+            statusElement.style.color = '#4CAF50';
+            setTimeout(() => {
+                if (statusElement && statusElement.textContent === '已保存') {
+                    statusElement.textContent = '';
+                }
+            }, 3000);
         }
-        
-        statusEl.textContent = `已于 ${new Date().toLocaleTimeString()} 保存`;
-        statusEl.style.color = 'green';
-        
+        return true;
     } catch (error) {
-        console.error("保存失败:", error);
-        statusEl.textContent = `保存失败: ${error.message}`;
-        statusEl.style.color = '#b83b51';
+        console.error('保存失败:', error);
+        if (statusElement) {
+            statusElement.textContent = '保存失败: ' + error.message;
+            statusElement.style.color = '#F44336';
+        }
+        throw error;
     }
 }
 
-// --- 数据加载与辅助函数 ---
-
 async function loadAndDisplayPatients(page = 1, query = '') {
-    const tableBody = document.getElementById('patient-table-body');
-    const paginationContainer = document.getElementById('pagination-container');
-    if (!tableBody) return;
-    tableBody.innerHTML = '<tr><td colspan="6">正在加载...</td></tr>';
-    if(paginationContainer) paginationContainer.innerHTML = '';
-    
     try {
-        const response = await apiClient.patients.getAll(page, 15, query);
-        if (!response.items.length) {
-            tableBody.innerHTML = '<tr><td colspan="6">未找到患者记录</td></tr>';
-        return;
-    }
-        tableBody.innerHTML = response.items.map(p => `
-            <tr>
-                <td>${p.id}</td>
-                <td>${p.name}</td>
-                <td>${p.gender||''}</td>
-                <td>${p.birth_date||''}</td>
-                <td>${p.contact_number||''}</td>
-                <td>
-                    <a href="#" class="action-link view" data-action="view-patient" data-id="${p.id}">查看</a>
-                    <a href="#" class="action-link edit" data-action="edit-patient" data-id="${p.id}">编辑</a>
-                    <a href="#" class="action-link delete" data-action="delete-patient" data-id="${p.id}" data-name="${p.name}">删除</a>
-                    <a href="#" class="action-link" data-action="view-records" data-id="${p.id}">查看病历</a>
-                </td>
-            </tr>`).join('');
+        const tableBody = document.getElementById('patient-table-body');
+        const paginationContainer = document.getElementById('pagination-container');
         
-        const totalPages = Math.ceil(response.total / 15);
+        if (!tableBody || !paginationContainer) return;
+        
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center">正在加载患者数据...</td></tr>';
+        
+        const response = await apiClient.patients.getAll(page, 15, query);
+        const patients = response.items || [];
+        const totalPages = response.total_pages || 1;
+        
+        if (patients.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center">没有找到患者记录</td></tr>';
+            paginationContainer.innerHTML = '';
+            return;
+        }
+        
+        let html = '';
+        patients.forEach(patient => {
+            html += `
+                <tr>
+                    <td>${patient.id}</td>
+                    <td>${patient.name}</td>
+                    <td>${patient.gender || ''}</td>
+                    <td>${patient.birth_date || ''}</td>
+                    <td>${patient.phone || ''}</td>
+                    <td>
+                        <a href="#" class="action-link" data-action="view-records" data-id="${patient.id}">查看病历</a>
+                        <a href="#" class="action-link edit" data-action="edit-patient" data-id="${patient.id}">编辑</a>
+                        <a href="#" class="action-link delete" data-action="delete-patient" data-id="${patient.id}" data-name="${patient.name}">删除</a>
+                    </td>
+                </tr>
+            `;
+        });
+        tableBody.innerHTML = html;
+        
+        // 渲染分页
         renderPagination(paginationContainer, page, totalPages, query, 'change-patient-page');
-    } catch(error) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="error">加载失败: ${error.message}</td></tr>`;
+        
+    } catch (error) {
+        console.error('加载患者数据失败:', error);
+        document.getElementById('patient-table-body').innerHTML = `<tr><td colspan="6" class="text-center text-danger">加载失败: ${error.message}</td></tr>`;
     }
 }
 
 async function renderMedicalRecordsPatientList(page = 1, query = '') {
-    const listContainer = document.getElementById('medical-records-patient-list-container');
-    const paginationContainer = document.getElementById('medical-records-patient-pagination-container');
-    if (!listContainer || !paginationContainer) return;
-    listContainer.innerHTML = '<p>正在加载患者列表...</p>';
-    paginationContainer.innerHTML = '';
-
     try {
+        const listContainer = document.getElementById('medical-records-patient-list-container');
+        const paginationContainer = document.getElementById('medical-records-patient-pagination-container');
+        
+        if (!listContainer || !paginationContainer) return;
+        
+        listContainer.innerHTML = '<p>正在加载患者列表...</p>';
+        paginationContainer.innerHTML = '';
+        
         const response = await apiClient.patients.getAll(page, 15, query);
-        if (!response.items || !response.items.length) {
+        const patients = response.items || [];
+        const totalPages = response.total_pages || 1;
+        
+        if (patients.length === 0) {
             listContainer.innerHTML = `<p>${query ? '未找到匹配的患者' : '系统中没有患者'}</p>`;
             return;
         }
+        
         listContainer.innerHTML = `
             <div class="card">
                 <table class="data-table">
@@ -452,7 +712,7 @@ async function renderMedicalRecordsPatientList(page = 1, query = '') {
                         </tr>
                     </thead>
                     <tbody>
-                        ${response.items.map(p => `
+                        ${patients.map(p => `
                             <tr>
                                 <td>${p.id}</td>
                                 <td>${p.name}</td>
@@ -465,23 +725,27 @@ async function renderMedicalRecordsPatientList(page = 1, query = '') {
                         `).join('')}
                     </tbody>
                 </table>
-                <div id="medical-records-patient-pagination-container"></div>
             </div>`;
-        const totalPages = Math.ceil(response.total / 15);
-        renderPagination(document.getElementById('medical-records-patient-pagination-container'), page, totalPages, query, 'change-mr-patient-page');
-    } catch(error) {
+        
+        // 渲染分页
+        renderPagination(paginationContainer, page, totalPages, query, 'change-mr-patient-page');
+        
+    } catch (error) {
+        console.error('加载患者列表失败:', error);
         listContainer.innerHTML = `<p class="error">加载患者列表失败: ${error.message}</p>`;
     }
 }
 
 function renderPagination(container, currentPage, totalPages, query, action, patientId = null) {
     if (!container || totalPages <= 1) {
-        if (container) container.innerHTML = '';
+        container.innerHTML = '';
         return;
     }
+    
     const patientIdAttr = patientId ? `data-patient-id="${patientId}"` : '';
     let html = `<div class="pagination-controls" style="display: flex; justify-content: flex-end; margin-top: 10px;">`;
     html += `<button class="pagination-btn" ${currentPage <= 1 ? 'disabled' : ''} data-action="${action}" data-page="${currentPage - 1}" data-query="${query}" ${patientIdAttr}>&lt; 上一页</button>`;
+    
     for (let i = 1; i <= totalPages; i++) {
         if (totalPages <= 7 || i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
             html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" data-action="${action}" data-page="${i}" data-query="${query}" ${patientIdAttr}>${i}</button>`;
@@ -489,138 +753,106 @@ function renderPagination(container, currentPage, totalPages, query, action, pat
             html += `<span class="pagination-ellipsis">...</span>`;
         }
     }
+    
     html += `<button class="pagination-btn" ${currentPage >= totalPages ? 'disabled' : ''} data-action="${action}" data-page="${currentPage + 1}" data-query="${query}" ${patientIdAttr}>下一页 &gt;</button>`;
     html += `</div>`;
     container.innerHTML = html;
 }
 
-// 显示添加患者模态框
 function showAddPatientModal() {
-    const modalTitle = document.getElementById('patient-modal-title');
-    const form = document.getElementById('patient-form');
-    const idField = document.getElementById('patient-id');
-    const modal = document.getElementById('patient-modal');
+    // 清空表单
+    document.getElementById('patient-id').value = '';
+    document.getElementById('patient-name').value = '';
+    document.getElementById('patient-gender').value = '男';
+    document.getElementById('patient-birth').value = '';
+    document.getElementById('patient-phone').value = '';
+    document.getElementById('patient-address').value = '';
     
-    if (modalTitle) modalTitle.textContent = '添加新患者';
-    if (form) form.reset();
-    if (idField) idField.value = '';
-    if (modal) modal.style.display = 'block';
+    // 更新标题
+    document.getElementById('patient-modal-title').textContent = '添加新患者';
+    
+    // 显示模态框
+    document.getElementById('patient-modal').classList.add('show');
 }
 
-// 编辑患者
 async function editPatient(id) {
     try {
         const patient = await apiClient.patients.getById(id);
         
-        const modalTitle = document.getElementById('patient-modal-title');
-        if (modalTitle) modalTitle.textContent = '编辑患者';
-        
         // 填充表单
-        const elements = {
-            id: document.getElementById('patient-id'),
-            name: document.getElementById('patient-name'),
-            gender: document.getElementById('patient-gender'),
-            birth: document.getElementById('patient-birth'),
-            phone: document.getElementById('patient-phone'),
-            address: document.getElementById('patient-address')
-        };
+        document.getElementById('patient-id').value = patient.id;
+        document.getElementById('patient-name').value = patient.name || '';
+        document.getElementById('patient-gender').value = patient.gender || '男';
+        document.getElementById('patient-birth').value = patient.birth_date || '';
+        document.getElementById('patient-phone').value = patient.phone || '';
+        document.getElementById('patient-address').value = patient.address || '';
         
-        if (elements.id) elements.id.value = patient.id;
-        if (elements.name) elements.name.value = patient.name || '';
-        if (elements.gender) elements.gender.value = patient.gender || '';
-        if (elements.birth) elements.birth.value = patient.birth_date || '';
-        if (elements.phone) elements.phone.value = patient.contact_number || '';
-        if (elements.address) elements.address.value = patient.address || '';
+        // 更新标题
+        document.getElementById('patient-modal-title').textContent = '编辑患者信息';
         
         // 显示模态框
-        const modal = document.getElementById('patient-modal');
-        if (modal) modal.style.display = 'block';
+        document.getElementById('patient-modal').classList.add('show');
     } catch (error) {
-        console.error('加载患者数据失败:', error);
-        alert(`加载患者数据失败: ${error.message}`);
+        alert(`获取患者信息失败: ${error.message}`);
     }
 }
 
-// 隐藏患者模态框
 function hidePatientModal() {
-    const modal = document.getElementById('patient-modal');
-    if (modal) modal.style.display = 'none';
+    document.getElementById('patient-modal').classList.remove('show');
 }
 
-// 处理患者表单提交
 async function handlePatientFormSubmit(event) {
-    if (!event) return;
+    event.preventDefault();
     
-    // 获取表单数据
-    const idField = document.getElementById('patient-id');
-    const patientId = idField ? idField.value : '';
-    
+    const patientId = document.getElementById('patient-id').value;
     const patientData = {
-        name: document.getElementById('patient-name')?.value?.trim() || '',
-        gender: document.getElementById('patient-gender')?.value || '',
-        birth_date: document.getElementById('patient-birth')?.value || '',
-        contact_number: document.getElementById('patient-phone')?.value || '',
-        address: document.getElementById('patient-address')?.value || ''
+        name: document.getElementById('patient-name').value,
+        gender: document.getElementById('patient-gender').value,
+        birth_date: document.getElementById('patient-birth').value,
+        phone: document.getElementById('patient-phone').value,
+        address: document.getElementById('patient-address').value
     };
     
-    if (!patientData.name) {
-        alert('姓名不能为空');
-        return;
-    }
-    
-    if (!patientData.birth_date) {
-        alert('出生日期为必填项');
-        return;
-    }
-    
     try {
-        // 根据是否有ID决定是创建还是更新
         if (patientId) {
+            // 更新已有患者
             await apiClient.patients.update(patientId, patientData);
-            alert('患者信息更新成功');
         } else {
+            // 创建新患者
             await apiClient.patients.create(patientData);
-            alert('患者添加成功');
         }
         
-        // 关闭模态框并重新加载数据
+        // 关闭模态框
         hidePatientModal();
-        loadAndDisplayPatients(1, '');
+        
+        // 重新加载患者列表
+        const currentSearchTerm = document.getElementById('patient-search-input').value || '';
+        loadAndDisplayPatients(1, currentSearchTerm);
     } catch (error) {
-        console.error('保存患者数据失败:', error);
-        alert(`操作失败: ${error.message}`);
+        alert(`保存患者信息失败: ${error.message}`);
     }
 }
 
-// 删除患者
 async function deletePatient(id, name) {
-    if (confirm(`确定要删除患者 ${name} 吗？此操作不可撤销。`)) {
+    if (confirm(`确定要删除患者 ${name} 吗？此操作不可恢复。`)) {
         try {
             await apiClient.patients.delete(id);
-            alert('删除成功');
-            loadAndDisplayPatients(1, '');
+            
+            // 重新加载患者列表
+            const currentSearchTerm = document.getElementById('patient-search-input').value || '';
+            loadAndDisplayPatients(1, currentSearchTerm);
         } catch (error) {
-            console.error('删除患者失败:', error);
-            alert(`删除失败: ${error.message}`);
-            }
+            alert(`删除患者失败: ${error.message}`);
+        }
     }
 }
 
-// 查看患者详情
 async function viewPatient(id) {
     try {
         const patient = await apiClient.patients.getById(id);
-        alert(`
-            患者详情：
-            ID: ${patient.id}
-            姓名: ${patient.name || ''}
-            性别: ${patient.gender || '未填写'}
-            出生日期: ${patient.birth_date || '未填写'}
-            联系电话: ${patient.contact_number || '未填写'}
-            地址: ${patient.address || '未填写'}
-        `);
+        console.log('患者信息:', patient);
+        // TODO: 实现患者详情页
     } catch (error) {
-        console.error('加载患者数据失败:', error);
-        alert(`加载患者数据失败: ${error.message}`);
+        alert(`获取患者信息失败: ${error.message}`);
     }
 } 

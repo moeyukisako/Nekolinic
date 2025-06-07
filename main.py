@@ -8,7 +8,8 @@ from app.app import app
 def open_browser():
     """在应用启动后打开浏览器"""
     time.sleep(1)  # 等待服务器启动
-    webbrowser.open("http://localhost:8000")
+    # 始终打开 index.html
+    webbrowser.open("http://localhost:8000/index.html")
 
 if __name__ == "__main__":
     # 检查前端目录是否存在

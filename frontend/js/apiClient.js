@@ -44,7 +44,7 @@ async function apiRequest(endpoint, options = {}) {
 
             localStorage.removeItem('accessToken');
 
-            window.location.href = '/login.html'; // 跳转到登录页
+            window.location.href = '/index.html'; // 修改为 index.html
 
             throw new Error('认证失败 (401)');
 
@@ -131,7 +131,7 @@ const apiClient = {
 
             currentUser = null;
 
-            window.location.href = '/login.html';
+            window.location.href = '/index.html'; // 修改为 index.html
 
         },
 
@@ -194,24 +194,19 @@ const apiClient = {
 
         getById: (recordId) => apiRequest(`/patients/medical-records/${recordId}`),
 
+        /**
+         * 创建一个新的病历
+         * @param {object} recordData 包含所有必需字段的病历对象 (patient_id, doctor_id, record_date, etc.)
+         */
         create: (recordData) => {
-
             const patientId = recordData.patient_id;
-
             if (!patientId) {
-
-                throw new Error("创建病历时必须提供 patient_id");
-
+                throw new Error("创建病历时，数据中必须提供 patient_id");
             }
-
             return apiRequest(`/patients/${patientId}/medical-records/`, {
-
                 method: 'POST',
-
                 body: JSON.stringify(recordData)
-
             });
-
         },
 
         update: (recordId, data) => apiRequest(`/patients/medical-records/${recordId}`, { 

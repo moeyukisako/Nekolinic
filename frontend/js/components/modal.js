@@ -40,21 +40,18 @@ export default class Modal {
     
     // 设置HTML内容
     this.element.innerHTML = `
-      <div class="modal-backdrop"></div>
-      <div class="modal-container">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3>${this.title}</h3>
-            <button type="button" class="close-modal" aria-label="关闭">&times;</button>
-          </div>
-          <div class="modal-body"></div>
-          ${this.showFooter ? `
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary cancel-modal">${this.cancelText}</button>
-              <button type="button" class="btn btn-primary confirm-modal">${this.confirmText}</button>
-            </div>
-          ` : ''}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>${this.title}</h3>
+          <button type="button" class="close-modal" aria-label="关闭">&times;</button>
         </div>
+        <div class="modal-body"></div>
+        ${this.showFooter ? `
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary cancel-modal">${this.cancelText}</button>
+            <button type="button" class="btn btn-primary confirm-modal">${this.confirmText}</button>
+          </div>
+        ` : ''}
       </div>
     `;
     
@@ -95,8 +92,11 @@ export default class Modal {
     
     // 点击背景关闭
     if (this.closeOnBackdrop) {
-      const backdrop = this.element.querySelector('.modal-backdrop');
-      backdrop.addEventListener('click', () => this.close());
+      this.element.addEventListener('click', (e) => {
+        if (e.target === this.element) {
+          this.close();
+        }
+      });
     }
     
     // 添加到DOM

@@ -14,11 +14,11 @@ export default async function render(container, { signal }) {
     container.innerHTML = `
         <div class="medicine-module-wrapper">
             <div id="medicine-module-content">
-                <div class="header-bar">
-                    <button id="add-medicine-btn" class="btn btn-primary">添加新药品</button>
-                </div>
-                <div class="search-bar">
-                    <input type="text" id="medicine-search-input" placeholder="按药品名称、厂家搜索...">
+                <div class="table-header-controls">
+                    <div class="search-input-group">
+                        <input type="text" id="medicine-search-input" placeholder="按药品名称、厂家搜索...">
+                        <button id="add-medicine-btn" class="search-addon-btn">添加新药品</button>
+                    </div>
                 </div>
                 <div class="data-table-container">
                     <div class="card">
@@ -56,7 +56,7 @@ export default async function render(container, { signal }) {
   // 绑定事件
   const addBtn = document.getElementById('add-medicine-btn');
   if (addBtn) {
-    addBtn.addEventListener('click', showMedicineFormModal, { signal });
+    addBtn.addEventListener('click', () => showMedicineFormModal(), { signal });
   }
 
   // 绑定表格事件
@@ -102,13 +102,18 @@ async function loadMedicines(searchTerm = '', page = 1) {
     renderMedicineTable(medicines, tableBody);
     
     // 渲染分页
-    if (response.total_pages > 1) {
-      new Pagination({
-        containerId: 'pagination-container',
-        currentPage: page,
-        totalPages: response.total_pages,
-        onPageChange: (newPage) => loadMedicines(searchTerm, newPage)
-      }).render();
+    const paginationContainer = document.getElementById('pagination-container');
+    if (paginationContainer) {
+      if (response.total_pages > 1) {
+        new Pagination({
+          containerId: 'pagination-container',
+          currentPage: page,
+          totalPages: response.total_pages,
+          onPageChange: (newPage) => loadMedicines(searchTerm, newPage)
+        }).render();
+      } else {
+        paginationContainer.innerHTML = '';
+      }
     }
   } catch (error) {
     console.error('加载药品列表失败:', error);
@@ -208,14 +213,14 @@ function showMedicineFormModal(medicine = null) {
   const modal = new Modal({
     title: title,
     content: form,
-    onConfirm: () => handleMedicineFormSubmit(isEdit)
+    onConfirm: () => handleMedicineFormSubmit(isEdit, medicine)
   }).render();
 }
 
 /**
  * 处理药品表单提交
  */
-async function handleMedicineFormSubmit(isEdit) {
+async function handleMedicineFormSubmit(isEdit, medicine = null) {
   const form = document.getElementById('medicine-form');
   if (!form) return false;
   
@@ -252,7 +257,7 @@ async function handleMedicineFormSubmit(isEdit) {
   try {
     if (isEdit) {
       // 编辑模式：更新现有药品
-      const medicineId = idInput ? idInput.value : null;
+      const medicineId = medicine?.id || (idInput ? idInput.value : null);
       if (!medicineId || medicineId === '' || medicineId === 'undefined') {
         throw new Error('无法获取有效的药品ID，请重新打开编辑窗口');
       }

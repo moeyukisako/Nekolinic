@@ -199,6 +199,12 @@ async function switchModule(moduleName) {
   // 更新顶部导航栏标题
   updateNavbarTitle(moduleName);
   
+  // 更新侧边栏active状态
+  document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  document.querySelector(`.sidebar-item[data-module="${moduleName}"]`)?.classList.add('active');
+  
   try {
     // 获取模块渲染器
     const moduleRenderers = store.get('moduleRenderers');
@@ -254,7 +260,10 @@ function updateNavbarTitle(moduleName) {
     '患者': ' 患者',
     '预约': ' 预约', 
     '病历': ' 病历',
-    '药品': ' 药品'
+    '药品': ' 药品',
+    '财务': ' 财务',
+    '报表': ' 报表',
+    '设置': ' 设置'
   };
   
   // 获取对应的显示名称，如果是状态模块则不添加后缀
@@ -332,7 +341,7 @@ function initBackgroundSettings() {
             if (bgPreview) bgPreview.style.backgroundImage = `url(${compressedImageUrl})`;
             
             // 保存到服务器
-            apiClient.request('/users/me/background-image', {
+            apiClient.request('/api/v1/users/me/background-image', {
               method: 'POST',
               body: JSON.stringify({
                 image_data: compressedImageUrl,

@@ -14,16 +14,21 @@ import SearchBar from '../components/searchBar.js';
  * @returns {Function} 清理函数
  */
 export default async function render(container, { signal }) {
+    // 重置分页状态
+    currentPage = 1;
+    totalPages = 1;
+    pagination = null;
+    
     container.innerHTML = `
         <div class="patient-module-wrapper">
             <div id="patient-module-content">
-                <div class="header-bar">
-                    <button id="add-patient-btn" class="btn btn-primary">添加新患者</button>
-                </div>
-                <div class="search-bar">
-                    <input type="text" id="patient-search-input" placeholder="按姓名搜索患者...">
-                </div>
                 <div class="data-table-container">
+                    <div class="table-header-controls">
+                        <div class="search-input-group">
+                            <input type="text" id="patient-search-input" placeholder="按姓名搜索患者...">
+                            <button id="add-patient-btn" class="search-addon-btn">添加新患者</button>
+                        </div>
+                    </div>
                     <div class="card">
                         <table class="data-table">
                             <thead>
@@ -38,19 +43,26 @@ export default async function render(container, { signal }) {
                             </thead>
                             <tbody id="patient-table-body"></tbody>
                         </table>
-                        <div id="patient-pagination-container"></div>
+                        <div id="patient-pagination-container" class="pagination-container"></div>
                     </div>
                 </div>
             </div>
         </div>
     `;
 
-  // 初始化搜索组件
-  const searchBar = new SearchBar({
-    containerId: 'patient-search-container',
-    placeholder: '搜索患者姓名、电话号码...',
-    onSearch: (query) => loadAndDisplayPatients(1, query)
-  }).render();
+  // 绑定搜索功能
+  const searchInput = document.getElementById('patient-search-input');
+  if (searchInput) {
+    let searchTimeout;
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      // 防抖处理
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        loadAndDisplayPatients(1, query);
+      }, 300);
+    }, { signal });
+  }
 
   // 初始化加载数据
   await loadAndDisplayPatients(1, '');
@@ -107,8 +119,13 @@ function handleTableAction(e) {
   }
 }
 
+// 分页状态
+let currentPage = 1;
+let totalPages = 1;
+let pagination = null;
+
 /**
- * 加载并显示患者列表
+ * 加载并显示患者数据
  * @param {number} page - 页码
  * @param {string} query - 搜索关键词
  */
@@ -116,14 +133,16 @@ async function loadAndDisplayPatients(page = 1, query = '') {
   const tableBody = document.getElementById('patient-table-body');
   if (!tableBody) return;
   
+  // 确保page参数是有效的数字
+  const validPage = parseInt(page) || 1;
+  
   // 显示加载状态
   showLoading(tableBody, 5);
   
   try {
     // 获取患者数据
-    const response = await apiClient.patients.getAll(page, 10, query);
+    const response = await apiClient.patients.getAll(validPage, 10, query);
     const patients = response.items || [];
-    const totalPages = response.total_pages || 1;
     
     if (patients.length === 0) {
       tableBody.innerHTML = '<tr><td colspan="6" class="text-center">未找到患者记录</td></tr>';
@@ -151,23 +170,51 @@ async function loadAndDisplayPatients(page = 1, query = '') {
       tableBody.appendChild(row);
     });
     
-    // 渲染分页
-    const paginationContainer = document.getElementById('patient-pagination-container');
-    if (paginationContainer && totalPages > 1) {
-      new Pagination({
-        containerId: 'patient-pagination-container',
-        currentPage: page,
-        totalPages: totalPages,
-        onPageChange: (newPage) => loadAndDisplayPatients(newPage, query)
-      }).render();
-    } else if (paginationContainer) {
-      paginationContainer.innerHTML = '';
-    }
+    // 更新分页信息
+    currentPage = validPage;
+    const total = response.total || 0;
+    totalPages = Math.ceil(total / 10);
+    
+    // 渲染分页组件
+    renderPagination(query);
     
   } catch (error) {
     console.error('加载患者数据失败', error);
     tableBody.innerHTML = `<tr><td colspan="6" class="text-center">加载失败: ${error.message}</td></tr>`;
   }
+}
+
+/**
+ * 渲染分页组件
+ * @param {string} query - 搜索关键词
+ */
+function renderPagination(query = '') {
+  const paginationContainer = document.getElementById('patient-pagination-container');
+  if (!paginationContainer) return;
+  
+  if (totalPages <= 1) {
+    paginationContainer.innerHTML = '';
+    return;
+  }
+  
+  // 创建或更新分页组件
+  if (!pagination) {
+    pagination = new Pagination({
+      containerId: 'patient-pagination-container',
+      currentPage: currentPage,
+      totalPages: totalPages,
+      onPageChange: (page) => {
+        loadAndDisplayPatients(page, query);
+      }
+    });
+  } else {
+    pagination.update({
+      currentPage: currentPage,
+      totalPages: totalPages
+    });
+  }
+  
+  pagination.render();
 }
 
 /**
@@ -335,34 +382,36 @@ async function viewPatient(id) {
     const patient = await apiClient.patients.getById(id);
     
     const content = document.createElement('div');
-    content.className = 'patient-detail';
+    content.className = 'patient-detail-view';
     content.innerHTML = `
-      <div class="patient-info">
-        <div class="info-row">
-          <div class="info-label">姓名:</div>
-          <div class="info-value">${patient.name || '-'}</div>
-        </div>
-        <div class="info-row">
-          <div class="info-label">性别:</div>
-          <div class="info-value">${patient.gender === 'male' ? '男' : patient.gender === 'female' ? '女' : '其他'}</div>
-        </div>
-        <div class="info-row">
-          <div class="info-label">出生日期:</div>
-          <div class="info-value">${patient.birth_date ? formatDate(patient.birth_date) : '-'}</div>
-        </div>
-        <div class="info-row">
-          <div class="info-label">联系电话:</div>
-          <div class="info-value">${patient.contact_number || '-'}</div>
-        </div>
-        <div class="info-row">
-          <div class="info-label">住址:</div>
-          <div class="info-value">${patient.address || '-'}</div>
-        </div>
-        <div class="info-row">
-          <div class="info-label">创建时间:</div>
-          <div class="info-value">${patient.created_at ? formatDateTime(patient.created_at) : '-'}</div>
-        </div>
-      </div>
+      <table class="patient-detail-table">
+        <tbody>
+          <tr>
+            <th>姓名</th>
+            <td>${patient.name || '-'}</td>
+          </tr>
+          <tr>
+            <th>性别</th>
+            <td>${patient.gender === 'male' ? '男' : patient.gender === 'female' ? '女' : '其他'}</td>
+          </tr>
+          <tr>
+            <th>出生日期</th>
+            <td>${patient.birth_date ? formatDate(patient.birth_date) : '-'}</td>
+          </tr>
+          <tr>
+            <th>联系电话</th>
+            <td>${patient.contact_number || '-'}</td>
+          </tr>
+          <tr>
+            <th>住址</th>
+            <td>${patient.address || '-'}</td>
+          </tr>
+          <tr>
+            <th>创建时间</th>
+            <td>${patient.created_at ? formatDateTime(patient.created_at) : '-'}</td>
+          </tr>
+        </tbody>
+      </table>
     `;
 
     const modal = new Modal({

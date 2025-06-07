@@ -6,6 +6,36 @@ import Pagination from '../components/pagination.js';
 import SearchBar from '../components/searchBar.js';
 import { formatDate, calculateAge } from '../utils/date.js';
 
+// 全局变量
+let currentPatientId = null;
+let currentRecordId = null;
+let currentPatient = null;
+let pagination = null;
+let signal = null;
+
+// 全局事件监听器 - 在模块加载时就注册
+window.eventBus.on('view:medical-records', ({ patientId }) => {
+  if (patientId) {
+    // 检查当前是否在病历模块
+    const currentModule = window.store.get('currentModule');
+    
+    if (currentModule !== '病历') {
+      // 如果不在病历模块，先切换到病历模块
+      import('../main.js').then(({ switchModule }) => {
+        switchModule('病历').then(() => {
+          // 切换完成后，等待足够时间确保模块完全加载完成，然后选中患者
+          setTimeout(() => {
+            selectPatientInMedicalRecords(patientId);
+          }, 500);
+        });
+      });
+    } else {
+      // 如果已经在病历模块，直接选中患者
+      selectPatientInMedicalRecords(patientId);
+    }
+  }
+});
+
 /**
  * 病历管理模块
  * @param {HTMLElement} container - 内容容器
@@ -13,11 +43,9 @@ import { formatDate, calculateAge } from '../utils/date.js';
  * @param {AbortSignal} options.signal - AbortController信号用于清理
  * @returns {Function} 清理函数
  */
-export default async function render(container, { signal }) {
-  // 当前选中的患者ID和病历ID
-  let currentPatientId = null;
-  let currentRecordId = null;
-  let currentPatient = null;
+export default async function render(container, { signal: moduleSignal }) {
+  // 设置全局signal
+  signal = moduleSignal;
   
   // 渲染模块基本结构 - 统一的模块包装器
   container.innerHTML = `
@@ -66,39 +94,109 @@ export default async function render(container, { signal }) {
     }, { signal });
   }
   
-  // 绑定患者列表点击事件
-  const patientsList = document.getElementById('patients-list');
-  if (patientsList) {
-    patientsList.addEventListener('click', (e) => {
-      const patientItem = e.target.closest('.patient-item');
-      if (patientItem) {
-        const patientId = patientItem.dataset.id;
-        
-        // 更新选中状态
-        document.querySelectorAll('.patient-item').forEach(item => {
-          item.classList.remove('active');
-        });
-        patientItem.classList.add('active');
-        
-        // 设置当前患者
-        currentPatientId = patientId;
-        
-        // 直接打开病历（触发查看病历事件）
-        window.eventBus.emit('view:medical-records', { patientId });
-      }
-    }, { signal });
-  }
+  // 初始绑定患者列表事件
+  bindPatientListEvents();
   
   // 初始化拖拽调整功能
   initResizer(signal);
   
-  // 加载患者列表的函数
-  async function loadPatients(page = 1, query = '') {
-    await renderPatientList(page, query);
+// 绑定患者列表点击事件的函数
+function bindPatientListEvents() {
+  const patientsList = document.getElementById('patients-list');
+  if (patientsList) {
+    // 移除之前的事件监听器（如果存在）
+    patientsList.removeEventListener('click', handlePatientClick);
+    // 添加新的事件监听器
+    patientsList.addEventListener('click', handlePatientClick, { signal });
   }
+}
+
+// 患者点击处理函数
+function handlePatientClick(e) {
+  const patientItem = e.target.closest('.patient-item');
+  if (patientItem) {
+    const patientId = patientItem.dataset.id;
+    
+    // 更新选中状态
+    document.querySelectorAll('.patient-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    patientItem.classList.add('active');
+    
+    // 设置当前患者
+    currentPatientId = patientId;
+    
+    // 直接渲染病历模块
+    renderMedicalRecordModule(patientId, signal);
+  }
+}
+
+// 加载患者列表的函数
+async function loadPatients(page = 1, query = '') {
+  await renderPatientList(page, query);
+}
+
+// 初始加载患者列表
+await loadPatients();
+
+/**
+ * 在病历模块中选中指定患者的函数
+ */
+async function selectPatientInMedicalRecords(patientId) {
+  currentPatientId = patientId;
   
-  // 初始加载患者列表
-  await loadPatients();
+  // 如果当前模块已经渲染，直接更新
+  const container = document.querySelector('.medical-records-module-wrapper');
+  if (container) {
+    // 使用全局signal，如果没有则传null
+    renderMedicalRecordModule(patientId, signal);
+    
+    // 首先尝试在当前页面中找到患者
+    let targetPatientItem = document.querySelector(`.patient-item[data-id="${patientId}"]`);
+    
+    if (!targetPatientItem) {
+      // 如果在当前页面找不到患者，尝试通过搜索找到该患者
+      try {
+        const patient = await apiClient.patients.getById(patientId);
+        if (patient) {
+          // 使用患者姓名进行搜索
+          const searchInput = document.getElementById('patient-search');
+          if (searchInput) {
+            searchInput.value = patient.name;
+            // 触发搜索
+            await renderPatientList(1, patient.name);
+            // 搜索完成后再次尝试找到患者项
+            targetPatientItem = document.querySelector(`.patient-item[data-id="${patientId}"]`);
+          }
+        }
+      } catch (error) {
+        console.error('获取患者信息失败:', error);
+      }
+    }
+    
+    // 在患者列表中标记选中项
+    document.querySelectorAll('.patient-item').forEach(item => {
+      if (item.dataset.id === patientId) {
+        item.classList.add('active');
+        // 滚动到选中的患者项
+        item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        item.classList.remove('active');
+      }
+    });
+    
+    // 更新侧边栏导航状态（这里不需要手动更新，因为switchModule已经处理了）
+    // document.querySelectorAll('.sidebar-item').forEach(item => {
+    //   item.classList.remove('active');
+    // });
+    // document.querySelector('.sidebar-item[data-module="病历"]')?.classList.add('active');
+  } else {
+    // 如果模块还没有渲染，等待一段时间后重试
+    setTimeout(() => {
+      selectPatientInMedicalRecords(patientId);
+    }, 200);
+  }
+}
 
 /**
  * 渲染患者列表
@@ -116,14 +214,13 @@ async function renderPatientList(page = 1, query = '') {
   try {
     const response = await apiClient.patients.getAll(page, 10, query);
     const patients = response.items || [];
-    const totalPages = response.totalPages || 1;
+    const total = response.total || 0;
+    const totalPages = Math.ceil(total / 10);
     
     if (patients.length === 0) {
       patientsContainer.innerHTML = `
         <div class="empty-state">
-          <div class="empty-icon">👥</div>
-          <h3>暂无患者</h3>
-          <p>${query ? '没有找到匹配的患者' : '还没有添加任何患者'}</p>
+          <p class="no-match-text">${query ? '没有找到匹配的患者' : '还没有添加任何患者'}</p>
         </div>
       `;
       if (paginationContainer) {
@@ -156,6 +253,9 @@ async function renderPatientList(page = 1, query = '') {
       paginationContainer.innerHTML = '';
     }
     
+    // 重新绑定患者列表事件（因为innerHTML会移除事件监听器）
+    bindPatientListEvents();
+    
   } catch (error) {
     console.error('加载患者列表失败', error);
     patientsContainer.innerHTML = `
@@ -169,25 +269,35 @@ async function renderPatientList(page = 1, query = '') {
   }
 }
 
-  // 监听事件
-  const unsubscribeViewRecord = window.eventBus.on('view:medical-records', ({ patientId }) => {
-    if (patientId) {
-      currentPatientId = patientId;
-      renderMedicalRecordModule(patientId, signal);
-      
-      // 在患者列表中标记选中项
-      document.querySelectorAll('.patient-item').forEach(item => {
-        if (item.dataset.id === patientId) {
-          item.classList.add('active');
-        } else {
-          item.classList.remove('active');
-        }
-      });
-    }
+/**
+ * 渲染分页组件
+ * @param {HTMLElement} container - 分页容器
+ * @param {number} currentPage - 当前页码
+ * @param {number} totalPages - 总页数
+ * @param {Function} onPageChange - 页码变化回调
+ */
+function renderPagination(container, currentPage, totalPages, onPageChange) {
+  if (!container || totalPages <= 1) {
+    if (container) container.innerHTML = '';
+    return;
+  }
+
+  const pagination = new Pagination({
+    containerId: container.id,
+    currentPage: currentPage,
+    totalPages: totalPages,
+    onPageChange: onPageChange
   });
-  
-  // 处理病历表单提交
-  async function handleMedicalRecordSubmit(e, signal) {
+
+  pagination.render();
+}
+
+
+
+
+
+// 处理病历表单提交
+async function handleMedicalRecordSubmit(e, signal) {
     e.preventDefault();
     
     const form = document.getElementById('medical-record-form');
@@ -221,7 +331,7 @@ async function renderPatientList(page = 1, query = '') {
     const recordData = {
       patient_id: parseInt(patientId),
       doctor_id: parseInt(doctorId) || null,
-      visit_date: visitDate,
+      record_date: visitDate,
       chief_complaint: chiefComplaint || null,
       present_illness: presentIllness || null,
       past_history: pastHistory || null,
@@ -257,9 +367,12 @@ async function renderPatientList(page = 1, query = '') {
           recordIdInput.value = newRecord.id;
         }
         showNotification('病历已保存', 'success');
-      }
+      }      
+      // 重新渲染病历模块以显示最新数据
+      await renderMedicalRecordModule(currentPatientId, null);
       
-      // 不需要重新渲染，表单会保持当前状态
+      // 重新加载病历列表
+      await loadPatientRecords(currentPatientId);
       
     } catch (error) {
       console.error('保存病历失败', error);
@@ -272,7 +385,7 @@ async function renderPatientList(page = 1, query = '') {
    * @param {string} patientId - 患者ID
    * @param {AbortSignal} signal - AbortController信号
    */
-  async function renderMedicalRecordModule(patientId, signal = null) {
+async function renderMedicalRecordModule(patientId, signal = null) {
   const contentContainer = document.getElementById('editor-content');
   if (!contentContainer || !patientId) return;
   
@@ -296,11 +409,13 @@ async function renderPatientList(page = 1, query = '') {
     let latestRecord = null;
     try {
       const recordsResponse = await apiClient.medicalRecords.getByPatientId(patientId, 1, 1);
-      if (recordsResponse.items && recordsResponse.items.length > 0) {
-        latestRecord = recordsResponse.items[0];
+      // 后端直接返回数组，不是包含items的对象
+      if (recordsResponse && recordsResponse.length > 0) {
+        latestRecord = recordsResponse[0];
+        console.log('获取到最新病历记录:', latestRecord);
       }
     } catch (error) {
-      console.log('未找到现有病历记录，将创建新病历');
+      console.log('未找到现有病历记录，将创建新病历', error);
     }
     
     // 渲染病历表单
@@ -400,7 +515,11 @@ async function renderPatientList(page = 1, query = '') {
     // 绑定表单提交事件
     const form = document.getElementById('medical-record-form');
     if (form) {
-      form.addEventListener('submit', (e) => handleMedicalRecordSubmit(e, signal), { signal });
+      if (signal) {
+        form.addEventListener('submit', (e) => handleMedicalRecordSubmit(e, signal), { signal });
+      } else {
+        form.addEventListener('submit', (e) => handleMedicalRecordSubmit(e, signal));
+      }
     }
     
     // 绑定清空表单按钮
@@ -411,7 +530,7 @@ async function renderPatientList(page = 1, query = '') {
           form.reset();
           document.getElementById('visit-date').value = formatDate(new Date());
         }
-      }, { signal });
+      }, signal ? { signal } : {});
     }
     
   } catch (error) {
@@ -529,8 +648,9 @@ async function loadPatientRecords(patientId, page = 1, signal = null) {
   try {
     // 获取病历列表
     const response = await apiClient.medicalRecords.getByPatientId(patientId, page);
-    const records = response.items || [];
-    const totalPages = response.total_pages || 1;
+    // 后端直接返回数组，不是分页对象
+    const records = Array.isArray(response) ? response : [];
+    const totalPages = 1; // 暂时设为1，因为后端没有返回分页信息
     
     if (records.length === 0) {
       recordsList.innerHTML = '<div class="no-data">该患者暂无病历记录</div>';
@@ -795,6 +915,9 @@ async function handleMedicalRecordFormSubmit(isEdit) {
     
     // 重新加载病历列表
     await loadPatientRecords(patientId);
+    
+    // 重新渲染病历模块以显示最新数据
+    await renderMedicalRecordModule(patientId, null);
     
     return true; // 允许模态框关闭
   } catch (error) {
@@ -1254,7 +1377,6 @@ function initResizer(signal) {
 
   // 模块清理函数
   return function cleanup() {
-    unsubscribeViewRecord();
     console.log('Medical records module cleaned up');
   };
 }

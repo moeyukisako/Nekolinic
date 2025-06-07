@@ -1,7 +1,7 @@
 // frontend/js/apiClient.js (最终正确版本)
 
 
-const API_BASE_URL = '/api/v1';
+const API_BASE_URL = 'http://localhost:8000';
 
 
 // 存储当前用户信息
@@ -39,15 +39,22 @@ async function apiRequest(endpoint, options = {}) {
 
 
         if (response.status === 401) {
-
-            alert('登录会话已过期，请重新登录。');
-
+            // 检查当前页面是否为index.html，避免循环alert
+            const currentPage = window.location.pathname;
+            const isIndexPage = currentPage.endsWith('index.html') || currentPage === '/' || currentPage.endsWith('/');
+            
+            if (!isIndexPage) {
+                alert('登录会话已过期，请重新登录。');
+            }
+            
             localStorage.removeItem('accessToken');
-
-            window.location.href = '/index.html'; // 修改为 index.html
-
+            
+            // 如果不在index页面，才进行重定向
+            if (!isIndexPage) {
+                window.location.href = '/index.html';
+            }
+            
             throw new Error('认证失败 (401)');
-
         }
 
 
@@ -94,7 +101,7 @@ const apiClient = {
 
             const body = JSON.stringify({ username, password });
 
-            const response = await fetch(`${API_BASE_URL}/users/login`, {
+            const response = await fetch(`${API_BASE_URL}/api/v1/users/login`, {
 
                 method: 'POST',
 
@@ -135,9 +142,8 @@ const apiClient = {
 
         },
 
-        getCurrentUser: () => apiRequest('/users/me'),
-
-        updatePreferences: (data) => apiRequest('/users/me/preferences', {
+        getCurrentUser: () => apiRequest('/api/v1/users/me'),
+        updatePreferences: (data) => apiRequest('/api/v1/users/me/preferences', {
 
             method: 'PUT',
 
@@ -153,13 +159,16 @@ const apiClient = {
     patients: {
 
         getAll: (page = 1, per_page = 15, query = '') => {
-
-            const params = new URLSearchParams({ page, per_page });
-
-            if (query) params.append('query', query);
-
-            return apiRequest(`/patients/?${params.toString()}`);
-
+            // 确保参数是有效的数字
+            const validPage = parseInt(page) || 1;
+            const validPerPage = parseInt(per_page) || 15;
+            
+            const params = new URLSearchParams({ 
+                skip: (validPage - 1) * validPerPage, 
+                limit: validPerPage 
+            });
+            if (query) params.append('name', query);
+            return apiRequest(`/api/v1/patients/?${params.toString()}`);
         },
 
         search: (query, page = 1, per_page = 15) => {
@@ -168,13 +177,13 @@ const apiClient = {
 
         },
 
-        getById: (id) => apiRequest(`/patients/${id}`),
+        getById: (id) => apiRequest(`/api/v1/patients/${id}`),
 
-        create: (data) => apiRequest('/patients/', { method: 'POST', body: JSON.stringify(data) }),
+        create: (data) => apiRequest('/api/v1/patients/', { method: 'POST', body: JSON.stringify(data) }),
 
-        update: (id, data) => apiRequest(`/patients/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+        update: (id, data) => apiRequest(`/api/v1/patients/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
-        delete: (id) => apiRequest(`/patients/${id}`, { method: 'DELETE' })
+        delete: (id) => apiRequest(`/api/v1/patients/${id}`, { method: 'DELETE' })
 
     },
 
@@ -186,13 +195,13 @@ const apiClient = {
             const { page = 1, limit = 10, search = '' } = options;
             const params = new URLSearchParams({ page, per_page: limit });
             if (search) params.append('search', search);
-            return apiRequest(`/patients/medical-records/?${params.toString()}`);
+            return apiRequest(`/api/v1/patients/medical-records/?${params.toString()}`);
         },
         getByPatientId: (patientId, page = 1, per_page = 10) => {
             const params = new URLSearchParams({ page, per_page });
-            return apiRequest(`/patients/${patientId}/medical-records/?${params.toString()}`);
+            return apiRequest(`/api/v1/patients/${patientId}/medical-records/?${params.toString()}`);
         },
-        getById: (recordId) => apiRequest(`/patients/medical-records/${recordId}`),
+        getById: (recordId) => apiRequest(`/api/v1/patients/medical-records/${recordId}`),
 
         /**
          * 创建一个新的病历
@@ -203,13 +212,13 @@ const apiClient = {
             if (!patientId) {
                 throw new Error("创建病历时，数据中必须提供 patient_id");
             }
-            return apiRequest(`/patients/${patientId}/medical-records/`, {
+            return apiRequest(`/api/v1/patients/${patientId}/medical-records/`, {
                 method: 'POST',
                 body: JSON.stringify(recordData)
             });
         },
 
-        update: (recordId, data) => apiRequest(`/patients/medical-records/${recordId}`, { 
+        update: (recordId, data) => apiRequest(`/api/v1/patients/medical-records/${recordId}`, { 
 
             method: 'PUT', 
 
@@ -217,7 +226,7 @@ const apiClient = {
 
         }),
 
-        delete: (recordId) => apiRequest(`/patients/medical-records/${recordId}`, { 
+        delete: (recordId) => apiRequest(`/api/v1/patients/medical-records/${recordId}`, { 
 
             method: 'DELETE' 
 
@@ -231,11 +240,11 @@ const apiClient = {
 
     finance: {
 
-        getBills: () => apiRequest('/finance/bills'),
+        getBills: () => apiRequest('/api/v1/finance/bills'),
 
-        getBillById: (id) => apiRequest(`/finance/bills/${id}`),
+        getBillById: (id) => apiRequest(`/api/v1/finance/bills/${id}`),
 
-        createPayment: (data) => apiRequest('/finance/payments', {
+        createPayment: (data) => apiRequest('/api/v1/finance/payments', {
 
             method: 'POST',
 
@@ -254,32 +263,41 @@ const apiClient = {
          * @param {object} options - { page, limit, search }
          * @returns {Promise<object>} 包含medicines数组和分页信息的对象
          */
-        getAll: (options = {}) => {
+        getAll: async (options = {}) => {
             const { page = 1, limit = 10, search = '' } = options;
-            const params = new URLSearchParams({ page, per_page: limit });
+            const skip = (page - 1) * limit;
+            const params = new URLSearchParams({ skip, limit });
             if (search) params.append('search', search);
-            return apiRequest(`/pharmacy/medicines/?${params.toString()}`);
+            const medicines = await apiRequest(`/api/v1/pharmacy/medicines/?${params.toString()}`);
+            
+            // 转换为前端期望的分页格式
+            return {
+                items: medicines,
+                total_pages: Math.ceil(medicines.length / limit) || 1,
+                current_page: page,
+                total_items: medicines.length
+            };
         },
         /**
          * 获取药品列表（支持搜索）
          * @param {string} [searchTerm=''] - 搜索关键词
          * @returns {Promise<Array>} 药品对象数组
          */
-        list: (searchTerm = '') => apiRequest(`/pharmacy/medicines/?search=${encodeURIComponent(searchTerm)}`),
+        list: (searchTerm = '') => apiRequest(`/api/v1/pharmacy/medicines/?search=${encodeURIComponent(searchTerm)}`),
         
         /**
          * 根据ID获取单个药品信息
          * @param {number} id - 药品ID
          * @returns {Promise<object>} 单个药品对象
          */
-        getById: (id) => apiRequest(`/pharmacy/medicines/${id}`),
+        getById: (id) => apiRequest(`/api/v1/pharmacy/medicines/${id}`),
 
         /**
          * 创建新药品
          * @param {object} medicineData - { name, specification, manufacturer, stock }
          * @returns {Promise<object>} 创建成功的药品对象
          */
-        create: (medicineData) => apiRequest('/pharmacy/medicines/', {
+        create: (medicineData) => apiRequest('/api/v1/pharmacy/medicines/', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(medicineData)
@@ -291,7 +309,7 @@ const apiClient = {
          * @param {object} medicineData - 更新的药品数据
          * @returns {Promise<object>} 更新成功的药品对象
          */
-        update: (id, medicineData) => apiRequest(`/pharmacy/medicines/${id}`, {
+        update: (id, medicineData) => apiRequest(`/api/v1/pharmacy/medicines/${id}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(medicineData)
@@ -302,7 +320,7 @@ const apiClient = {
          * @param {number} id - 药品ID
          * @returns {Promise<object>} 成功删除的响应
          */
-        delete: (id) => apiRequest(`/pharmacy/medicines/${id}`, { method: 'DELETE' })
+        delete: (id) => apiRequest(`/api/v1/pharmacy/medicines/${id}`, { method: 'DELETE' })
     },
 
     /**
@@ -315,7 +333,7 @@ const apiClient = {
          * @param {object} prescriptionData - { medical_record_id, medicine_id, dosage, frequency, notes }
          * @returns {Promise<object>} 创建成功的处方对象
          */
-        create: (prescriptionData) => apiRequest('/pharmacy/prescriptions/', {
+        create: (prescriptionData) => apiRequest('/api/v1/pharmacy/prescriptions/', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(prescriptionData)
@@ -326,25 +344,25 @@ const apiClient = {
          * @param {number} medicalRecordId - 病历ID
          * @returns {Promise<Array>} 该病历的处方对象数组
          */
-        getByMedicalRecordId: (medicalRecordId) => apiRequest(`/pharmacy/prescriptions/medical_record/${medicalRecordId}`),
+        getByMedicalRecordId: (medicalRecordId) => apiRequest(`/api/v1/pharmacy/prescriptions/medical_record/${medicalRecordId}`),
         
         /**
          * 获取所有处方
          * @returns {Promise<Array>} 处方对象数组
          */
-        getAll: () => apiRequest('/pharmacy/prescriptions/'),
+        getAll: () => apiRequest('/api/v1/pharmacy/prescriptions/'),
         
         /**
          * 删除指定处方
          * @param {number} id - 处方ID
          * @returns {Promise<object>} 成功删除的响应
          */
-        delete: (id) => apiRequest(`/pharmacy/prescriptions/${id}`, { method: 'DELETE' })
+        delete: (id) => apiRequest(`/api/v1/pharmacy/prescriptions/${id}`, { method: 'DELETE' })
     },
 
     // 报告相关
     reports: {
-        getFinancialSummary: (startDate, endDate) => apiRequest('/reports/financial-summary', {
+        getFinancialSummary: (startDate, endDate) => apiRequest('/api/v1/reports/financial-summary', {
             method: 'POST',
             body: JSON.stringify({
                 start_date: startDate,

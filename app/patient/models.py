@@ -36,10 +36,19 @@ class MedicalRecordHistory(Base):
     # Snapshot of MedicalRecord fields
     id = Column(Integer, index=True)
     record_date = Column(DateTime)
-    symptoms = Column(Text)
-    diagnosis = Column(Text)
-    treatment_plan = Column(Text)
-    notes = Column(Text)
+    chief_complaint = Column(Text)  # 主诉
+    present_illness = Column(Text)  # 现病史
+    past_history = Column(Text)  # 既往病史
+    temperature = Column(Float)  # 体温
+    pulse = Column(Integer)  # 脉搏
+    respiratory_rate = Column(Integer)  # 呼吸频率
+    blood_pressure = Column(String(20))  # 血压
+    physical_examination = Column(Text)  # 体格检查
+    diagnosis = Column(Text)  # 诊断
+    treatment_plan = Column(Text)  # 治疗方案
+    prescription = Column(Text)  # 处方
+    notes = Column(Text)  # 备注
+    symptoms = Column(Text)  # 症状描述（保留兼容性）
     patient_id = Column(Integer)
     doctor_id = Column(Integer)
     appointment_id = Column(Integer)
@@ -97,10 +106,19 @@ class MedicalRecord(Base, Auditable):
     __tablename__ = 'medical_records'
     id = Column(Integer, primary_key=True, index=True)
     record_date = Column(DateTime, nullable=False)
-    symptoms = Column(Text)  # 症状描述
-    diagnosis = Column(Text)
-    treatment_plan = Column(Text)
-    notes = Column(Text)
+    chief_complaint = Column(Text)  # 主诉
+    present_illness = Column(Text)  # 现病史
+    past_history = Column(Text)  # 既往病史
+    temperature = Column(Float)  # 体温
+    pulse = Column(Integer)  # 脉搏
+    respiratory_rate = Column(Integer)  # 呼吸频率
+    blood_pressure = Column(String(20))  # 血压
+    physical_examination = Column(Text)  # 体格检查
+    diagnosis = Column(Text)  # 诊断
+    treatment_plan = Column(Text)  # 治疗方案
+    prescription = Column(Text)  # 处方
+    notes = Column(Text)  # 备注
+    symptoms = Column(Text)  # 症状描述（保留兼容性）
     
     patient_id = Column(Integer, ForeignKey('patients.id'), nullable=False)
     doctor_id = Column(Integer, ForeignKey('doctors.id'), nullable=False)

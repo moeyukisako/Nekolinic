@@ -13,32 +13,33 @@ import SearchBar from '../components/searchBar.js';
  * @returns {Function} 清理函数
  */
 export default async function render(container, { signal }) {
-  // 渲染模块基本结构
-  container.innerHTML = `
-    <div class="patient-module-wrapper">
-      <div class="content-header">
-        <h2>患者管理</h2>
-        <button id="add-patient-btn" class="btn btn-primary">添加新患者</button>
-      </div>
-      <div id="patient-search-container"></div>
-      <div class="data-table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>姓名</th>
-              <th>性别</th>
-              <th>出生日期</th>
-              <th>电话</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody id="patient-table-body"></tbody>
-        </table>
-      </div>
-      <div id="patient-pagination-container"></div>
-    </div>
-  `;
+    container.innerHTML = `
+        <div class="patient-module-wrapper">
+            <div class="header-bar">
+                <h1>患者管理</h1>
+                <button id="add-patient-btn" class="btn btn-primary">添加新患者</button>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="patient-search-input" placeholder="按姓名搜索患者...">
+            </div>
+            <div class="card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>姓名</th>
+                            <th>性别</th>
+                            <th>出生日期</th>
+                            <th>电话</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patient-table-body"></tbody>
+                </table>
+                <div id="patient-pagination-container"></div>
+            </div>
+        </div>
+    `;
 
   // 初始化搜索组件
   const searchBar = new SearchBar({
@@ -136,11 +137,11 @@ async function loadAndDisplayPatients(page = 1, query = '') {
         <td>${patient.gender === 'male' ? '男' : patient.gender === 'female' ? '女' : '其他'}</td>
         <td>${patient.birth_date || '-'}</td>
         <td>${patient.phone || '-'}</td>
-        <td class="action-buttons">
-          <button class="btn btn-sm" data-action="view" data-id="${patient.id}">查看</button>
-          <button class="btn btn-sm" data-action="edit" data-id="${patient.id}">编辑</button>
-          <button class="btn btn-sm" data-action="view-records" data-id="${patient.id}">病历</button>
-          <button class="btn btn-sm btn-danger" data-action="delete" data-id="${patient.id}" data-name="${patient.name || ''}">删除</button>
+        <td>
+          <a href="#" class="action-link view" data-action="view" data-id="${patient.id}">查看</a>
+          <a href="#" class="action-link edit" data-action="edit" data-id="${patient.id}">编辑</a>
+          <a href="#" class="action-link" data-action="view-records" data-id="${patient.id}">病历</a>
+          <a href="#" class="action-link delete" data-action="delete" data-id="${patient.id}" data-name="${patient.name || ''}">删除</a>
         </td>
       `;
       tableBody.appendChild(row);

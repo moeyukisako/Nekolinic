@@ -17,65 +17,72 @@ export default async function render(container, { signal }) {
   // 当前选中的患者ID和病历ID
   let currentPatientId = null;
   let currentRecordId = null;
+
+/**
+ * 计算年龄
+ * @param {string} birthDate - 出生日期
+ * @returns {number|string} 年龄或'未知'
+ */
+function calculateAge(birthDate) {
+  if (!birthDate) return '未知';
+  const birth = new Date(birthDate);
+  const ageDifMs = Date.now() - birth.getTime();
+  const ageDate = new Date(ageDifMs);
+  return Math.abs(ageDate.getUTCFullYear() - 1970);
+}
   
   // 渲染模块基本结构
   container.innerHTML = `
-    <div class="medical-records-module">
-      <div class="content-header">
-        <h2>病历管理</h2>
+    <div class="patient-module-wrapper">
+      <div class="header-bar">
+        <h1>病历管理</h1>
+        <button id="add-record-btn" class="btn btn-primary">新建病历</button>
       </div>
-      
-      <div class="medical-records-container">
-        <div class="medical-records-sidebar">
-          <div class="sidebar-header">
-            <h3>患者列表</h3>
-            <div id="medical-records-search-container"></div>
-          </div>
-          <div class="patients-list" id="medical-records-patients-list"></div>
-          <div id="medical-records-pagination"></div>
-        </div>
-        
-        <div class="medical-records-content" id="medical-records-content">
-          <div class="placeholder-message">
-            <p>请从左侧选择一位患者以查看或创建病历</p>
-          </div>
-        </div>
+      <div class="search-bar">
+        <input type="text" id="medical-records-search-input" placeholder="按患者姓名、主诉搜索病历...">
+      </div>
+      <div class="card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>患者姓名</th>
+              <th>性别</th>
+              <th>年龄</th>
+              <th>就诊日期</th>
+              <th>主诉</th>
+              <th>诊断</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="medical-records-table-body"></tbody>
+        </table>
+        <div id="medical-records-pagination-container"></div>
       </div>
     </div>
   `;
 
-  // 初始化搜索组件
-  const searchBar = new SearchBar({
-    containerId: 'medical-records-search-container',
-    placeholder: '搜索患者...',
-    showButton: false,
-    onSearch: (query) => renderPatientList(1, query)
-  }).render();
-
-  // 加载患者列表
-  await renderPatientList(1, '');
-  
-  // 监听患者列表点击事件
-  const patientsList = document.getElementById('medical-records-patients-list');
-  if (patientsList) {
-    patientsList.addEventListener('click', (e) => {
-      const patientItem = e.target.closest('.patient-item');
-      if (patientItem) {
-        const patientId = patientItem.dataset.id;
-        
-        // 移除其他患者的选中状态
-        document.querySelectorAll('.patient-item').forEach(item => {
-          item.classList.remove('active');
-        });
-        
-        // 设置当前患者的选中状态
-        patientItem.classList.add('active');
-        
-        // 加载该患者的病历
-        currentPatientId = patientId;
-        renderMedicalRecordModule(patientId);
-      }
+  // 绑定搜索输入框事件
+  const searchInput = document.getElementById('medical-records-search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      loadAndDisplayMedicalRecords(1, query);
     }, { signal });
+  }
+
+  // 加载病历列表
+  await loadAndDisplayMedicalRecords(1, '');
+  
+  // 绑定新建病历按钮事件
+  const addBtn = document.getElementById('add-record-btn');
+  if (addBtn) {
+    addBtn.addEventListener('click', showAddMedicalRecordModal, { signal });
+  }
+
+  // 绑定表格事件
+  const tableBody = document.getElementById('medical-records-table-body');
+  if (tableBody) {
+    tableBody.addEventListener('click', handleTableAction, { signal });
   }
   
   // 监听事件
@@ -213,6 +220,79 @@ async function renderMedicalRecordModule(patientId) {
 }
 
 /**
+ * 加载并显示病历记录
+ * @param {number} page - 页码
+ * @param {string} searchQuery - 搜索关键词
+ */
+async function loadAndDisplayMedicalRecords(page = 1, searchQuery = '') {
+  const tableBody = document.getElementById('medical-records-table-body');
+  const paginationContainer = document.getElementById('medical-records-pagination-container');
+  
+  if (!tableBody) return;
+  
+  try {
+    tableBody.innerHTML = '<tr><td colspan="7" class="loading">加载中...</td></tr>';
+    
+    const response = await apiClient.medicalRecords.getAll({
+      page: page,
+      limit: 10,
+      search: searchQuery
+    });
+    
+    const { records, totalPages, currentPage } = response;
+    
+    if (!records || records.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="7" class="no-data">暂无病历记录</td></tr>';
+      if (paginationContainer) {
+        paginationContainer.innerHTML = '';
+      }
+      return;
+    }
+    
+    // 渲染病历表格
+    const html = records.map(record => {
+      const date = new Date(record.visit_date).toLocaleDateString('zh-CN');
+      const age = record.patient ? calculateAge(record.patient.birth_date) : '未知';
+      return `
+        <tr>
+          <td>${record.patient ? record.patient.name : '未知'}</td>
+          <td>${record.patient ? record.patient.gender : '未知'}</td>
+          <td>${age}</td>
+          <td>${date}</td>
+          <td>${record.chief_complaint || '无'}</td>
+          <td>${record.diagnosis || '无'}</td>
+          <td>
+            <a href="#" class="action-link action-view" data-action="view" data-id="${record.id}">查看</a>
+            <a href="#" class="action-link action-edit" data-action="edit" data-id="${record.id}">编辑</a>
+            <a href="#" class="action-link action-print" data-action="print" data-id="${record.id}">打印</a>
+            <a href="#" class="action-link action-prescription" data-action="prescription" data-id="${record.id}">处方</a>
+            <a href="#" class="action-link action-delete" data-action="delete" data-id="${record.id}">删除</a>
+          </td>
+        </tr>
+      `;
+    }).join('');
+    
+    tableBody.innerHTML = html;
+    
+    // 渲染分页
+    if (paginationContainer && totalPages > 1) {
+      new Pagination({
+        containerId: 'medical-records-pagination-container',
+        currentPage: page,
+        totalPages: totalPages,
+        onPageChange: (newPage) => loadAndDisplayMedicalRecords(newPage, searchQuery)
+      }).render();
+    } else if (paginationContainer) {
+      paginationContainer.innerHTML = '';
+    }
+    
+  } catch (error) {
+    console.error('加载病历记录失败', error);
+    tableBody.innerHTML = `<tr><td colspan="7" class="error-message">加载病历记录失败: ${error.message}</td></tr>`;
+  }
+}
+
+/**
  * 加载患者病历列表
  * @param {string} patientId - 患者ID
  * @param {number} page - 页码
@@ -251,11 +331,11 @@ async function loadPatientRecords(patientId, page = 1) {
           </div>
           <div class="record-summary">${record.chief_complaint || '未记录主诉'}</div>
           <div class="record-actions">
-            <button class="btn btn-sm" data-action="view" data-id="${record.id}">查看</button>
-            <button class="btn btn-sm" data-action="edit" data-id="${record.id}">编辑</button>
-            <button class="btn btn-sm" data-action="print" data-id="${record.id}">打印</button>
-            <button class="btn btn-sm" data-action="prescription" data-id="${record.id}">处方</button>
-            <button class="btn btn-sm btn-danger" data-action="delete" data-id="${record.id}">删除</button>
+            <a href="#" class="action-link view" data-action="view" data-id="${record.id}">查看</a>
+            <a href="#" class="action-link edit" data-action="edit" data-id="${record.id}">编辑</a>
+            <a href="#" class="action-link" data-action="print" data-id="${record.id}">打印</a>
+            <a href="#" class="action-link" data-action="prescription" data-id="${record.id}">处方</a>
+            <a href="#" class="action-link delete" data-action="delete" data-id="${record.id}">删除</a>
           </div>
         </div>
       `;
@@ -285,12 +365,14 @@ async function loadPatientRecords(patientId, page = 1) {
 }
 
 /**
- * 处理病历操作事件
+ * 处理表格操作事件
  * @param {Event} e - 事件对象
  */
-function handleRecordAction(e) {
+function handleTableAction(e) {
   const target = e.target;
   if (!target.dataset.action) return;
+  
+  e.preventDefault();
   
   const recordId = target.dataset.id;
   const action = target.dataset.action;
@@ -312,6 +394,21 @@ function handleRecordAction(e) {
       deleteMedicalRecord(recordId);
       break;
   }
+}
+
+/**
+ * 处理病历操作事件 (保留兼容性)
+ * @param {Event} e - 事件对象
+ */
+function handleRecordAction(e) {
+  handleTableAction(e);
+}
+
+/**
+ * 显示新建病历模态框
+ */
+function showAddMedicalRecordModal() {
+  showMedicalRecordForm(null);
 }
 
 /**

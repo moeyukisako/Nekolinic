@@ -11,41 +11,44 @@ import SearchBar from '../components/searchBar.js';
  * @returns {Function} 清理函数
  */
 export default async function render(container, { signal }) {
-  // 渲染模块基本结构
-  container.innerHTML = `
-    <div class="medicine-module">
-      <div class="content-header">
-        <h2>药品管理</h2>
-        <button id="add-medicine-btn" class="btn btn-primary">添加新药品</button>
-      </div>
-      <div id="search-container"></div>
-      <div class="data-table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>药品名称</th>
-              <th>规格</th>
-              <th>生产厂家</th>
-              <th>当前库存</th>
-              <th class="actions-column">操作</th>
-            </tr>
-          </thead>
-          <tbody id="medicine-table-body"></tbody>
-        </table>
-      </div>
-      <div id="pagination-container"></div>
-    </div>
-  `;
-
-  // 初始化搜索组件
-  const searchBar = new SearchBar({
-    containerId: 'search-container',
-    placeholder: '按药品名称、厂家搜索...',
-    onSearch: (query) => loadMedicines(query)
-  }).render();
+    container.innerHTML = `
+        <div class="patient-module-wrapper">
+            <div class="header-bar">
+                <h1>药品管理</h1>
+                <button id="add-medicine-btn" class="btn btn-primary">添加新药品</button>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="medicine-search-input" placeholder="按药品名称、厂家搜索...">
+            </div>
+            <div class="card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>药品名称</th>
+                            <th>规格</th>
+                            <th>生产厂家</th>
+                            <th>当前库存</th>
+                            <th class="actions-column">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="medicine-table-body"></tbody>
+                </table>
+                <div id="pagination-container"></div>
+            </div>
+        </div>
+    `;
 
   // 初始化加载数据
   await loadMedicines();
+
+  // 绑定搜索输入框事件
+  const searchInput = document.getElementById('medicine-search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      loadMedicines(query);
+    }, { signal });
+  }
 
   // 绑定事件
   const addBtn = document.getElementById('add-medicine-btn');
@@ -123,9 +126,9 @@ function renderMedicineTable(medicines, tableBody) {
       <td>${med.specification || 'N/A'}</td>
       <td>${med.manufacturer || 'N/A'}</td>
       <td>${med.stock}</td>
-      <td class="action-buttons">
-        <button class="btn btn-sm btn-edit" data-id="${med.id}" data-action="edit">编辑</button>
-        <button class="btn btn-sm btn-danger" data-id="${med.id}" data-action="delete">删除</button>
+      <td>
+        <a href="#" class="action-link edit" data-id="${med.id}" data-action="edit">编辑</a>
+        <a href="#" class="action-link delete" data-id="${med.id}" data-action="delete">删除</a>
       </td>
     `;
     tableBody.appendChild(row);
@@ -167,6 +170,10 @@ function showMedicineFormModal(medicine = null) {
       <input type="text" id="medicine-name" value="${medicine?.name || ''}" required>
     </div>
     <div class="form-group">
+      <label for="medicine-code">药品代码</label>
+      <input type="text" id="medicine-code" value="${medicine?.code || ''}" placeholder="留空自动生成">
+    </div>
+    <div class="form-group">
       <label for="medicine-specification">规格</label>
       <input type="text" id="medicine-specification" value="${medicine?.specification || ''}">
     </div>
@@ -175,8 +182,22 @@ function showMedicineFormModal(medicine = null) {
       <input type="text" id="medicine-manufacturer" value="${medicine?.manufacturer || ''}">
     </div>
     <div class="form-group">
-      <label for="medicine-stock">库存</label>
-      <input type="number" id="medicine-stock" value="${medicine?.stock || 0}" required>
+      <label for="medicine-unit">单位</label>
+      <select id="medicine-unit">
+        <option value="盒" ${medicine?.unit === '盒' ? 'selected' : ''}>盒</option>
+        <option value="瓶" ${medicine?.unit === '瓶' ? 'selected' : ''}>瓶</option>
+        <option value="片" ${medicine?.unit === '片' ? 'selected' : ''}>片</option>
+        <option value="支" ${medicine?.unit === '支' ? 'selected' : ''}>支</option>
+        <option value="袋" ${medicine?.unit === '袋' ? 'selected' : ''}>袋</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="medicine-unit-price">单价（元）</label>
+      <input type="number" id="medicine-unit-price" step="0.01" value="${medicine?.unit_price || 0}" required>
+    </div>
+    <div class="form-group">
+      <label for="medicine-cost-price">成本价（元）</label>
+      <input type="number" id="medicine-cost-price" step="0.01" value="${medicine?.cost_price || 0}">
     </div>
     ${isEdit ? `<input type="hidden" id="medicine-id" value="${medicine.id}">` : ''}
   `;
@@ -196,9 +217,12 @@ async function handleMedicineFormSubmit(isEdit) {
   if (!form) return;
   
   const nameInput = document.getElementById('medicine-name');
+  const codeInput = document.getElementById('medicine-code');
   const specInput = document.getElementById('medicine-specification');
   const manufInput = document.getElementById('medicine-manufacturer');
-  const stockInput = document.getElementById('medicine-stock');
+  const unitSelect = document.getElementById('medicine-unit');
+  const unitPriceInput = document.getElementById('medicine-unit-price');
+  const costPriceInput = document.getElementById('medicine-cost-price');
   const idInput = document.getElementById('medicine-id');
   
   if (!nameInput.value.trim()) {
@@ -206,18 +230,32 @@ async function handleMedicineFormSubmit(isEdit) {
     return;
   }
   
+  if (!unitPriceInput.value || parseFloat(unitPriceInput.value) < 0) {
+    showNotification('错误', '请输入有效的单价', 'error');
+    return;
+  }
+  
   const medicineData = {
     name: nameInput.value.trim(),
+    code: codeInput.value.trim() || nameInput.value.trim().replace(/\s+/g, '_').toUpperCase(),
     specification: specInput.value.trim(),
     manufacturer: manufInput.value.trim(),
-    stock: parseInt(stockInput.value) || 0
+    unit: unitSelect.value,
+    unit_price: parseFloat(unitPriceInput.value).toFixed(2),
+    cost_price: (parseFloat(costPriceInput.value) || 0.00).toFixed(2)
   };
   
   try {
-    if (isEdit && idInput) {
-      await apiClient.medicines.update(idInput.value, medicineData);
+    if (isEdit) {
+      // 编辑模式：更新现有药品
+      const medicineId = idInput ? idInput.value : null;
+      if (!medicineId) {
+        throw new Error('无法获取药品ID');
+      }
+      await apiClient.medicines.update(medicineId, medicineData);
       showNotification('成功', '药品信息已更新', 'success');
     } else {
+      // 添加模式：创建新药品
       await apiClient.medicines.create(medicineData);
       showNotification('成功', '药品已添加', 'success');
     }
@@ -259,4 +297,4 @@ async function deleteMedicine(id) {
       showNotification('错误', `删除失败: ${error.message}`, 'error');
     }
   }
-} 
+}

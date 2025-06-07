@@ -6,20 +6,7 @@ from app.user.models import User
 from datetime import datetime
 
 @pytest.fixture
-def test_category(db: Session):
-    """创建测试药品类别"""
-    category = models.DrugCategory(
-        name="Test Category",
-        created_at=datetime.now(),
-        updated_at=datetime.now()
-    )
-    db.add(category)
-    db.commit()
-    db.refresh(category)
-    return category
-
-@pytest.fixture
-def test_drug(db: Session, test_category):
+def test_drug(db: Session):
     """创建测试药品"""
     drug = models.Drug(
         name="Test Drug",
@@ -30,7 +17,6 @@ def test_drug(db: Session, test_category):
         unit="tablet",
         unit_price=10.00,
         cost_price=5.00,
-        category_id=test_category.id,
         created_at=datetime.now(),
         updated_at=datetime.now()
     )
@@ -125,4 +111,4 @@ def test_inventory_transaction_history(client: TestClient, db: Session, test_dru
     
     # 验证交易记录存在
     assert len(transactions) > 0
-    assert any(tx["quantity_change"] == 30 and tx["notes"] == "History test" for tx in transactions) 
+    assert any(tx["quantity_change"] == 30 and tx["notes"] == "History test" for tx in transactions)

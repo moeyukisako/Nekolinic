@@ -181,17 +181,17 @@ const apiClient = {
     
 
     // --- 病历管理API ---
-
     medicalRecords: {
-
-        getByPatientId: (patientId, page = 1, per_page = 10) => {
-
-            const params = new URLSearchParams({ page, per_page });
-
-            return apiRequest(`/patients/${patientId}/medical-records/?${params.toString()}`);
-
+        getAll: (options = {}) => {
+            const { page = 1, limit = 10, search = '' } = options;
+            const params = new URLSearchParams({ page, per_page: limit });
+            if (search) params.append('search', search);
+            return apiRequest(`/patients/medical-records/?${params.toString()}`);
         },
-
+        getByPatientId: (patientId, page = 1, per_page = 10) => {
+            const params = new URLSearchParams({ page, per_page });
+            return apiRequest(`/patients/${patientId}/medical-records/?${params.toString()}`);
+        },
         getById: (recordId) => apiRequest(`/patients/medical-records/${recordId}`),
 
         /**
@@ -248,8 +248,18 @@ const apiClient = {
     
 
     // 药房相关
-
     medicines: {
+        /**
+         * 获取所有药品（支持分页和搜索）
+         * @param {object} options - { page, limit, search }
+         * @returns {Promise<object>} 包含medicines数组和分页信息的对象
+         */
+        getAll: (options = {}) => {
+            const { page = 1, limit = 10, search = '' } = options;
+            const params = new URLSearchParams({ page, per_page: limit });
+            if (search) params.append('search', search);
+            return apiRequest(`/pharmacy/medicines/?${params.toString()}`);
+        },
         /**
          * 获取药品列表（支持搜索）
          * @param {string} [searchTerm=''] - 搜索关键词
@@ -333,28 +343,19 @@ const apiClient = {
     },
 
     // 报告相关
-
     reports: {
-
         getFinancialSummary: (startDate, endDate) => apiRequest('/reports/financial-summary', {
-
             method: 'POST',
-
             body: JSON.stringify({
-
                 start_date: startDate,
-
                 end_date: endDate
-
             })
-
         })
+    },
 
-    }
-
+    // 通用请求方法
+    request: (endpoint, options = {}) => apiRequest(endpoint, options)
 };
 
-
 // 确保在所有脚本中都能访问到
-
-window.apiClient = apiClient; 
+window.apiClient = apiClient;

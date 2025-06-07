@@ -9,78 +9,7 @@ from . import schemas, service
 router = APIRouter()
 
 # --- 药品类别API ---
-@router.post("/categories/", response_model=schemas.DrugCategory)
-def create_drug_category(
-    category_in: schemas.DrugCategoryCreate,
-    db: Session = Depends(get_db),
-    current_user: user_models.User = Depends(security.get_current_active_user)
-):
-    """创建药品类别 (需要认证)"""
-    existing = service.drug_category_service.get_by_name(db, name=category_in.name)
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="同名药品类别已存在"
-        )
-    return service.drug_category_service.create(db=db, obj_in=category_in)
-
-@router.get("/categories/", response_model=List[schemas.DrugCategory])
-def read_drug_categories(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db),
-    current_user: user_models.User = Depends(security.get_current_active_user)
-):
-    """获取所有药品类别 (需要认证)"""
-    return service.drug_category_service.get_multi(db, skip=skip, limit=limit)
-
-@router.get("/categories/{category_id}", response_model=schemas.DrugCategory)
-def read_drug_category(
-    category_id: int,
-    db: Session = Depends(get_db),
-    current_user: user_models.User = Depends(security.get_current_active_user)
-):
-    """根据ID获取药品类别 (需要认证)"""
-    category = service.drug_category_service.get(db, id=category_id)
-    if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"药品类别 ID {category_id} 不存在"
-        )
-    return category
-
-@router.put("/categories/{category_id}", response_model=schemas.DrugCategory)
-def update_drug_category(
-    category_id: int,
-    category_in: schemas.DrugCategoryUpdate,
-    db: Session = Depends(get_db),
-    current_user: user_models.User = Depends(security.get_current_active_user)
-):
-    """更新药品类别 (需要认证)"""
-    category = service.drug_category_service.get(db, id=category_id)
-    if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"药品类别 ID {category_id} 不存在"
-        )
-    return service.drug_category_service.update(db=db, db_obj=category, obj_in=category_in)
-
-@router.delete("/categories/{category_id}", response_model=schemas.DrugCategory)
-def delete_drug_category(
-    category_id: int,
-    db: Session = Depends(get_db),
-    current_user: user_models.User = Depends(security.requires_role("admin"))
-):
-    """删除药品类别 (需要管理员权限)"""
-    category = service.drug_category_service.get(db, id=category_id)
-    if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"药品类别 ID {category_id} 不存在"
-        )
-    return service.drug_category_service.remove(db=db, id=category_id)
-
-# --- 药品API ---
+# --- Drug Routes --- 药品API ---
 @router.post("/drugs/", response_model=schemas.Drug)
 def create_drug(
     drug_in: schemas.DrugCreate,
@@ -304,3 +233,79 @@ def get_drug_transactions(
         )
     
     return service.inventory_service.get_stock_history(db, drug_id=drug_id, skip=skip, limit=limit)
+
+# --- Medicines API (别名路由，兼容前端) ---
+@router.post("/medicines/", response_model=schemas.Drug)
+def create_medicine(
+    drug_in: schemas.DrugCreate,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """创建药品 (medicines别名路由)"""
+    existing = service.drug_service.get_by_code(db, code=drug_in.code)
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"药品代码 {drug_in.code} 已存在"
+        )
+    return service.drug_service.create(db=db, obj_in=drug_in)
+
+@router.get("/medicines/", response_model=List[schemas.Drug])
+def read_medicines(
+    skip: int = 0,
+    limit: int = 100,
+    search: str = "",
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """获取所有药品 (medicines别名路由)"""
+    if search:
+        # 如果有搜索参数，使用搜索功能
+        return service.drug_service.search_by_name(db, name=search, skip=skip, limit=limit)
+    return service.drug_service.get_multi(db, skip=skip, limit=limit)
+
+@router.get("/medicines/{medicine_id}", response_model=schemas.Drug)
+def read_medicine(
+    medicine_id: int,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """根据ID获取药品 (medicines别名路由)"""
+    drug = service.drug_service.get(db, id=medicine_id)
+    if not drug:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"药品 ID {medicine_id} 不存在"
+        )
+    return drug
+
+@router.put("/medicines/{medicine_id}", response_model=schemas.Drug)
+def update_medicine(
+    medicine_id: int,
+    drug_in: schemas.DrugUpdate,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """更新药品 (medicines别名路由)"""
+    drug = service.drug_service.get(db, id=medicine_id)
+    if not drug:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"药品 ID {medicine_id} 不存在"
+        )
+    return service.drug_service.update(db=db, db_obj=drug, obj_in=drug_in)
+
+@router.delete("/medicines/{medicine_id}", response_model=schemas.Drug)
+def delete_medicine(
+    medicine_id: int,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.requires_role("admin"))
+):
+    """删除药品 (medicines别名路由)"""
+    drug = service.drug_service.get(db, id=medicine_id)
+    if not drug:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"药品 ID {medicine_id} 不存在"
+        )
+    return service.drug_service.remove(db=db, id=medicine_id)

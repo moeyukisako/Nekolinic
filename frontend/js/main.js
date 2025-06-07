@@ -119,26 +119,28 @@ function bindUserMenu() {
  * 绑定侧边栏导航事件
  */
 function bindSidebarNavigation() {
-  const sidebarNav = document.querySelector('.sidebar-nav');
-  if (!sidebarNav) return;
-  
-  sidebarNav.addEventListener('click', (e) => {
-    const targetLink = e.target.closest('.sidebar-item');
-    if (!targetLink) return;
+    const sidebarMenu = document.querySelector('.sidebar-menu');
+    if (!sidebarMenu) return;
     
-    e.preventDefault();
-    
-    // 移除所有active状态
-    sidebarNav.querySelectorAll('.sidebar-item').forEach(link => link.classList.remove('active'));
-    // 添加当前项的active状态
-    targetLink.classList.add('active');
-    
-    // 获取模块名称
-    const moduleName = targetLink.getAttribute('data-module');
-    
-    // 切换到相应模块
-    switchModule(moduleName);
-  });
+    sidebarMenu.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetLink = e.target.closest('a');
+        if (!targetLink) return;
+        
+        // 移除所有导航项的 active 状态
+        sidebarMenu.querySelectorAll('a').forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        // 为当前点击项添加 active 状态
+        targetLink.classList.add('active');
+        
+        // 获取中文模块名
+        const moduleName = targetLink.textContent.trim();
+        
+        // 切换模块
+        switchModule(moduleName);
+    });
 }
 
 /**
@@ -341,21 +343,36 @@ function initBackgroundSettings() {
 async function loadUserBackgroundSetting() {
   try {
     const user = await apiClient.auth.getCurrentUser();
+    const bgContainer = document.querySelector('.bg-container');
+    const bgPreview = document.getElementById('bg-preview');
     
     if (user && user.background_preference) {
       const backgroundUrl = user.background_preference;
       document.documentElement.style.setProperty('--bg-image', `url(${backgroundUrl})`);
       
-      const bgContainer = document.querySelector('.bg-container');
-      const bgPreview = document.getElementById('bg-preview');
-      
       if (bgContainer) {
         bgContainer.style.backgroundImage = `url(${backgroundUrl})`;
       }
       if (bgPreview) bgPreview.style.backgroundImage = `url(${backgroundUrl})`;
+    } else {
+      // 用户未设置背景时，使用默认背景
+      const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
+      document.documentElement.style.setProperty('--bg-image', defaultBg);
+      
+      if (bgContainer) {
+        bgContainer.style.backgroundImage = defaultBg;
+      }
+      if (bgPreview) bgPreview.style.backgroundImage = defaultBg;
     }
   } catch (err) {
     console.error('加载用户背景设置失败:', err);
+    // 出错时也使用默认背景
+    const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
+    const bgContainer = document.querySelector('.bg-container');
+    if (bgContainer) {
+      bgContainer.style.backgroundImage = defaultBg;
+    }
+    document.documentElement.style.setProperty('--bg-image', defaultBg);
   }
 }
 

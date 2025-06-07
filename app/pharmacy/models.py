@@ -6,21 +6,6 @@ import enum
 from datetime import datetime
 
 # --- History Models (for auditable tables) ---
-class DrugCategoryHistory(Base):
-    __tablename__ = 'drug_categories_history'
-    history_id = Column(Integer, primary_key=True, index=True)
-    action_type = Column(String(10), nullable=False)
-    action_timestamp = Column(DateTime, nullable=False)
-    action_by_id = Column(Integer, ForeignKey('users.id'))
-    
-    # Snapshot of DrugCategory fields
-    id = Column(Integer, index=True)
-    name = Column(String(100))
-    created_at = Column(DateTime)
-    updated_at = Column(DateTime)
-    created_by_id = Column(Integer)
-    updated_by_id = Column(Integer)
-    deleted_at = Column(DateTime, nullable=True)
 
 class DrugHistory(Base):
     __tablename__ = 'drugs_history'
@@ -39,7 +24,6 @@ class DrugHistory(Base):
     unit = Column(String(20))
     unit_price = Column(Numeric(10, 2))
     cost_price = Column(Numeric(10, 2))
-    category_id = Column(Integer)
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
     created_by_id = Column(Integer)
@@ -88,21 +72,6 @@ class PrescriptionDetailHistory(Base):
 
 # --- Main Business Models ---
 
-@register_audit_model(DrugCategoryHistory)
-class DrugCategory(Base, Auditable):
-    __tablename__ = 'drug_categories'
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), unique=True, nullable=False)
-    
-    # Audit fields
-    created_at = Column(DateTime)
-    updated_at = Column(DateTime)
-    created_by_id = Column(Integer, ForeignKey('users.id'))
-    updated_by_id = Column(Integer, ForeignKey('users.id'))
-    deleted_at = Column(DateTime, nullable=True)
-
-    drugs = relationship("Drug", back_populates="category")
-
 @register_audit_model(DrugHistory)
 class Drug(Base, Auditable):
     __tablename__ = 'drugs'
@@ -116,8 +85,6 @@ class Drug(Base, Auditable):
     unit_price = Column(Numeric(10, 2), nullable=False)  # 售价
     cost_price = Column(Numeric(10, 2))  # 成本价
     
-    category_id = Column(Integer, ForeignKey('drug_categories.id'))
-    
     # Audit fields
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
@@ -125,7 +92,6 @@ class Drug(Base, Auditable):
     updated_by_id = Column(Integer, ForeignKey('users.id'))
     deleted_at = Column(DateTime, nullable=True)
 
-    category = relationship("DrugCategory", back_populates="drugs")
     inventory_transactions = relationship("InventoryTransaction", back_populates="drug")
 
 class DispensingStatus(str, enum.Enum):

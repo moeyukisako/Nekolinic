@@ -90,20 +90,7 @@ def test_full_workflow(client: TestClient, db: Session, test_user: User):
     assert medical_record_response.status_code == 200
     medical_record = medical_record_response.json()
     
-    # 6a. 创建药品类别
-    category_data = {
-        "name": f"Category {generate_random_string()}",
-        "description": "Test category"
-    }
-    category_response = client.post(
-        "/api/v1/pharmacy/categories/",
-        json=category_data,
-        headers=auth_headers
-    )
-    assert category_response.status_code == 200
-    category = category_response.json()
-    
-    # 6b. 创建药品
+    # 6. 创建药品
     drug_data = {
         "name": f"Drug {generate_random_string()}",
         "description": "Test drug",
@@ -111,8 +98,7 @@ def test_full_workflow(client: TestClient, db: Session, test_user: User):
         "manufacturer": "Test Manufacturer",
         "unit_price": 10.00,
         "unit": "片",
-        "code": f"CODE-{generate_random_string()}",
-        "category_id": category["id"]
+        "code": f"CODE-{generate_random_string()}"
     }
     drug_response = client.post(
         "/api/v1/pharmacy/drugs/",
@@ -209,4 +195,4 @@ def test_full_workflow(client: TestClient, db: Session, test_user: User):
     )
     assert stock_response.status_code == 200
     stock_data = stock_response.json()
-    assert stock_data["current_stock"] == 90  # 初始100减去10 
+    assert stock_data["current_stock"] == 90  # 初始100减去10

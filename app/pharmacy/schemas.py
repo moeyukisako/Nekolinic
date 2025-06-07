@@ -3,20 +3,6 @@ from datetime import datetime
 from typing import Optional, List
 from decimal import Decimal
 
-# --- DrugCategory Schemas ---
-class DrugCategoryBase(BaseModel):
-    name: str
-
-class DrugCategoryCreate(DrugCategoryBase):
-    pass
-
-class DrugCategoryUpdate(BaseModel):
-    name: Optional[str] = None
-
-class DrugCategory(DrugCategoryBase):
-    id: int
-    model_config = ConfigDict(from_attributes=True)
-
 # --- Drug Schemas ---
 class DrugBase(BaseModel):
     name: str
@@ -27,7 +13,6 @@ class DrugBase(BaseModel):
     unit: str
     unit_price: Decimal
     cost_price: Optional[Decimal] = None
-    category_id: int
 
 class DrugCreate(DrugBase):
     pass
@@ -41,11 +26,9 @@ class DrugUpdate(BaseModel):
     unit: Optional[str] = None
     unit_price: Optional[Decimal] = None
     cost_price: Optional[Decimal] = None
-    category_id: Optional[int] = None
 
 class Drug(DrugBase):
     id: int
-    category: Optional[DrugCategory] = None
     model_config = ConfigDict(from_attributes=True)
 
 # --- PrescriptionDetail Schemas ---

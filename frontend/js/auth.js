@@ -120,6 +120,45 @@ function logout() {
 }
 
 /**
+ * 加载用户背景设置
+ */
+async function loadUserBackgroundSetting() {
+  try {
+    const user = await apiClient.auth.getCurrentUser();
+    const bgContainer = document.querySelector('.bg-container');
+    const bgPreview = document.getElementById('bg-preview');
+    
+    if (user && user.background_preference) {
+      const backgroundUrl = user.background_preference;
+      document.documentElement.style.setProperty('--bg-image', `url(${backgroundUrl})`);
+      
+      if (bgContainer) {
+        bgContainer.style.backgroundImage = `url(${backgroundUrl})`;
+      }
+      if (bgPreview) bgPreview.style.backgroundImage = `url(${backgroundUrl})`;
+    } else {
+      // 用户未设置背景时，使用默认背景
+      const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
+      document.documentElement.style.setProperty('--bg-image', defaultBg);
+      
+      if (bgContainer) {
+        bgContainer.style.backgroundImage = defaultBg;
+      }
+      if (bgPreview) bgPreview.style.backgroundImage = defaultBg;
+    }
+  } catch (err) {
+    console.error('加载用户背景设置失败:', err);
+    // 出错时也使用默认背景
+    const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
+    const bgContainer = document.querySelector('.bg-container');
+    if (bgContainer) {
+      bgContainer.style.backgroundImage = defaultBg;
+    }
+    document.documentElement.style.setProperty('--bg-image', defaultBg);
+  }
+}
+
+/**
  * 背景图片设置相关功能
  */
 function initBackgroundSettings() {
@@ -130,12 +169,13 @@ function initBackgroundSettings() {
   const fileInput = document.getElementById('bg-file-input');
   const resetBgBtn = document.getElementById('reset-bg-btn');
   
-  // 从LocalStorage加载保存的背景
+  // 加载用户背景设置
+  loadUserBackgroundSetting();
+  
+  // 从LocalStorage加载保存的背景（作为备用）
   const savedBgImage = localStorage.getItem('nekolinic-bg-image');
-  if (savedBgImage) {
-    bgContainer.style.backgroundImage = `url(${savedBgImage})`;
-  } else {
-    bgContainer.style.backgroundImage = 'url(assets/backgrounds/bg_1_20250607103706.jpg)';
+  if (!savedBgImage && bgContainer) {
+    bgContainer.style.backgroundImage = 'url(assets/backgrounds/default_background.jpg)';
   }
   
   // 背景设置面板切换
@@ -177,7 +217,7 @@ function initBackgroundSettings() {
   if (resetBgBtn) {
     resetBgBtn.addEventListener('click', function() {
       if (bgContainer) {
-        bgContainer.style.backgroundImage = 'url(assets/backgrounds/bg_1_20250607103706.jpg)';
+        bgContainer.style.backgroundImage = 'url(assets/backgrounds/default_background.jpg)';
       }
     });
   }
@@ -188,4 +228,4 @@ window.enterSystem = enterSystem;
 window.logout = logout;
 
 // 在DOM加载完成后初始化应用
-document.addEventListener('DOMContentLoaded', initAuth); 
+document.addEventListener('DOMContentLoaded', initAuth);

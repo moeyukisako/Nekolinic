@@ -53,13 +53,7 @@ class DrugNotFoundException(ResourceNotFoundException):
         self.drug_id = drug_id
 
 
-class DrugCategoryNotFoundException(ResourceNotFoundException):
-    """
-    药品类别未找到异常
-    """
-    def __init__(self, category_id: int):
-        super().__init__("Drug Category", category_id)
-        self.category_id = category_id
+
 
 
 class PrescriptionNotFoundException(ResourceNotFoundException):

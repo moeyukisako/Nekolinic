@@ -7,19 +7,11 @@ from app.core.context import current_user_id
 from app.core.exceptions import (
     ValidationException, 
     DrugNotFoundException, 
-    DrugCategoryNotFoundException, 
     PrescriptionNotFoundException,
     InsufficientStockException,
     AuthenticationException
 )
 from . import models, schemas
-
-class DrugCategoryService(BaseService[models.DrugCategory, schemas.DrugCategoryCreate, schemas.DrugCategoryUpdate]):
-    def __init__(self):
-        super().__init__(models.DrugCategory)
-
-    def get_by_name(self, db: Session, *, name: str) -> Optional[models.DrugCategory]:
-        return db.query(models.DrugCategory).filter(models.DrugCategory.name == name).first()
 
 class DrugService(BaseService[models.Drug, schemas.DrugCreate, schemas.DrugUpdate]):
     def __init__(self):
@@ -27,6 +19,16 @@ class DrugService(BaseService[models.Drug, schemas.DrugCreate, schemas.DrugUpdat
 
     def get_by_code(self, db: Session, *, code: str) -> Optional[models.Drug]:
         return db.query(models.Drug).filter(models.Drug.code == code).first()
+    
+    def search_by_name(self, db: Session, *, name: str, skip: int = 0, limit: int = 100) -> List[models.Drug]:
+        """根据药品名称搜索药品"""
+        return (
+            db.query(models.Drug)
+            .filter(models.Drug.name.ilike(f"%{name}%"))
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
 class PrescriptionService(BaseService[models.Prescription, schemas.PrescriptionCreate, schemas.PrescriptionUpdate]):
     def __init__(self):
@@ -261,7 +263,6 @@ class InventoryService:
         return low_stock_drugs
 
 # 实例化所有服务
-drug_category_service = DrugCategoryService()
 drug_service = DrugService()
 prescription_service = PrescriptionService()
 inventory_service = InventoryService()

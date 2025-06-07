@@ -196,6 +196,9 @@ async function switchModule(moduleName) {
   // 更新当前模块状态
   store.set('currentModule', moduleName);
   
+  // 更新顶部导航栏标题
+  updateNavbarTitle(moduleName);
+  
   try {
     // 获取模块渲染器
     const moduleRenderers = store.get('moduleRenderers');
@@ -235,6 +238,28 @@ async function switchModule(moduleName) {
       </div>
     `;
   }
+}
+
+/**
+ * 更新顶部导航栏标题
+ * @param {string} moduleName - 模块名称
+ */
+function updateNavbarTitle(moduleName) {
+  const navbarTitle = document.getElementById('navbar-title');
+  if (!navbarTitle) return;
+  
+  // 模块名称映射
+  const moduleNameMap = {
+    '状态': '',
+    '患者': ' 患者',
+    '预约': ' 预约', 
+    '病历': ' 病历',
+    '药品': ' 药品'
+  };
+  
+  // 获取对应的显示名称，如果是状态模块则不添加后缀
+  const displaySuffix = moduleNameMap[moduleName] || '';
+  navbarTitle.textContent = 'Nekolinic.' + displaySuffix;
 }
 
 /**

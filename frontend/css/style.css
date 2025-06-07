@@ -384,6 +384,8 @@ body .main-container .sidebar:hover {
 body .content {
     margin-left: 138px !important; /* 调整为侧边栏宽度+左边距(78px + 50px + 10px) */
     padding: 1rem;
+    padding-top: calc(70px + 35px); /* 顶部导航栏高度 + 35px间距 */
+    padding-bottom: 50px; /* 底部距离浏览器窗口下边缘50px */
     min-height: calc(100vh - 60px);
     background-color: rgba(255, 255, 255, 0); /* 完全透明背景 */
     transition: margin-left 0.3s ease;
@@ -391,6 +393,29 @@ body .content {
 
 body .sidebar:hover + .content {
     margin-left: 274px !important; /* 调整为侧边栏悬浮宽度+左边距(214px + 50px + 10px) */
+}
+
+/* 内容区域模块通用样式 */
+.content-section {
+    height: calc(100vh - 70px - 35px - 50px); /* 视窗高度 - 导航栏 - 顶部间距 - 底部间距 */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 为三个主要模块添加包装器样式 */
+#patients-section {
+    padding: 0; /* 移除默认padding，让包装器控制间距 */
+}
+
+#pharmacy-section {
+    padding: 0;
+}
+
+#medical-records-section {
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 /* 表格内操作链接样式 */
@@ -474,21 +499,31 @@ body .sidebar:hover + .content {
 
 /* 患者管理区域包装样式 */
 .patient-module-wrapper {
-    margin-top: 80px; /* 增加到距离顶部navbar 80px (原来是40px) */
+    margin-top: 40px; /* 恢复到原来的距离顶部navbar 40px */
     margin-left: 35px;
     margin-right: 35px;
-    margin-bottom: 35px;
+    margin-bottom: 50px; /* 距离浏览器窗口下边缘50px */
     background-color: rgba(255, 255, 255, 0.1); /* 10%透明度 */
     border-radius: var(--border-radius);
     padding: 35px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    min-height: calc(100vh - 70px - 80px - 100px); /* 视窗高度 - 顶部navbar高度 - 顶部间距 - 底部间距 */
+    min-height: calc(100vh - 70px - 40px - 50px); /* 视窗高度 - 顶部navbar高度 - 顶部间距 - 底部间距 */
 }
 
 #patient-module-content {
     background-color: var(--color-bg-card);
     border-radius: var(--border-radius);
     padding: 20px;
+    min-height: calc(100vh - 70px - 40px - 50px - 70px - 40px); /* 确保表格部分占用空间到距离模块下边缘40px */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 表格容器样式，确保占用剩余空间 */
+#patient-module-content .data-table-container {
+    flex: 1;
+    min-height: 300px; /* 最小高度确保即使内容不足也有足够空间 */
+    margin-bottom: 40px; /* 距离模块下边缘40px */
 }
 
 /* 背景设置样式增强 */
@@ -646,8 +681,158 @@ body .sidebar:hover + .content {
 }
 
 /* ============================================= */
+/* 药品管理模块样式                        */
+/* ============================================= */
+
+/* 药品管理区域包装样式 */
+.medicine-module-wrapper {
+    margin-top: 40px;
+    margin-left: 35px;
+    margin-right: 35px;
+    margin-bottom: 50px; /* 距离浏览器窗口下边缘50px */
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    padding: 35px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    min-height: calc(100vh - 70px - 40px - 50px);
+}
+
+#medicine-module-content {
+    background-color: var(--color-bg-card);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    min-height: calc(100vh - 70px - 40px - 50px - 70px - 40px);
+    display: flex;
+    flex-direction: column;
+}
+
+#medicine-module-content .data-table-container {
+    flex: 1;
+    min-height: 300px;
+    margin-bottom: 40px;
+}
+
+/* ============================================= */
 /* 病历管理模块样式                        */
 /* ============================================= */
+
+/* 病历管理区域包装样式 */
+.medical-records-module-wrapper {
+    margin-top: 40px;
+    margin-left: 35px;
+    margin-right: 35px;
+    margin-bottom: 50px; /* 距离浏览器窗口下边缘50px */
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    padding: 35px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    min-height: calc(100vh - 70px - 40px - 50px);
+}
+
+#medical-records-module-content {
+    background-color: var(--color-bg-card);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    min-height: calc(100vh - 70px - 40px - 50px - 70px - 40px);
+    display: flex;
+    flex-direction: column;
+}
+
+#medical-records-module-content .data-table-container {
+    flex: 1;
+    min-height: 300px;
+    margin-bottom: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.medical-records-module-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#medical-records-module-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 病历管理模块特殊布局样式 - 极度扁平化设计 */
+.medical-records-layout {
+    display: flex;
+    height: 100%;
+    min-height: 500px;
+    width: 100%;
+    background-color: var(--color-bg-card);
+    border-radius: var(--border-radius);
+}
+
+.patients-sidebar {
+    width: 35%;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    border-right: 1px solid var(--color-border);
+}
+
+/* 可拖拽的分隔线 */
+.resizer {
+    width: 2px;
+    background-color: var(--color-border);
+    cursor: col-resize;
+    position: relative;
+    transition: background-color 0.2s ease;
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+.resizer:hover {
+    background-color: var(--color-primary);
+    width: 3px;
+}
+
+.resizer:active {
+    background-color: var(--color-primary);
+    width: 3px;
+}
+
+.medical-record-editor {
+    width: 65%;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+}
+
+.editor-content {
+    height: 100%;
+    min-height: 400px;
+}
+
+.no-patient-selected {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 400px;
+    color: #666;
+    text-align: center;
+}
+
+.placeholder-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
 
 /* 大型模态框样式 */
 .modal-content.large {

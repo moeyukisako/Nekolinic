@@ -81,9 +81,15 @@ export default class Modal {
         this.close();
       });
       
-      confirmButton.addEventListener('click', () => {
-        if (this.onConfirm) this.onConfirm();
-        this.close();
+      confirmButton.addEventListener('click', async () => {
+        if (this.onConfirm) {
+          const result = await this.onConfirm();
+          if (result !== false) {
+            this.close();
+          }
+        } else {
+          this.close();
+        }
       });
     }
     
@@ -179,4 +185,4 @@ export default class Modal {
       onConfirm: onClose
     }).render();
   }
-} 
+}

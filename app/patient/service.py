@@ -19,10 +19,14 @@ class PatientService(BaseService[models.Patient, schemas.PatientCreate, schemas.
         blank_record_data = schemas.MedicalRecordCreate(
             patient_id=new_patient.id,
             doctor_id=1, 
-            record_date=datetime.now(timezone.utc),
-            symptoms="首次建档",
-            diagnosis="暂无",
-            treatment_plan="待定",
+            visit_date=datetime.now(timezone.utc).date(),
+            chief_complaint="",
+            present_illness="",
+            past_history="",
+            physical_examination="",
+            diagnosis="",
+            treatment_plan="",
+            prescription="",
             notes="系统自动创建的空白病历"
         )
         

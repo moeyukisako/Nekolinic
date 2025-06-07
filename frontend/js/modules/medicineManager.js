@@ -12,28 +12,31 @@ import SearchBar from '../components/searchBar.js';
  */
 export default async function render(container, { signal }) {
     container.innerHTML = `
-        <div class="patient-module-wrapper">
-            <div class="header-bar">
-                <h1>药品管理</h1>
-                <button id="add-medicine-btn" class="btn btn-primary">添加新药品</button>
-            </div>
-            <div class="search-bar">
-                <input type="text" id="medicine-search-input" placeholder="按药品名称、厂家搜索...">
-            </div>
-            <div class="card">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>药品名称</th>
-                            <th>规格</th>
-                            <th>生产厂家</th>
-                            <th>当前库存</th>
-                            <th class="actions-column">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="medicine-table-body"></tbody>
-                </table>
-                <div id="pagination-container"></div>
+        <div class="medicine-module-wrapper">
+            <div id="medicine-module-content">
+                <div class="header-bar">
+                    <button id="add-medicine-btn" class="btn btn-primary">添加新药品</button>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="medicine-search-input" placeholder="按药品名称、厂家搜索...">
+                </div>
+                <div class="data-table-container">
+                    <div class="card">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>药品名称</th>
+                                    <th>规格</th>
+                                    <th>生产厂家</th>
+                                    <th>当前库存</th>
+                                    <th class="actions-column">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="medicine-table-body"></tbody>
+                        </table>
+                        <div id="pagination-container"></div>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -87,7 +90,7 @@ async function loadMedicines(searchTerm = '', page = 1) {
 
   try {
     // 获取药品数据
-    const response = await apiClient.medicines.getAll(page, 10, searchTerm);
+    const response = await apiClient.medicines.getAll({ page, limit: 10, search: searchTerm });
     const medicines = response.items || [];
     
     if (medicines.length === 0) {
@@ -199,7 +202,7 @@ function showMedicineFormModal(medicine = null) {
       <label for="medicine-cost-price">成本价（元）</label>
       <input type="number" id="medicine-cost-price" step="0.01" value="${medicine?.cost_price || 0}">
     </div>
-    ${isEdit ? `<input type="hidden" id="medicine-id" value="${medicine.id}">` : ''}
+    ${isEdit ? `<input type="hidden" id="medicine-id" value="${medicine?.id || ''}">` : ''}
   `;
 
   const modal = new Modal({
@@ -214,7 +217,7 @@ function showMedicineFormModal(medicine = null) {
  */
 async function handleMedicineFormSubmit(isEdit) {
   const form = document.getElementById('medicine-form');
-  if (!form) return;
+  if (!form) return false;
   
   const nameInput = document.getElementById('medicine-name');
   const codeInput = document.getElementById('medicine-code');
@@ -227,30 +230,31 @@ async function handleMedicineFormSubmit(isEdit) {
   
   if (!nameInput.value.trim()) {
     showNotification('错误', '药品名称不能为空', 'error');
-    return;
+    return false;
   }
   
   if (!unitPriceInput.value || parseFloat(unitPriceInput.value) < 0) {
     showNotification('错误', '请输入有效的单价', 'error');
-    return;
+    return false;
   }
   
   const medicineData = {
     name: nameInput.value.trim(),
     code: codeInput.value.trim() || nameInput.value.trim().replace(/\s+/g, '_').toUpperCase(),
-    specification: specInput.value.trim(),
-    manufacturer: manufInput.value.trim(),
+    description: null,
+    specification: specInput.value.trim() || null,
+    manufacturer: manufInput.value.trim() || null,
     unit: unitSelect.value,
-    unit_price: parseFloat(unitPriceInput.value).toFixed(2),
-    cost_price: (parseFloat(costPriceInput.value) || 0.00).toFixed(2)
+    unit_price: parseFloat(unitPriceInput.value),
+    cost_price: parseFloat(costPriceInput.value) || null
   };
   
   try {
     if (isEdit) {
       // 编辑模式：更新现有药品
       const medicineId = idInput ? idInput.value : null;
-      if (!medicineId) {
-        throw new Error('无法获取药品ID');
+      if (!medicineId || medicineId === '' || medicineId === 'undefined') {
+        throw new Error('无法获取有效的药品ID，请重新打开编辑窗口');
       }
       await apiClient.medicines.update(medicineId, medicineData);
       showNotification('成功', '药品信息已更新', 'success');

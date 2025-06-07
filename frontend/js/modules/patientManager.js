@@ -1,6 +1,7 @@
 // frontend/js/modules/patientManager.js
 
 import { showLoading, showNotification, confirmDialog } from '../utils/ui.js';
+import { formatDate, formatDateTime } from '../utils/date.js';
 import Modal from '../components/modal.js';
 import Pagination from '../components/pagination.js';
 import SearchBar from '../components/searchBar.js';
@@ -15,28 +16,31 @@ import SearchBar from '../components/searchBar.js';
 export default async function render(container, { signal }) {
     container.innerHTML = `
         <div class="patient-module-wrapper">
-            <div class="header-bar">
-                <h1>患者管理</h1>
-                <button id="add-patient-btn" class="btn btn-primary">添加新患者</button>
-            </div>
-            <div class="search-bar">
-                <input type="text" id="patient-search-input" placeholder="按姓名搜索患者...">
-            </div>
-            <div class="card">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>姓名</th>
-                            <th>性别</th>
-                            <th>出生日期</th>
-                            <th>电话</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody id="patient-table-body"></tbody>
-                </table>
-                <div id="patient-pagination-container"></div>
+            <div id="patient-module-content">
+                <div class="header-bar">
+                    <button id="add-patient-btn" class="btn btn-primary">添加新患者</button>
+                </div>
+                <div class="search-bar">
+                    <input type="text" id="patient-search-input" placeholder="按姓名搜索患者...">
+                </div>
+                <div class="data-table-container">
+                    <div class="card">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>姓名</th>
+                                    <th>性别</th>
+                                    <th>出生日期</th>
+                                    <th>电话</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patient-table-body"></tbody>
+                        </table>
+                        <div id="patient-pagination-container"></div>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -135,8 +139,8 @@ async function loadAndDisplayPatients(page = 1, query = '') {
         <td>${patient.id}</td>
         <td>${patient.name || '-'}</td>
         <td>${patient.gender === 'male' ? '男' : patient.gender === 'female' ? '女' : '其他'}</td>
-        <td>${patient.birth_date || '-'}</td>
-        <td>${patient.phone || '-'}</td>
+        <td>${patient.birth_date ? formatDate(patient.birth_date) : '-'}</td>
+        <td>${patient.contact_number || '-'}</td>
         <td>
           <a href="#" class="action-link view" data-action="view" data-id="${patient.id}">查看</a>
           <a href="#" class="action-link edit" data-action="edit" data-id="${patient.id}">编辑</a>
@@ -190,8 +194,8 @@ function showAddPatientModal() {
       <input type="date" id="patient-birth-date">
     </div>
     <div class="form-group">
-      <label for="patient-phone">联系电话</label>
-      <input type="tel" id="patient-phone">
+      <label for="patient-contact-number">联系电话</label>
+      <input type="tel" id="patient-contact-number">
     </div>
     <div class="form-group">
       <label for="patient-address">住址</label>
@@ -235,8 +239,8 @@ async function editPatient(id) {
         <input type="date" id="patient-birth-date" value="${patient.birth_date || ''}">
       </div>
       <div class="form-group">
-        <label for="patient-phone">联系电话</label>
-        <input type="tel" id="patient-phone" value="${patient.phone || ''}">
+        <label for="patient-contact-number">联系电话</label>
+        <input type="tel" id="patient-contact-number" value="${patient.contact_number || ''}">
       </div>
       <div class="form-group">
         <label for="patient-address">住址</label>
@@ -266,7 +270,7 @@ async function handlePatientFormSubmit(isEdit) {
   const nameInput = document.getElementById('patient-name');
   const genderSelect = document.getElementById('patient-gender');
   const birthDateInput = document.getElementById('patient-birth-date');
-  const phoneInput = document.getElementById('patient-phone');
+  const contactNumberInput = document.getElementById('patient-contact-number');
   const addressTextarea = document.getElementById('patient-address');
   const idInput = isEdit ? document.getElementById('patient-id') : null;
   
@@ -279,7 +283,7 @@ async function handlePatientFormSubmit(isEdit) {
     name: nameInput.value.trim(),
     gender: genderSelect.value,
     birth_date: birthDateInput.value || null,
-    phone: phoneInput.value.trim(),
+    contact_number: contactNumberInput.value.trim(),
     address: addressTextarea.value.trim()
   };
   
@@ -344,11 +348,11 @@ async function viewPatient(id) {
         </div>
         <div class="info-row">
           <div class="info-label">出生日期:</div>
-          <div class="info-value">${patient.birth_date || '-'}</div>
+          <div class="info-value">${patient.birth_date ? formatDate(patient.birth_date) : '-'}</div>
         </div>
         <div class="info-row">
           <div class="info-label">联系电话:</div>
-          <div class="info-value">${patient.phone || '-'}</div>
+          <div class="info-value">${patient.contact_number || '-'}</div>
         </div>
         <div class="info-row">
           <div class="info-label">住址:</div>
@@ -356,7 +360,7 @@ async function viewPatient(id) {
         </div>
         <div class="info-row">
           <div class="info-label">创建时间:</div>
-          <div class="info-value">${new Date(patient.created_at).toLocaleString() || '-'}</div>
+          <div class="info-value">${patient.created_at ? formatDateTime(patient.created_at) : '-'}</div>
         </div>
       </div>
     `;

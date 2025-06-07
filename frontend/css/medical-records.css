@@ -1,0 +1,383 @@
+/* 病历管理模块样式 */
+.medical-records-layout {
+  display: flex;
+  flex: 1;
+  gap: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+}
+
+/* 左侧患者列表 - 极度扁平化设计 */
+.patients-sidebar {
+  width: 35%;
+  min-width: 200px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.sidebar-header {
+  padding: 15px;
+  border-bottom: 1px solid #e5e7eb;
+  background: transparent;
+  margin: 0;
+}
+
+.sidebar-header h3 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.search-box {
+  position: relative;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-box input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.patients-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  margin: 0;
+}
+
+.patient-item {
+  padding: 10px 15px;
+  margin: 0;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  background: transparent;
+}
+
+.patient-item:hover {
+  background: #f8f9fa;
+}
+
+.patient-item.active {
+  background: #39c5bb;
+  color: white;
+  border-left: 3px solid #39c5bb;
+}
+
+.patient-item.active .patient-name {
+  color: white;
+}
+
+.patient-item.active .patient-info {
+  color: #333;
+}
+
+.patient-name {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.patient-info {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.patient-info span {
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* 右侧病历编辑区 - 极度扁平化设计 */
+.medical-record-editor {
+  flex: 1;
+  width: 65%;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.editor-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+/* 未选择患者状态 */
+.no-patient-selected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: #6b7280;
+}
+
+.placeholder-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.no-patient-selected h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.no-patient-selected p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* 病历表单样式 */
+.medical-record-form {
+  max-width: 800px;
+}
+
+.patient-header {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: linear-gradient(135deg, #39c5bb 0%, #2dd4bf 100%);
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(57, 197, 187, 0.15);
+}
+
+.patient-header h3 {
+  margin: 0 0 12px 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.patient-basic-info {
+  display: flex;
+  gap: 16px;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.95);
+  flex-wrap: wrap;
+}
+
+.patient-basic-info span {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.record-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  resize: vertical;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-group textarea {
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 10px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.btn-outline {
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+
+.btn-outline:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* 错误状态 */
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: #ef4444;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+.error-state h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.error-state p {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* 无数据状态 */
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.error-message {
+  text-align: center;
+  padding: 20px;
+  color: #ef4444;
+  font-size: 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  margin: 10px;
+}
+
+/* 分页样式 */
+#patients-pagination {
+  padding: 15px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .patients-sidebar {
+    width: 300px;
+    min-width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .medical-records-layout {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .patients-sidebar {
+    width: 100%;
+    min-width: auto;
+    height: 300px;
+  }
+  
+  .medical-record-editor {
+    min-height: 500px;
+  }
+  
+  .form-row {
+    flex-direction: column;
+  }
+  
+  .patient-basic-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

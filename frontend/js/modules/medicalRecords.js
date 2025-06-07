@@ -598,18 +598,268 @@ async function deleteMedicalRecord(recordId) {
 }
 
 /**
+ * 保存处方
+ * @param {string} recordId - 病历ID
+ */
+async function savePrescriptions(recordId) {
+  try {
+    // 为每个处方项目创建处方记录
+    const prescriptionPromises = window.tempPrescriptionItems.map(item => {
+      // 如果已经有ID，则不需要创建
+      if (item.id) return Promise.resolve();
+      
+      return apiClient.prescriptions.create({
+        medical_record_id: recordId,
+        medicine_id: item.medicineId,
+        dosage: item.dosage,
+        frequency: item.frequency,
+        notes: item.notes
+      });
+    });
+    
+    await Promise.all(prescriptionPromises);
+    
+    // 重新加载处方列表
+    await loadPrescriptions(recordId);
+    
+    return true;
+  } catch (error) {
+    console.error('保存处方失败:', error);
+    showNotification('错误', `保存处方失败: ${error.message}`, 'error');
+    return false;
+  }
+}
+
+/**
  * 打印病历
  * @param {string} recordId - 病历ID
  */
 async function printMedicalRecord(recordId) {
+  if (!recordId) {
+    showNotification('错误', '缺少病历ID', 'error');
+    return;
+  }
+  
   try {
-    // 通知事件总线
-    window.eventBus.emit('print:medical-record', { recordId });
+    // 并行获取所有需要的数据
+    const [record, prescriptions] = await Promise.all([
+      apiClient.medicalRecords.getById(recordId),
+      apiClient.prescriptions.getByMedicalRecordId(recordId)
+    ]);
     
-    // 打开打印窗口
-    window.open(`/print-medical-record.html?id=${recordId}`, '_blank');
+    const patient = await apiClient.patients.getById(record.patient_id);
+    
+    // 计算年龄
+    const calculateAge = (birthDate) => {
+      if (!birthDate) return '未知';
+      const birth = new Date(birthDate);
+      const ageDifMs = Date.now() - birth.getTime();
+      const ageDate = new Date(ageDifMs);
+      return Math.abs(ageDate.getUTCFullYear() - 1970);
+    };
+    
+    const patientAge = calculateAge(patient.birth_date);
+    
+    // 构建打印用的HTML
+    const printHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>病历记录 - ${patient.name}</title>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+          .header { text-align: center; margin-bottom: 20px; }
+          .title { font-size: 24px; font-weight: bold; }
+          .section { margin-bottom: 15px; }
+          .section-title { font-weight: bold; margin-bottom: 5px; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+          table, th, td { border: 1px solid #ddd; }
+          th, td { padding: 8px; text-align: left; }
+          .footer { margin-top: 30px; display: flex; justify-content: space-between; }
+          @media print {
+            body { margin: 0; padding: 15px; }
+            button { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="title">Nekolinic诊所 - 病历记录</div>
+          <p>就诊时间: ${new Date(record.record_date).toLocaleString()}</p>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">患者信息</div>
+          <p>姓名: ${patient.name} | 性别: ${patient.gender || '未记录'} | 年龄: ${patientAge}岁</p>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">既往病史</div>
+          <p>${patient.past_medical_history || '无'}</p>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">主诉与症状</div>
+          <p>${record.symptoms || '无记录'}</p>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">诊断</div>
+          <p>${record.diagnosis || '无记录'}</p>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">处置意见</div>
+          <p>${record.treatment_plan || '无记录'}</p>
+        </div>
+        
+        ${prescriptions.length > 0 ? `
+        <div class="section">
+          <div class="section-title">处方信息</div>
+          <table>
+            <thead>
+              <tr>
+                <th>药品名称</th>
+                <th>用量</th>
+                <th>频率</th>
+                <th>备注</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${prescriptions.map(p => `
+                <tr>
+                  <td>${p.medicine_name}</td>
+                  <td>${p.dosage}</td>
+                  <td>${p.frequency}</td>
+                  <td>${p.notes || ''}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        ` : ''}
+        
+        <div class="footer">
+          <div>医师签名: _________________</div>
+          <div>日期: ${new Date().toLocaleDateString()}</div>
+        </div>
+        
+        <button onclick="window.print();" style="margin-top: 20px;">打印</button>
+      </body>
+      </html>
+    `;
+    
+    // 打开新窗口并打印
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printHtml);
+    printWindow.document.close();
+    printWindow.focus();
+    
   } catch (error) {
-    showNotification('错误', `打印准备失败: ${error.message}`, 'error');
+    console.error('准备打印病历失败:', error);
+    showNotification('错误', `获取病历信息失败: ${error.message}`, 'error');
+  }
+}
+
+/**
+ * 打印处方
+ * @param {string} recordId - 病历ID
+ */
+async function printPrescription(recordId) {
+  if (!recordId) {
+    showNotification('错误', '缺少病历ID', 'error');
+    return;
+  }
+  
+  try {
+    // 获取数据
+    const prescriptions = await apiClient.prescriptions.getByMedicalRecordId(recordId);
+    
+    if (prescriptions.length === 0) {
+      showNotification('提示', '此病历没有处方信息可打印', 'info');
+      return;
+    }
+    
+    const record = await apiClient.medicalRecords.getById(recordId);
+    const patient = await apiClient.patients.getById(record.patient_id);
+    
+    // 计算年龄
+    const calculateAge = (birthDate) => {
+      if (!birthDate) return '未知';
+      const birth = new Date(birthDate);
+      const ageDifMs = Date.now() - birth.getTime();
+      const ageDate = new Date(ageDifMs);
+      return Math.abs(ageDate.getUTCFullYear() - 1970);
+    };
+    
+    const patientAge = calculateAge(patient.birth_date);
+    
+    // 构建处方笺格式的HTML
+    const printHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>处方笺 - ${patient.name}</title>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+          .header { text-align: center; margin-bottom: 20px; }
+          .title { font-size: 24px; font-weight: bold; }
+          .info-section { margin-bottom: 15px; }
+          .prescription-list { margin: 20px 0; }
+          .prescription-item { margin-bottom: 10px; }
+          .footer { margin-top: 30px; display: flex; justify-content: space-between; }
+          .line { border-bottom: 1px solid #000; margin: 5px 0; }
+          @media print {
+            body { margin: 0; padding: 15px; }
+            button { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="title">Nekolinic 诊所 - 处方笺</div>
+          <div class="line"></div>
+        </div>
+        
+        <div class="info-section">
+          <p><strong>患者:</strong> ${patient.name} &nbsp;&nbsp; <strong>性别:</strong> ${patient.gender || '未记录'} &nbsp;&nbsp; <strong>年龄:</strong> ${patientAge}岁</p>
+          <p><strong>诊断:</strong> ${record.diagnosis || '无记录'}</p>
+          <p><strong>日期:</strong> ${new Date(record.record_date).toLocaleDateString()}</p>
+        </div>
+        
+        <h2>Rp.</h2>
+        <ol class="prescription-list">
+          ${prescriptions.map(p => `
+            <li class="prescription-item">
+              ${p.medicine_name} ${p.medicine_specification ? `(${p.medicine_specification})` : ''}
+              <br>
+              用法: ${p.dosage}, ${p.frequency}
+              ${p.notes ? `<br>备注: ${p.notes}` : ''}
+            </li>
+          `).join('')}
+        </ol>
+        
+        <div class="footer">
+          <div><strong>医师签名:</strong> __________________</div>
+          <div><strong>日期:</strong> ${new Date().toLocaleDateString()}</div>
+        </div>
+        
+        <button onclick="window.print();" style="margin-top: 20px;">打印</button>
+      </body>
+      </html>
+    `;
+    
+    // 打开新窗口并打印
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printHtml);
+    printWindow.document.close();
+    printWindow.focus();
+    
+  } catch (error) {
+    console.error('准备打印处方失败:', error);
+    showNotification('错误', `获取处方信息失败: ${error.message}`, 'error');
   }
 }
 

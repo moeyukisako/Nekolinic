@@ -718,4 +718,169 @@ legend {
     font-size: 16px;
     padding: 5px 10px;
     font-weight: 500;
-} 
+}
+
+/* ============================================= */
+/* 模态框样式 (Modal Styles)                    */
+/* ============================================= */
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: var(--color-bg-card);
+    margin: auto;
+    padding: 0;
+    border-radius: var(--border-radius);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease;
+}
+
+.modal-header {
+    padding: calc(var(--spacing-unit) * 2);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-text-primary);
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.modal-close:hover {
+    background-color: var(--color-border);
+}
+
+.modal-body {
+    padding: calc(var(--spacing-unit) * 2);
+}
+
+.modal-footer {
+    padding: calc(var(--spacing-unit) * 2);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: calc(var(--spacing-unit) * 1.5);
+}
+
+/* 背景设置面板样式 */
+.bg-thumbnail {
+    width: 50px;
+    height: 50px;
+    border: 2px solid transparent;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    margin: 5px;
+    display: inline-block;
+    transition: border-color 0.2s;
+}
+
+.bg-thumbnail:hover {
+    border-color: var(--color-bar-primary);
+}
+
+.bg-thumbnail.active {
+    border-color: var(--color-bar-primary);
+    box-shadow: 0 0 0 2px rgba(57, 197, 187, 0.3);
+}
+
+.no-backgrounds {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+    font-style: italic;
+}
+
+/* 搜索结果样式 */
+.search-results {
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    background-color: var(--color-bg-card);
+}
+
+.search-result-item {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color 0.2s;
+}
+
+.search-result-item:hover {
+    background-color: var(--color-bg-primary);
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .bg-settings {
+        bottom: 10px;
+        right: 10px;
+    }
+}

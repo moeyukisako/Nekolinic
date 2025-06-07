@@ -1,31 +1,39 @@
 from sqlalchemy.orm import Session, joinedload
+from typing import Dict, Any
 from . import models, schemas
 from app.core.service_base import BaseService
 from app.core.exceptions import ResourceNotFoundException, ValidationException
-from typing import List
 
 class PatientService(BaseService[models.Patient, schemas.PatientCreate, schemas.PatientUpdate]):
+    def get_multi(self, db: Session, *, skip: int = 0, limit: int = 15) -> Dict[str, Any]:
+        """
+        获取患者列表（分页），通过调用基类的 get_paginated 来实现。
+        """
+        # 直接调用基类中已经实现好的、能返回总数的分页方法
+        return super().get_paginated(db=db, skip=skip, limit=limit)
+
+    def search_patients(self, db: Session, name: str, skip: int = 0, limit: int = 15) -> Dict[str, Any]:
+        """
+        按姓名搜索患者（分页），通过调用基类的 get_paginated 实现。
+        """
+        # 构造过滤条件，并调用基类的分页方法
+        filters = {"name_like": name}
+        return super().get_paginated(db=db, skip=skip, limit=limit, **filters)
+
     def get_patient_with_medical_records(self, db: Session, id: int):
         """获取患者及其所有病历 (使用预加载优化性能)"""
         patient = (
             db.query(self.model)
             .options(
-                joinedload(self.model.medical_records)  # 使用joinedload一次性加载medical_records
-                .joinedload(models.MedicalRecord.vital_sign)  # 进一步预加载病历的生命体征
+                joinedload(self.model.medical_records)
+                .joinedload(models.MedicalRecord.vital_sign)
             )
-            .filter(self.model.id == id)
+            .filter(self.model.id == id, self.model.deleted_at.is_(None))
             .first()
         )
         if not patient:
             raise ResourceNotFoundException(resource_id=id, resource_type="Patient")
         return patient
-
-    def search_patients(self, db: Session, name: str = None, skip: int = 0, limit: int = 100):
-        """搜索患者"""
-        query = db.query(self.model)
-        if name:
-            query = query.filter(self.model.name.ilike(f"%{name}%"))
-        return query.offset(skip).limit(limit).all()
 
 class MedicalRecordService(BaseService[models.MedicalRecord, schemas.MedicalRecordCreate, schemas.MedicalRecordUpdate]):
     def get_by_patient_id(self, db: Session, patient_id: int, skip: int = 0, limit: int = 100):

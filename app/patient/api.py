@@ -6,6 +6,7 @@ from app.core.database import get_db
 from app.core.exceptions import ResourceNotFoundException, ValidationException
 from app.core import security
 from app.user import models as user_models
+from app.core.schemas import PaginatedResponse
 
 # 修改APIRouter配置
 router = APIRouter(redirect_slashes=False)
@@ -20,18 +21,27 @@ def create_patient(
     """创建新患者 (需要认证)"""
     return service.patient_service.create(db=db, obj_in=patient_in)
 
-@router.get("/", response_model=List[schemas.Patient])
+@router.get("/", response_model=PaginatedResponse[schemas.Patient])
 def read_patients(
     name: Optional[str] = None,
-    skip: int = 0, 
-    limit: int = 100, 
+    skip: int = Query(0, ge=0),
+    limit: int = Query(15, ge=1, le=100),
     db: Session = Depends(get_db),
     current_user: user_models.User = Depends(security.get_current_active_user)
 ):
-    """获取患者列表，可选按姓名搜索 (需要认证)"""
+    """
+    获取患者列表，支持分页和按姓名搜索 (需要认证)。
+    返回一个包含总数和患者列表的对象。
+    """
     if name:
-        return service.patient_service.search_patients(db, name=name, skip=skip, limit=limit)
-    return service.patient_service.get_multi(db, skip=skip, limit=limit)
+        # service函数现在返回一个字典 {"total": ..., "items": ...}
+        data = service.patient_service.search_patients(db, name=name, skip=skip, limit=limit)
+    else:
+        # service函数现在返回一个字典 {"total": ..., "items": ...}
+        data = service.patient_service.get_multi(db, skip=skip, limit=limit)
+    
+    # 直接返回这个字典，FastAPI会根据response_model将其序列化为正确的JSON
+    return data
 
 @router.get("/{patient_id}", response_model=schemas.Patient)
 def read_patient(

@@ -92,6 +92,17 @@ const apiClient = {
             localStorage.removeItem('accessToken');
             currentUser = null;
             window.location.href = '/index.html';
+        },
+        
+        // 更新用户偏好设置
+        updatePreferences: async (data) => {
+            const updatedUser = await authorizedFetch('/users/me/preferences', {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            });
+            // 更新本地缓存的用户信息
+            currentUser = updatedUser;
+            return updatedUser;
         }
     },
 
@@ -120,6 +131,56 @@ const apiClient = {
         createMedicalRecord: (patientId, data) => authorizedFetch(`/patients/${patientId}/medical-records/`, {
             method: 'POST',
             body: JSON.stringify(data)
+        })
+    },
+    
+    // --- 病历管理API ---
+    medicalRecords: {
+        /**
+         * 根据患者ID获取病历列表（分页）
+         * @param {number} patientId - 患者ID
+         * @param {number} skip - 跳过的记录数
+         * @param {number} limit - 每页记录数
+         */
+        getByPatientId: (patientId, skip = 0, limit = 15) => 
+            authorizedFetch(`/patients/${patientId}/medical-records?skip=${skip}&limit=${limit}`),
+        
+        /**
+         * 获取单个病历详情
+         * @param {number} recordId - 病历ID
+         */
+        getById: (recordId) => authorizedFetch(`/medical-records/${recordId}`),
+
+        /**
+         * 创建新病历
+         * @param {object} data - 病历数据, 包含 vital_sign 对象
+         */
+        create: (data) => authorizedFetch('/medical-records', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        }),
+
+        /**
+         * 更新病历
+         * @param {number} recordId - 病历ID
+         * @param {object} data - 要更新的病历数据
+         */
+        update: (recordId, data) => authorizedFetch(`/medical-records/${recordId}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        }),
+
+        /**
+         * 删除病历
+         * @param {number} recordId - 病历ID
+         */
+        delete: (recordId) => authorizedFetch(`/medical-records/${recordId}`, { method: 'DELETE' }),
+
+        // --- 生命体征相关API ---
+        // 如果需要单独更新生命体征，可以添加以下方法
+        updateVitalSign: (vitalSignId, data) => authorizedFetch(`/vital-signs/${vitalSignId}`, {
+             method: 'PUT',
+             body: JSON.stringify(data)
         })
     },
     

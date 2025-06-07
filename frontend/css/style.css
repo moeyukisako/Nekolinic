@@ -643,4 +643,43 @@ body .sidebar:hover + .content {
 .pagination-ellipsis {
     padding: 5px;
     color: #666;
+}
+
+/* ============================================= */
+/* 病历管理模块样式                        */
+/* ============================================= */
+
+/* 大型模态框样式 */
+.modal-content.large {
+    max-width: 800px; /* 更宽的模态框，适合病历表单 */
+}
+
+/* 表单行样式，用于生命体征等多列表单 */
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.form-row .form-group {
+    flex: 1 1 150px; /* 基础宽度150px，可自动伸缩 */
+}
+
+/* 分组样式 */
+fieldset {
+    border: 1px solid #ddd;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+}
+
+legend {
+    padding: 0 0.5rem;
+    font-weight: bold;
+    color: var(--color-bar-primary);
+}
+
+/* 病历模块的返回按钮样式 */
+[data-action="back-to-patients"] {
+    margin-left: 1rem;
 } 

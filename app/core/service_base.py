@@ -96,6 +96,47 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             
         return query.offset(skip).limit(limit).all()
     
+    def get_paginated(
+        self, db: Session, *, skip: int = 0, limit: int = 100, **filters
+    ) -> Dict[str, Any]:
+        """
+        获取分页数据，返回包含总记录数和当前页数据的字典
+        
+        Args:
+            db: 数据库会话
+            skip: 跳过的记录数
+            limit: 返回的最大记录数
+            **filters: 过滤条件，格式为field=value或field_like=value
+            
+        Returns:
+            包含total和items的字典
+        """
+        query = db.query(self.model)
+        
+        # 如果模型有deleted_at字段，则添加软删除过滤条件
+        if hasattr(self.model, "deleted_at"):
+            query = query.filter(self.model.deleted_at.is_(None))
+        
+        # 应用过滤条件
+        for field, value in filters.items():
+            if value is not None:
+                if field.endswith('_like') and isinstance(value, str):
+                    field_name = field.replace('_like', '')
+                    query = query.filter(getattr(self.model, field_name).ilike(f"%{value}%"))
+                else:
+                    query = query.filter(getattr(self.model, field) == value)
+        
+        # 获取总记录数
+        total = query.count()
+        
+        # 应用分页
+        items = query.order_by(self.model.id.desc()).offset(skip).limit(limit).all()
+        
+        return {
+            "total": total,
+            "items": items
+        }
+    
     def get_multi_by_ids(self, db: Session, *, ids: List[int]) -> List[ModelType]:
         """
         根据多个ID查询对象

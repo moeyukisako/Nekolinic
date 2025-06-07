@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const contentRenderers = {
         '仪表盘': renderDashboard,
         '患者管理': renderPatientModule,
+        '病历管理': renderMedicalRecordsModule,
         // ... 其他模块的渲染函数 ...
     };
 
@@ -201,6 +202,9 @@ function renderPatientModule(container) {
                         goToPage(parseInt(page));
                     }
                     break;
+                case 'view-records':
+                    renderMedicalRecordModule(mainContent, id);
+                    break;
             }
         });
     }
@@ -273,79 +277,70 @@ function goToPage(page) {
     loadAndDisplayPatients();
 }
 
-// 更新分页器UI
+// 更新分页器UI (优化后)
 function updatePagination() {
+    const paginationContainer = document.getElementById('pagination-container');
     const paginationRange = document.getElementById('pagination-range');
     const paginationTotal = document.getElementById('pagination-total');
     const paginationPages = document.getElementById('pagination-pages');
     const prevBtn = document.getElementById('pagination-prev');
     const nextBtn = document.getElementById('pagination-next');
     
-    if (!paginationRange || !paginationTotal || !paginationPages || !prevBtn || !nextBtn) {
+    if (!paginationContainer || !paginationRange || !paginationTotal || !paginationPages || !prevBtn || !nextBtn) {
         return;
     }
     
-    // 计算显示范围
-    const start = currentPage * pageSize + 1;
-    const end = Math.min((currentPage + 1) * pageSize, totalPatients);
+    // 如果总页数小于等于1，则隐藏整个分页组件
+    if (totalPages <= 1) {
+        paginationContainer.style.display = 'none';
+        return;
+    }
+    paginationContainer.style.display = ''; // 确保在需要时显示
+
+    const startItem = totalPatients > 0 ? (currentPage * pageSize) + 1 : 0;
+    const endItem = Math.min((currentPage + 1) * pageSize, totalPatients);
     
-    // 更新显示范围和总数
-    paginationRange.textContent = `${start}-${end}`;
+    paginationRange.textContent = `${startItem}-${endItem}`;
     paginationTotal.textContent = totalPatients;
     
-    // 更新分页按钮状态
-    prevBtn.disabled = currentPage === 0;
-    nextBtn.disabled = currentPage >= totalPages - 1;
+    prevBtn.disabled = (currentPage === 0);
+    nextBtn.disabled = (currentPage >= totalPages - 1);
     
-    // 生成分页数字按钮
     let pagesHTML = '';
-    const maxVisiblePages = 5; // 最多显示的页码数
     
-    if (totalPages <= maxVisiblePages) {
-        // 页数少，全部显示
+    if (totalPages <= 4) {
+        // 总页数小于等于4页，则全部显示
         for (let i = 0; i < totalPages; i++) {
-            const isActive = i === currentPage ? 'active' : '';
-            pagesHTML += `<button class="pagination-btn ${isActive}" data-action="change-page" data-page="${i}">${i + 1}</button>`;
+            pagesHTML += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" data-action="change-page" data-page="${i}">${i + 1}</button>`;
         }
     } else {
-        // 页数多，显示部分，带省略号
-        const showFirst = true;
-        const showLast = true;
-        const midCount = maxVisiblePages - (showFirst ? 1 : 0) - (showLast ? 1 : 0);
-        let startPage = Math.max(0, currentPage - Math.floor(midCount / 2));
-        let endPage = Math.min(totalPages - 1, startPage + midCount - 1);
-        
-        if (endPage - startPage + 1 < midCount) {
-            startPage = Math.max(0, endPage - midCount + 1);
-        }
-        
-        // 第一页
-        if (showFirst && startPage > 0) {
-            pagesHTML += `<button class="pagination-btn ${currentPage === 0 ? 'active' : ''}" data-action="change-page" data-page="0">1</button>`;
-            if (startPage > 1) {
-                pagesHTML += `<span class="pagination-ellipsis">...</span>`;
+        // 总页数大于4页，智能显示
+        const pagesToShow = new Set();
+        pagesToShow.add(0); // 始终显示第一页
+        pagesToShow.add(totalPages - 1); // 始终显示最后一页
+
+        // 添加当前页和其前后两页
+        for (let i = -2; i <= 2; i++) {
+            const page = currentPage + i;
+            if (page > 0 && page < totalPages - 1) {
+                pagesToShow.add(page);
             }
         }
-        
-        // 中间页码
-        for (let i = startPage; i <= endPage; i++) {
-            const isActive = i === currentPage ? 'active' : '';
-            pagesHTML += `<button class="pagination-btn ${isActive}" data-action="change-page" data-page="${i}">${i + 1}</button>`;
-        }
-        
-        // 最后一页
-        if (showLast && endPage < totalPages - 1) {
-            if (endPage < totalPages - 2) {
+
+        let lastPage = -1;
+        Array.from(pagesToShow).sort((a, b) => a - b).forEach(i => {
+            if (lastPage !== -1 && i > lastPage + 1) {
                 pagesHTML += `<span class="pagination-ellipsis">...</span>`;
             }
-            pagesHTML += `<button class="pagination-btn ${currentPage === totalPages - 1 ? 'active' : ''}" data-action="change-page" data-page="${totalPages - 1}">${totalPages}</button>`;
-        }
+            pagesHTML += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" data-action="change-page" data-page="${i}">${i + 1}</button>`;
+            lastPage = i;
+        });
     }
     
     paginationPages.innerHTML = pagesHTML;
 }
 
-// 加载并显示患者数据
+// 加载并显示患者数据 (修复后)
 async function loadAndDisplayPatients() {
     const tableBody = document.getElementById('patient-table-body');
     if (!tableBody) return;
@@ -354,82 +349,38 @@ async function loadAndDisplayPatients() {
 
     try {
         if (!window.apiClient || !window.apiClient.patients) {
-            console.error('API客户端未初始化');
             throw new Error('API客户端未初始化');
         }
         
-        console.log(`正在加载患者数据，页码: ${currentPage}, 每页: ${pageSize}...`);
+        const skipCount = currentPage * pageSize;
+        let response;
         
-        let patients;
-        let skipCount = currentPage * pageSize;
+        // 根据是否搜索模式调用不同的API
+        if (isSearchMode && currentSearchTerm) {
+            response = await window.apiClient.patients.search(currentSearchTerm, skipCount, pageSize);
+        } else {
+            response = await window.apiClient.patients.getAll(skipCount, pageSize);
+        }
         
-        try {
-            if (isSearchMode && currentSearchTerm) {
-                patients = await window.apiClient.patients.search(currentSearchTerm, skipCount, pageSize);
-            } else {
-                patients = await window.apiClient.patients.getAll(skipCount, pageSize);
-            }
-            
-            console.log("患者数据加载成功:", patients);
-            
-            // 检查响应是否包含总记录数信息（服务端可能会返回总记录数）
-            if (patients && typeof patients === 'object') {
-                if (patients.total !== undefined) {
-                    // 直接从服务器获取总记录数
-                    totalPatients = patients.total;
-                    // 数据可能在items或data字段中
-                    if (Array.isArray(patients.items)) {
-                        allPatients = patients.items;
-                    } else if (Array.isArray(patients.data)) {
-                        allPatients = patients.data;
-                    } else if (Array.isArray(patients)) {
-                        // 仍然支持旧的API格式
-                        allPatients = patients;
-                        // 如果仍需要估算总记录数
-                        estimateTotalFromCurrentPage(patients, skipCount);
-                    }
-                } else if (Array.isArray(patients)) {
-                    // 旧API格式，需要估算总记录数
-                    allPatients = patients;
-                    estimateTotalFromCurrentPage(patients, skipCount);
-                }
-            }
-            
-            // 计算总页数
+        // **核心修改**：检查并解析新的响应格式
+        if (response && typeof response.total === 'number' && Array.isArray(response.items)) {
+            totalPatients = response.total; // 直接从后端获取准确的总数
+            allPatients = response.items;   // 获取当页的数据
             totalPages = Math.ceil(totalPatients / pageSize);
-            console.log(`总记录数: ${totalPatients}, 总页数: ${totalPages}`);
             
-            // 渲染表格
+            // 渲染表格和分页
             renderPatientTable(allPatients);
-            
-            // 更新分页器
             updatePagination();
-            
-        } catch (error) {
-            console.error('加载患者数据失败:', error);
-            if (tableBody) {
-                tableBody.innerHTML = `<tr><td colspan="6" class="text-danger">加载失败: ${error.message}</td></tr>`;
-            }
+        } else {
+            // 如果API响应格式不正确，抛出错误
+            throw new Error('API返回数据格式不正确，期望格式为 {total: number, items: array}');
         }
+        
     } catch (error) {
-        console.error('API客户端初始化失败:', error);
+        console.error('加载患者数据失败:', error);
         if (tableBody) {
-            tableBody.innerHTML = '<tr><td colspan="6" class="text-danger">API客户端初始化错误，请刷新页面重试</td></tr>';
+            tableBody.innerHTML = `<tr><td colspan="6" class="text-danger">加载失败: ${error.message}</td></tr>`;
         }
-    }
-}
-
-// 辅助函数：根据当前页估算总记录数
-function estimateTotalFromCurrentPage(patients, skipCount) {
-    // 如果返回的数据少于pageSize，说明已经是最后一页
-    if (patients.length < pageSize) {
-        totalPatients = skipCount + patients.length;
-        console.log(`估算总患者数: ${totalPatients} (不足一页，可能是最后一页)`);
-    } else {
-        // 如果返回的数据等于pageSize，那么总数至少还有这么多
-        // 在实际环境中，后端应该返回总数，这里仅为简单实现
-        totalPatients = Math.max(totalPatients, skipCount + patients.length + pageSize);
-        console.log(`估算总患者数: ${totalPatients} (可能有更多页)`);
     }
 }
 
@@ -458,6 +409,7 @@ function renderPatientTable(patients) {
                 <a href="#" class="action-link view" data-action="view-patient" data-id="${patient.id}">查看</a>
                 <a href="#" class="action-link edit" data-action="edit-patient" data-id="${patient.id}">编辑</a>
                 <a href="#" class="action-link delete" data-action="delete-patient" data-id="${patient.id}" data-name="${patient.name}">删除</a>
+                <a href="#" class="action-link" data-action="view-records" data-id="${patient.id}">查看病历</a>
             </td>
         `;
         tableBody.appendChild(row);
@@ -865,7 +817,7 @@ async function viewPatient(id) {
     } catch (error) {
         console.error('加载患者数据失败:', error);
         showNotification('错误', `加载患者数据失败: ${error.message}`, 'error');
-        }
+    }
 }
 
 // 格式化日期
@@ -883,5 +835,688 @@ function formatDate(dateString) {
         });
     } catch (e) {
         return dateString;
+    }
+}
+
+// 全局变量，用于病历管理
+let currentPatientForRecords = null;
+let medicalRecordsCurrentPage = 0;
+const medicalRecordsPageSize = 15; // 可自定义
+
+async function renderMedicalRecordModule(container, patientId) {
+    if (!container || !patientId) return;
+
+    // 首先确保病历管理部分显示
+    const section = document.getElementById('medical-records-section');
+    if (section) {
+        // 先隐藏其他所有部分
+        document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+        // 显示病历管理部分
+        section.style.display = 'block';
+        
+        // 更新侧边栏的激活状态
+        document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+        document.querySelector('.sidebar-item[data-section="medical-records"]')?.classList.add('active');
+    }
+
+    // 处理容器
+    let targetContainer = container;
+    if (section) {
+        const medicalRecordsContainer = section.querySelector('#medical-records-container');
+        if (medicalRecordsContainer) {
+            targetContainer = medicalRecordsContainer;
+        }
+    }
+
+    try {
+        // 获取当前患者信息，用于显示标题
+        currentPatientForRecords = await window.apiClient.patients.getById(patientId);
+    } catch (error) {
+        targetContainer.innerHTML = `<h1>错误</h1><p>无法加载患者信息: ${error.message}</p>`;
+        return;
+    }
+    
+    // 渲染UI骨架，与患者管理模块高度相似
+    targetContainer.innerHTML = `
+        <div id="medical-record-module-container">
+            <div class="header-bar">
+                <h1>病历管理: ${currentPatientForRecords.name}</h1>
+                <button data-action="add-record" class="btn btn-primary">添加新病历</button>
+                <button data-action="back-to-records" class="btn btn-secondary">返回患者选择</button>
+            </div>
+            <div class="card">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>病历ID</th>
+                            <th>就诊日期</th>
+                            <th>主诉症状</th>
+                            <th>诊断结果</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="record-table-body"></tbody>
+                </table>
+                <div id="record-pagination-container" class="pagination-container">
+                </div>
+            </div>
+
+            <div id="record-modal" class="modal">
+                <div class="modal-content large"> <span class="close-btn" data-action="close-record-modal">&times;</span>
+                    <h2 id="record-modal-title">添加新病历</h2>
+                    <form id="record-form">
+                        <input type="hidden" id="record-id">
+                        <fieldset>
+                            <legend>基本信息</legend>
+                            <div class="form-group">
+                                <label for="record-date">就诊日期</label>
+                                <input type="datetime-local" id="record-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="record-symptoms">主诉症状</label>
+                                <textarea id="record-symptoms" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="record-diagnosis">诊断结果</label>
+                                <textarea id="record-diagnosis" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="record-treatment">治疗方案</label>
+                                <textarea id="record-treatment" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="record-notes">备注</label>
+                                <textarea id="record-notes" rows="2"></textarea>
+                            </div>
+                        </fieldset>
+                        <fieldset>
+                            <legend>生命体征</legend>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="vital-temp">体温 (°C)</label>
+                                    <input type="number" step="0.1" id="vital-temp" placeholder="例如 36.5">
+                                </div>
+                                <div class="form-group">
+                                    <label for="vital-hr">心率 (次/分)</label>
+                                    <input type="number" id="vital-hr" placeholder="例如 75">
+                                </div>
+                                <div class="form-group">
+                                    <label for="vital-bp">血压 (mmHg)</label>
+                                    <input type="text" id="vital-bp" placeholder="例如 120/80">
+                                </div>
+                                <div class="form-group">
+                                    <label for="vital-rr">呼吸频率 (次/分)</label>
+                                    <input type="number" id="vital-rr" placeholder="例如 18">
+                                </div>
+                                <div class="form-group">
+                                    <label for="vital-sat">血氧饱和度 (%)</label>
+                                    <input type="number" step="0.1" id="vital-sat" placeholder="例如 98.5">
+                                </div>
+                            </div>
+                        </fieldset>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">保存</button>
+                            <button type="button" class="btn btn-secondary" data-action="close-record-modal">取消</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 绑定事件监听器
+    setupMedicalRecordEventListeners();
+
+    // 初始加载第一页病历数据
+    medicalRecordsCurrentPage = 0;
+    loadAndDisplayRecords(patientId);
+}
+
+function setupMedicalRecordEventListeners() {
+    const container = document.getElementById('medical-record-module-container');
+    if (!container) return;
+
+    // 使用事件委托
+    container.addEventListener('click', function(e) {
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
+
+        const action = target.dataset.action;
+        const recordId = target.dataset.id;
+
+        switch (action) {
+            case 'add-record':
+                showAddRecordModal();
+                break;
+            case 'edit-record':
+                showEditRecordModal(recordId);
+                break;
+            case 'delete-record':
+                deleteRecord(recordId);
+                break;
+            case 'close-record-modal':
+                hideRecordModal();
+                break;
+            case 'change-record-page':
+                const page = parseInt(target.dataset.page, 10);
+                goToRecordPage(page);
+                break;
+            case 'back-to-records':
+                // 返回患者选择
+                const mainContent = document.querySelector('.main-content');
+                if (mainContent) {
+                    // 检查是否从病历管理模块进入
+                    const medicalRecordsSection = document.getElementById('medical-records-section');
+                    const patientsSection = document.getElementById('patients-section');
+                    const activeSidebar = document.querySelector('.sidebar-item.active');
+                    
+                    if (activeSidebar && activeSidebar.getAttribute('data-section') === 'medical-records') {
+                        // 如果侧边栏激活的是病历管理，返回病历管理的患者选择页面
+                        renderMedicalRecordsModule(mainContent);
+                    } else {
+                        // 否则默认返回患者管理模块
+                        renderPatientModule(mainContent);
+                    }
+                }
+                break;
+        }
+    });
+
+    // 表单提交
+    const recordForm = document.getElementById('record-form');
+    if (recordForm) {
+        recordForm.addEventListener('submit', handleRecordFormSubmit);
+    }
+}
+
+async function loadAndDisplayRecords(patientId) {
+    const tableBody = document.getElementById('record-table-body');
+    if (!tableBody) return;
+    tableBody.innerHTML = '<tr><td colspan="5">正在加载病历...</td></tr>';
+
+    try {
+        const skip = medicalRecordsCurrentPage * medicalRecordsPageSize;
+        const response = await window.apiClient.medicalRecords.getByPatientId(patientId, skip, medicalRecordsPageSize);
+        
+        tableBody.innerHTML = '';
+        if (response.items.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5">该患者暂无病历记录。</td></tr>';
+            return;
+        }
+
+        response.items.forEach(record => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${record.id}</td>
+                <td>${new Date(record.record_date).toLocaleString()}</td>
+                <td>${(record.symptoms || '').substring(0, 20)}${record.symptoms && record.symptoms.length > 20 ? '...' : ''}</td>
+                <td>${(record.diagnosis || '').substring(0, 20)}${record.diagnosis && record.diagnosis.length > 20 ? '...' : ''}</td>
+                <td>
+                    <button class="btn btn-secondary" data-action="edit-record" data-id="${record.id}">编辑</button>
+                    <button class="btn btn-danger" data-action="delete-record" data-id="${record.id}">删除</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+        
+        // 调用分页渲染函数
+        renderRecordPagination(response.total, medicalRecordsCurrentPage, medicalRecordsPageSize);
+    } catch (error) {
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-danger">加载病历失败: ${error.message}</td></tr>`;
+    }
+}
+
+function renderRecordPagination(totalItems, currentPage, pageSize) {
+    const container = document.getElementById('record-pagination-container');
+    if (!container) return;
+    
+    const totalPages = Math.ceil(totalItems / pageSize);
+    
+    // 如果总页数小于等于1，则隐藏整个分页组件
+    if (totalPages <= 1) {
+        container.style.display = 'none';
+        return;
+    }
+    container.style.display = ''; // 确保在需要时显示
+    
+    const startItem = totalItems > 0 ? (currentPage * pageSize) + 1 : 0;
+    const endItem = Math.min((currentPage + 1) * pageSize, totalItems);
+    
+    let paginationHTML = `<div class="pagination-info">显示 ${startItem}-${endItem} 条，共 ${totalItems} 条</div>`;
+    paginationHTML += `<div class="pagination-controls">`;
+    paginationHTML += `<button class="pagination-btn" ${currentPage === 0 ? 'disabled' : ''} data-action="change-record-page" data-page="${currentPage - 1}">&lt; 上一页</button>`;
+    
+    paginationHTML += `<div class="pagination-pages">`;
+    
+    if (totalPages <= 4) {
+        // 总页数小于等于4页，则全部显示
+        for (let i = 0; i < totalPages; i++) {
+            paginationHTML += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" data-action="change-record-page" data-page="${i}">${i + 1}</button>`;
+        }
+    } else {
+        // 总页数大于4页，智能显示
+        const pagesToShow = new Set();
+        pagesToShow.add(0); // 始终显示第一页
+        pagesToShow.add(totalPages - 1); // 始终显示最后一页
+
+        // 添加当前页和其前后两页
+        for (let i = -2; i <= 2; i++) {
+            const page = currentPage + i;
+            if (page > 0 && page < totalPages - 1) {
+                pagesToShow.add(page);
+            }
+        }
+
+        let lastPage = -1;
+        Array.from(pagesToShow).sort((a, b) => a - b).forEach(i => {
+            if (lastPage !== -1 && i > lastPage + 1) {
+                paginationHTML += `<span class="pagination-ellipsis">...</span>`;
+            }
+            paginationHTML += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" data-action="change-record-page" data-page="${i}">${i + 1}</button>`;
+            lastPage = i;
+        });
+    }
+    
+    paginationHTML += `</div>`;
+    
+    paginationHTML += `<button class="pagination-btn" ${currentPage >= totalPages - 1 ? 'disabled' : ''} data-action="change-record-page" data-page="${currentPage + 1}">下一页 &gt;</button>`;
+    paginationHTML += `</div>`;
+    
+    container.innerHTML = paginationHTML;
+}
+
+function goToRecordPage(page) {
+    medicalRecordsCurrentPage = page;
+    loadAndDisplayRecords(currentPatientForRecords.id);
+}
+
+function showAddRecordModal() {
+    document.getElementById('record-form').reset();
+    document.getElementById('record-id').value = '';
+    document.getElementById('record-modal-title').textContent = '添加新病历';
+    document.getElementById('record-modal').style.display = 'block';
+    
+    // 设置默认的就诊日期为当前时间
+    const now = new Date();
+    const dateTimeStr = now.toISOString().slice(0, 16); // 格式：2023-11-23T10:30
+    document.getElementById('record-date').value = dateTimeStr;
+}
+
+async function showEditRecordModal(recordId) {
+    document.getElementById('record-form').reset();
+    try {
+        const record = await window.apiClient.medicalRecords.getById(recordId);
+        
+        document.getElementById('record-id').value = record.id;
+        document.getElementById('record-modal-title').textContent = '编辑病历';
+        
+        // 填充表单
+        document.getElementById('record-date').value = new Date(record.record_date).toISOString().slice(0, 16);
+        document.getElementById('record-symptoms').value = record.symptoms || '';
+        document.getElementById('record-diagnosis').value = record.diagnosis || '';
+        document.getElementById('record-treatment').value = record.treatment_plan || '';
+        document.getElementById('record-notes').value = record.notes || '';
+
+        if (record.vital_sign) {
+            document.getElementById('vital-temp').value = record.vital_sign.temperature || '';
+            document.getElementById('vital-hr').value = record.vital_sign.heart_rate || '';
+            document.getElementById('vital-bp').value = record.vital_sign.blood_pressure || '';
+            document.getElementById('vital-rr').value = record.vital_sign.respiratory_rate || '';
+            document.getElementById('vital-sat').value = record.vital_sign.oxygen_saturation || '';
+        }
+        
+        document.getElementById('record-modal').style.display = 'block';
+    } catch (error) {
+        alert('加载病历信息失败: ' + error.message);
+    }
+}
+
+function hideRecordModal() {
+    document.getElementById('record-modal').style.display = 'none';
+}
+
+async function handleRecordFormSubmit(event) {
+    event.preventDefault();
+    const recordId = document.getElementById('record-id').value;
+
+    const recordData = {
+        patient_id: currentPatientForRecords.id,
+        doctor_id: 1, // 临时的医生ID，后续应从当前登录用户获取
+        record_date: new Date(document.getElementById('record-date').value).toISOString(),
+        symptoms: document.getElementById('record-symptoms').value,
+        diagnosis: document.getElementById('record-diagnosis').value,
+        treatment_plan: document.getElementById('record-treatment').value,
+        notes: document.getElementById('record-notes').value,
+        vital_sign: { // 将生命体征作为嵌套对象
+            temperature: parseFloat(document.getElementById('vital-temp').value) || null,
+            heart_rate: parseInt(document.getElementById('vital-hr').value, 10) || null,
+            blood_pressure: document.getElementById('vital-bp').value,
+            respiratory_rate: parseInt(document.getElementById('vital-rr').value, 10) || null,
+            oxygen_saturation: parseFloat(document.getElementById('vital-sat').value) || null,
+        }
+    };
+    
+    try {
+        if (recordId) {
+            // 更新逻辑
+            await window.apiClient.medicalRecords.update(recordId, recordData);
+        } else {
+            // 创建新病历
+            await window.apiClient.medicalRecords.create(recordData);
+        }
+        alert('病历保存成功！');
+        hideRecordModal();
+        loadAndDisplayRecords(currentPatientForRecords.id);
+    } catch (error) {
+        alert('保存失败: ' + error.message);
+    }
+}
+
+async function deleteRecord(recordId) {
+    if (confirm('确定要删除这条病历吗？')) {
+        try {
+            await window.apiClient.medicalRecords.delete(recordId);
+            alert('删除成功！');
+            loadAndDisplayRecords(currentPatientForRecords.id);
+        } catch (error) {
+            alert('删除失败: ' + error.message);
+        }
+    }
+}
+
+// 新增病历管理主模块渲染函数
+function renderMedicalRecordsModule(container) {
+    if (!container) return;
+    
+    // 首先确保病历管理部分可见
+    const section = document.getElementById('medical-records-section');
+    if (section) {
+        // 隐藏其他所有部分
+        document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+        // 显示病历管理部分
+        section.style.display = 'block';
+        
+        // 更新侧边栏的激活状态
+        document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+        document.querySelector('.sidebar-item[data-section="medical-records"]')?.classList.add('active');
+    }
+    
+    // 获取或创建medical-records-container
+    let medicalRecordsContainer = section ? section.querySelector('#medical-records-container') : null;
+    if (!medicalRecordsContainer) {
+        medicalRecordsContainer = document.createElement('div');
+        medicalRecordsContainer.id = 'medical-records-container';
+        if (section) {
+            section.appendChild(medicalRecordsContainer);
+        }
+    }
+    
+    // 使用正确的容器
+    const targetContainer = medicalRecordsContainer || container;
+    
+    // 渲染病历管理主界面
+    targetContainer.innerHTML = `
+        <div id="medical-records-module-container" class="patient-module-wrapper">
+            <div id="medical-records-module-content">
+                <div class="header-bar">
+                    <h1>病历管理</h1>
+                </div>
+                <div class="card">
+                    <div class="patient-selection">
+                        <h3>请先选择一个患者</h3>
+                        <div class="search-bar">
+                            <input type="text" id="medical-records-patient-search" placeholder="按姓名搜索患者...">
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>姓名</th>
+                                    <th>性别</th>
+                                    <th>出生日期</th>
+                                    <th>电话</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="medical-records-patient-table-body">
+                                <tr>
+                                    <td colspan="6">正在加载患者数据...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div id="medical-records-pagination-container" class="pagination-container">
+                            <div class="pagination-info">显示 <span id="medical-records-pagination-range">0-0</span> 条，共 <span id="medical-records-pagination-total">0</span> 条</div>
+                            <div class="pagination-controls">
+                                <button id="medical-records-pagination-prev" class="pagination-btn" disabled>&lt; 上一页</button>
+                                <div id="medical-records-pagination-pages" class="pagination-pages"></div>
+                                <button id="medical-records-pagination-next" class="pagination-btn" disabled>下一页 &gt;</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // 为患者选择界面绑定事件
+    setupMedicalRecordsPatientSelection(targetContainer);
+}
+
+// 设置病历管理中的患者选择功能
+function setupMedicalRecordsPatientSelection(container) {
+    // 复用患者管理模块的变量，但使用独立的搜索和分页状态
+    let mrCurrentPage = 0;
+    let mrPageSize = 15;
+    let mrTotalPages = 0;
+    let mrTotalPatients = 0;
+    let mrIsSearchMode = false;
+    let mrCurrentSearchTerm = '';
+
+    // 加载患者数据
+    loadAndDisplayMRPatients();
+
+    // 搜索框事件绑定
+    const searchInput = document.getElementById('medical-records-patient-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', handleMRPatientSearch);
+    }
+
+    // 分页按钮事件
+    const prevBtn = document.getElementById('medical-records-pagination-prev');
+    const nextBtn = document.getElementById('medical-records-pagination-next');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            if (mrCurrentPage > 0) {
+                goToMRPage(mrCurrentPage - 1);
+            }
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            if (mrCurrentPage < mrTotalPages - 1) {
+                goToMRPage(mrCurrentPage + 1);
+            }
+        });
+    }
+
+    // 事件委托，处理患者表格内的操作
+    const moduleContainer = container.querySelector('#medical-records-module-container');
+    if (moduleContainer) {
+        moduleContainer.addEventListener('click', function(e) {
+            const target = e.target.closest('[data-action]');
+            if (!target) return;
+            
+            const action = target.dataset.action;
+            const id = target.dataset.id;
+            const page = target.dataset.page;
+
+            if (action === 'view-patient-records') {
+                renderMedicalRecordModule(container, id);
+            } else if (action === 'change-mr-page' && page !== undefined) {
+                goToMRPage(parseInt(page));
+            }
+        });
+    }
+
+    // 加载并显示患者列表
+    async function loadAndDisplayMRPatients() {
+        const tableBody = document.getElementById('medical-records-patient-table-body');
+        if (!tableBody) return;
+
+        tableBody.innerHTML = '<tr><td colspan="6">正在加载患者数据...</td></tr>';
+
+        try {
+            if (!window.apiClient || !window.apiClient.patients) {
+                throw new Error('API客户端未初始化');
+            }
+            
+            const skipCount = mrCurrentPage * mrPageSize;
+            let response;
+            
+            // 根据是否搜索模式调用不同的API
+            if (mrIsSearchMode && mrCurrentSearchTerm) {
+                response = await window.apiClient.patients.search(mrCurrentSearchTerm, skipCount, mrPageSize);
+            } else {
+                response = await window.apiClient.patients.getAll(skipCount, mrPageSize);
+            }
+            
+            // 处理响应
+            if (response && typeof response.total === 'number' && Array.isArray(response.items)) {
+                mrTotalPatients = response.total;
+                mrTotalPages = Math.ceil(mrTotalPatients / mrPageSize);
+                
+                // 渲染表格和分页
+                renderMRPatientTable(response.items);
+                updateMRPagination();
+            } else {
+                throw new Error('API返回数据格式不正确');
+            }
+            
+        } catch (error) {
+            console.error('加载患者数据失败:', error);
+            if (tableBody) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-danger">加载失败: ${error.message}</td></tr>`;
+            }
+        }
+    }
+
+    // 渲染患者表格
+    function renderMRPatientTable(patients) {
+        const tableBody = document.getElementById('medical-records-patient-table-body');
+        if (!tableBody) return;
+        
+        tableBody.innerHTML = '';
+        
+        if (!patients || patients.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6">未找到患者。</td></tr>';
+            return;
+        }
+        
+        // 渲染数据
+        patients.forEach(patient => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${patient.id}</td>
+                <td>${patient.name}</td>
+                <td>${patient.gender || ''}</td>
+                <td>${patient.birth_date || ''}</td>
+                <td>${patient.contact_number || ''}</td>
+                <td>
+                    <a href="#" class="action-link" data-action="view-patient-records" data-id="${patient.id}">查看病历</a>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    // 更新分页UI
+    function updateMRPagination() {
+        const paginationContainer = document.getElementById('medical-records-pagination-container');
+        const paginationRange = document.getElementById('medical-records-pagination-range');
+        const paginationTotal = document.getElementById('medical-records-pagination-total');
+        const paginationPages = document.getElementById('medical-records-pagination-pages');
+        const prevBtn = document.getElementById('medical-records-pagination-prev');
+        const nextBtn = document.getElementById('medical-records-pagination-next');
+        
+        if (!paginationContainer || !paginationRange || !paginationTotal || !paginationPages || !prevBtn || !nextBtn) {
+            return;
+        }
+        
+        // 如果总页数小于等于1，则隐藏整个分页组件
+        if (mrTotalPages <= 1) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+        paginationContainer.style.display = '';
+
+        const startItem = mrTotalPatients > 0 ? (mrCurrentPage * mrPageSize) + 1 : 0;
+        const endItem = Math.min((mrCurrentPage + 1) * mrPageSize, mrTotalPatients);
+        
+        paginationRange.textContent = `${startItem}-${endItem}`;
+        paginationTotal.textContent = mrTotalPatients;
+        
+        prevBtn.disabled = (mrCurrentPage === 0);
+        nextBtn.disabled = (mrCurrentPage >= mrTotalPages - 1);
+        
+        let pagesHTML = '';
+        
+        if (mrTotalPages <= 4) {
+            // 总页数小于等于4页，则全部显示
+            for (let i = 0; i < mrTotalPages; i++) {
+                pagesHTML += `<button class="pagination-btn ${i === mrCurrentPage ? 'active' : ''}" data-action="change-mr-page" data-page="${i}">${i + 1}</button>`;
+            }
+        } else {
+            // 总页数大于4页，智能显示
+            const pagesToShow = new Set();
+            pagesToShow.add(0); // 始终显示第一页
+            pagesToShow.add(mrTotalPages - 1); // 始终显示最后一页
+
+            // 添加当前页和其前后两页
+            for (let i = -2; i <= 2; i++) {
+                const page = mrCurrentPage + i;
+                if (page > 0 && page < mrTotalPages - 1) {
+                    pagesToShow.add(page);
+                }
+            }
+
+            let lastPage = -1;
+            Array.from(pagesToShow).sort((a, b) => a - b).forEach(i => {
+                if (lastPage !== -1 && i > lastPage + 1) {
+                    pagesHTML += `<span class="pagination-ellipsis">...</span>`;
+                }
+                pagesHTML += `<button class="pagination-btn ${i === mrCurrentPage ? 'active' : ''}" data-action="change-mr-page" data-page="${i}">${i + 1}</button>`;
+                lastPage = i;
+            });
+        }
+        
+        paginationPages.innerHTML = pagesHTML;
+    }
+
+    // 前往指定页
+    function goToMRPage(page) {
+        if (page < 0 || page >= mrTotalPages) return;
+        mrCurrentPage = page;
+        loadAndDisplayMRPatients();
+    }
+
+    // 搜索功能
+    function handleMRPatientSearch(event) {
+        if (!event || !event.target) return;
+        
+        const searchTerm = event.target.value.toLowerCase().trim();
+        
+        // 重置分页状态
+        mrCurrentPage = 0;
+        mrTotalPages = 0;
+        mrTotalPatients = 0;
+        
+        // 根据搜索词是否为空决定是搜索模式还是普通加载
+        mrIsSearchMode = searchTerm.length > 0;
+        mrCurrentSearchTerm = searchTerm;
+        
+        // 重新加载数据
+        loadAndDisplayMRPatients();
     }
 } 

@@ -48,6 +48,17 @@ class UserService(BaseService[models.User, schemas.UserCreate, schemas.UserUpdat
         if not user.is_active:
             raise AuthenticationException(message="Inactive user")
         return user
+        
+    def update_preferences(
+        self, db: Session, *, user: models.User, preferences: schemas.UserPreferenceUpdate
+    ) -> models.User:
+        """
+        更新用户的偏好设置
+        """
+        # 将偏好数据转换为字典
+        update_data = preferences.model_dump(exclude_unset=True)
+        # 调用基类的update方法来更新用户对象
+        return super().update(db, db_obj=user, obj_in=update_data)
 
 # 创建 service 实例供 api 层使用
 user_service = UserService(models.User) 

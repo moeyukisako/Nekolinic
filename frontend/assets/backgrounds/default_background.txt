@@ -1,0 +1,5 @@
+这里是背景图片的目录。图片可以在下列网站获取：
+https://source.unsplash.com/random/1920x1080/?hospital
+https://source.unsplash.com/random/1920x1080/?doctor
+https://source.unsplash.com/random/1920x1080/?medical
+https://source.unsplash.com/random/1920x1080/?abstract 

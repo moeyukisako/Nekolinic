@@ -15,6 +15,7 @@ class UserBase(BaseModel):
     full_name: Optional[str] = None
     role: str = "user"
     is_active: bool = True
+    background_preference: Optional[str] = None
 
 class UserCreate(UserBase):
     username: str
@@ -26,9 +27,14 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
     role: Optional[str] = None
     is_active: Optional[bool] = None
+    background_preference: Optional[str] = None
 
 class User(UserBase):
     id: int
     username: str
     
-    model_config = ConfigDict(from_attributes=True) 
+    model_config = ConfigDict(from_attributes=True)
+
+# --- 用户偏好更新 ---
+class UserPreferenceUpdate(BaseModel):
+    background_preference: Optional[str] = None 

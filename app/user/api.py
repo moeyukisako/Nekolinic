@@ -1,8 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Body, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Body, Request, File, UploadFile, Form
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
 from pydantic import BaseModel
+import os
+import base64
+import shutil
+from pathlib import Path
+from datetime import datetime
 
 from . import schemas, service
 from app.core.database import get_db
@@ -77,4 +82,72 @@ async def read_users_me(current_user = Depends(get_current_active_user)):
     """
     获取当前登录用户信息
     """
-    return current_user 
+    return current_user
+
+@router.put("/me/preferences", response_model=schemas.User)
+def update_current_user_preferences(
+    *,
+    db: Session = Depends(get_db),
+    preferences_in: schemas.UserPreferenceUpdate,
+    current_user = Depends(get_current_active_user)
+):
+    """
+    更新当前用户的偏好设置，例如背景图片
+    """
+    user = service.user_service.update_preferences(
+        db, user=current_user, preferences=preferences_in
+    )
+    return user
+
+# 背景图片保存请求模型
+class BackgroundImageRequest(BaseModel):
+    image_data: str
+    filename: str
+
+@router.post("/me/background-image", response_model=schemas.User)
+async def upload_background_image(
+    *,
+    db: Session = Depends(get_db),
+    image_data: BackgroundImageRequest,
+    current_user = Depends(get_current_active_user)
+):
+    """
+    上传并保存用户背景图片
+    """
+    try:
+        # 确保目录存在
+        backgrounds_dir = Path("frontend/assets/backgrounds")
+        backgrounds_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 解析Base64图片数据
+        if "base64," in image_data.image_data:
+            # 从Data URL中提取实际的Base64编码部分
+            encoded_data = image_data.image_data.split("base64,")[1]
+        else:
+            encoded_data = image_data.image_data
+            
+        # 生成唯一文件名
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        filename = f"bg_{current_user.id}_{timestamp}.jpg"
+        file_path = backgrounds_dir / filename
+        
+        # 解码Base64数据并写入文件
+        with open(file_path, "wb") as f:
+            f.write(base64.b64decode(encoded_data))
+        
+        # 更新用户记录中的背景偏好
+        background_path = f"/assets/backgrounds/{filename}"
+        
+        # 使用服务更新用户偏好
+        user = service.user_service.update_preferences(
+            db, 
+            user=current_user, 
+            preferences=schemas.UserPreferenceUpdate(background_preference=background_path)
+        )
+        
+        return user
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"无法保存背景图片: {str(e)}"
+        ) 

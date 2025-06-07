@@ -18,6 +18,7 @@ class UserHistory(Base):
     hashed_password = Column(String(255))
     role = Column(String(50))
     is_active = Column(Boolean)
+    background_preference = Column(String(255), nullable=True)
     
     # 审计字段快照
     created_at = Column(DateTime)
@@ -38,6 +39,7 @@ class User(Base, Auditable):
     hashed_password = Column(String(255), nullable=False)
     role = Column(String(50), nullable=False, default='user')
     is_active = Column(Boolean, default=True)
+    background_preference = Column(String(255), nullable=True)
     
     # 基础审计字段 (由 BaseService 自动填充)
     created_at = Column(DateTime)

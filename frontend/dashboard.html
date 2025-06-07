@@ -481,8 +481,9 @@
             </div>
             
             <div id="medical-records-section" class="content-section" style="display: none;">
-                <h1>病历管理</h1>
-                <p>此功能正在开发中...</p>
+                <div id="medical-records-container">
+                    <!-- 病历管理模块将由JavaScript动态渲染 -->
+                </div>
             </div>
             
             <div id="pharmacy-section" class="content-section" style="display: none;">
@@ -675,7 +676,7 @@
             const cancelBtn = document.getElementById('modal-cancel');
             
             modalTitle.textContent = title;
-            modalBody.textContent = message;
+            modalBody.innerHTML = message;
             modal.setAttribute('data-type', type);
             
             // 重置按钮事件为默认行为
@@ -716,37 +717,8 @@
             const localBackgrounds = document.getElementById('local-backgrounds');
             const bgContainer = document.querySelector('.bg-container');
             
-            // 从LocalStorage加载保存的背景
-            const savedBgImage = localStorage.getItem('nekolinic-bg-image');
-            if (savedBgImage) {
-                document.documentElement.style.setProperty('--bg-image', `url(${savedBgImage})`);
-                if (bgContainer) {
-                    bgContainer.style.backgroundImage = `url(${savedBgImage})`;
-                }
-                if (bgPreview) bgPreview.style.backgroundImage = `url(${savedBgImage})`;
-            }
-            
-            // 检查是否有保存的背景颜色
-            const savedBgColor = localStorage.getItem('nekolinic-bg-color');
-            if (savedBgColor) {
-                document.documentElement.style.setProperty('--bg-image', 'none');
-                document.documentElement.style.setProperty('--color-bg-primary', savedBgColor);
-                if (bgContainer) {
-                    bgContainer.style.backgroundImage = 'none';
-                }
-                if (bgPreview) {
-                    bgPreview.style.backgroundColor = savedBgColor;
-                    bgPreview.style.backgroundImage = 'none';
-                }
-                
-                // 更新激活状态
-                const thumbnails = document.querySelectorAll('.bg-thumbnail');
-                thumbnails.forEach(thumb => {
-                    if (thumb.getAttribute('data-color') === savedBgColor) {
-                        thumb.classList.add('active');
-                    }
-                });
-            }
+            // 异步加载用户背景设置
+            loadUserBackgroundSetting();
             
             // 背景设置面板切换
             if (bgSettingsTrigger) {
@@ -777,6 +749,10 @@
                             
                             // 压缩图片
                             compressImage(imageUrl, function(compressedImageUrl) {
+                                // 获取文件名
+                                const fileName = `bg_${Date.now()}.jpg`;
+                                
+                                // 应用背景到UI以提供即时反馈
                                 if (bgContainer) {
                                     bgContainer.style.backgroundImage = `url(${compressedImageUrl})`;
                                 }
@@ -784,20 +760,47 @@
                                 // 更新预览
                                 if (bgPreview) bgPreview.style.backgroundImage = `url(${compressedImageUrl})`;
                                 
-                                // 保存到localStorage
+                                // 保存到服务器
                                 try {
-                                    localStorage.setItem('nekolinic-bg-image', compressedImageUrl);
-                                    document.documentElement.style.setProperty('--bg-image', `url(${compressedImageUrl})`);
-                                    
-                                    // 清除所有缩略图激活状态
-                                    const thumbnails = document.querySelectorAll('.bg-thumbnail');
-                                    thumbnails.forEach(thumb => thumb.classList.remove('active'));
-                                    
-                                    // 清除可能设置的背景颜色
-                                    document.documentElement.style.removeProperty('--bg-color');
-                                    localStorage.removeItem('nekolinic-bg-color');
-                                    
-                                    showNotification('成功', '背景图片已成功应用并保存', 'info');
+                                    // 将图片数据发送到服务器
+                                    fetch(`${API_BASE_URL}/users/me/background-image`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                                        },
+                                        body: JSON.stringify({
+                                            image_data: compressedImageUrl,
+                                            filename: fileName
+                                        })
+                                    })
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error(`服务器响应错误: ${response.status}`);
+                                        }
+                                        return response.json();
+                                    })
+                                    .then(user => {
+                                        // 更新全局用户对象
+                                        currentUser = user;
+                                        
+                                        // 应用新的背景URL
+                                        document.documentElement.style.setProperty('--bg-image', `url(${user.background_preference})`);
+                                        
+                                        // 清除所有缩略图激活状态
+                                        const thumbnails = document.querySelectorAll('.bg-thumbnail');
+                                        thumbnails.forEach(thumb => thumb.classList.remove('active'));
+                                        
+                                        // 从localStorage移除背景颜色设置
+                                        document.documentElement.style.removeProperty('--bg-color');
+                                        localStorage.removeItem('nekolinic-bg-color');
+                                        
+                                        showNotification('成功', '背景图片已成功应用并保存到您的帐户', 'info');
+                                    })
+                                    .catch(err => {
+                                        showNotification('错误', '保存背景图片失败: ' + err.message, 'error');
+                                        console.error('保存背景图片失败:', err);
+                                    });
                                 } catch (err) {
                                     showNotification('错误', '保存背景图片失败: ' + err.message, 'error');
                                     console.error('保存背景图片失败:', err);
@@ -826,23 +829,107 @@
             // 加载本地预设背景
             loadLocalBackgrounds();
             
+            // 异步加载用户背景设置
+            async function loadUserBackgroundSetting() {
+                try {
+                    // 获取当前用户信息
+                    const user = await apiClient.auth.getCurrentUser();
+                    
+                    // 检查用户是否有保存的背景
+                    if (user && user.background_preference) {
+                        // 应用背景
+                        const backgroundUrl = user.background_preference;
+                        document.documentElement.style.setProperty('--bg-image', `url(${backgroundUrl})`);
+                        if (bgContainer) {
+                            bgContainer.style.backgroundImage = `url(${backgroundUrl})`;
+                        }
+                        if (bgPreview) bgPreview.style.backgroundImage = `url(${backgroundUrl})`;
+                    } else {
+                        // 检查是否有保存在localStorage的背景（向后兼容）
+                        const savedBgImage = localStorage.getItem('nekolinic-bg-image');
+                        if (savedBgImage) {
+                            document.documentElement.style.setProperty('--bg-image', `url(${savedBgImage})`);
+                            if (bgContainer) {
+                                bgContainer.style.backgroundImage = `url(${savedBgImage})`;
+                            }
+                            if (bgPreview) bgPreview.style.backgroundImage = `url(${savedBgImage})`;
+                            
+                            // 将localStorage中的背景保存到用户账户中
+                            try {
+                                await apiClient.auth.updatePreferences({
+                                    background_preference: savedBgImage
+                                });
+                                // 保存成功后清除localStorage
+                                localStorage.removeItem('nekolinic-bg-image');
+                            } catch (err) {
+                                console.error('从localStorage迁移背景设置失败:', err);
+                            }
+                        }
+                        
+                        // 检查是否有保存的背景颜色
+                        const savedBgColor = localStorage.getItem('nekolinic-bg-color');
+                        if (savedBgColor) {
+                            document.documentElement.style.setProperty('--bg-image', 'none');
+                            document.documentElement.style.setProperty('--color-bg-primary', savedBgColor);
+                            if (bgContainer) {
+                                bgContainer.style.backgroundImage = 'none';
+                            }
+                            if (bgPreview) {
+                                bgPreview.style.backgroundColor = savedBgColor;
+                                bgPreview.style.backgroundImage = 'none';
+                            }
+                            
+                            // 更新激活状态
+                            const thumbnails = document.querySelectorAll('.bg-thumbnail');
+                            thumbnails.forEach(thumb => {
+                                if (thumb.getAttribute('data-color') === savedBgColor) {
+                                    thumb.classList.add('active');
+                                }
+                            });
+                            
+                            // 将背景颜色保存到用户账户中
+                            try {
+                                await apiClient.auth.updatePreferences({
+                                    background_preference: `color:${savedBgColor}`
+                                });
+                                // 保存成功后清除localStorage
+                                localStorage.removeItem('nekolinic-bg-color');
+                            } catch (err) {
+                                console.error('从localStorage迁移背景颜色设置失败:', err);
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('加载用户背景设置失败:', err);
+                }
+            }
+            
             // 应用背景函数
             function applyBackground(imageUrl) {
                 if (bgContainer) {
                     bgContainer.style.backgroundImage = `url(${imageUrl})`;
                 }
                 document.documentElement.style.setProperty('--bg-image', `url(${imageUrl})`);
-                localStorage.setItem('nekolinic-bg-image', imageUrl);
                 if (bgPreview) bgPreview.style.backgroundImage = `url(${imageUrl})`;
                 
-                // 更新所有缩略图激活状态
-                const thumbnails = document.querySelectorAll('.bg-thumbnail');
-                thumbnails.forEach(thumb => {
-                    if (thumb.getAttribute('data-img') === imageUrl) {
-                        thumb.classList.add('active');
-                    } else {
-                        thumb.classList.remove('active');
-                    }
+                // 保存到服务器
+                apiClient.auth.updatePreferences({
+                    background_preference: imageUrl
+                }).then(() => {
+                    // 更新所有缩略图激活状态
+                    const thumbnails = document.querySelectorAll('.bg-thumbnail');
+                    thumbnails.forEach(thumb => {
+                        if (thumb.getAttribute('data-img') === imageUrl) {
+                            thumb.classList.add('active');
+                        } else {
+                            thumb.classList.remove('active');
+                        }
+                    });
+                    
+                    showNotification('成功', '背景图片已成功应用并保存', 'info');
+                }).catch(err => {
+                    showNotification('错误', '保存背景设置失败: ' + err.message, 'error');
+                    console.error('保存背景设置失败:', err);
                 });
             }
             
@@ -852,7 +939,6 @@
                     bgContainer.style.backgroundImage = 'none';
                 }
                 document.documentElement.style.setProperty('--bg-image', 'none');
-                localStorage.removeItem('nekolinic-bg-image');
                 if (bgPreview) bgPreview.style.backgroundImage = 'none';
                 
                 // 清除所有缩略图激活状态
@@ -862,7 +948,15 @@
                 // 清除文件输入
                 if (fileInput) fileInput.value = '';
                 
-                showNotification('成功', '背景已重置', 'info');
+                // 保存到服务器
+                apiClient.auth.updatePreferences({
+                    background_preference: null
+                }).then(() => {
+                    showNotification('成功', '背景已重置', 'info');
+                }).catch(err => {
+                    showNotification('错误', '重置背景设置失败: ' + err.message, 'error');
+                    console.error('重置背景设置失败:', err);
+                });
             }
             
             // 加载本地预设背景
@@ -879,12 +973,10 @@
                 ];
                 
                 let html = '';
-                const savedBgColor = localStorage.getItem('nekolinic-bg-color');
                 
                 backgrounds.forEach(bg => {
-                    const isActive = savedBgColor === bg.color ? 'active' : '';
                     html += `
-                        <div class="bg-thumbnail ${isActive}" 
+                        <div class="bg-thumbnail" 
                             style="background-color: ${bg.color}" 
                             data-color="${bg.color}"
                             title="${bg.name}">
@@ -905,14 +997,19 @@
                         if (bgPreview) bgPreview.style.backgroundImage = 'none';
                         
                         try {
-                            localStorage.setItem('nekolinic-bg-color', color);
-                            localStorage.removeItem('nekolinic-bg-image');
-                            
-                            // 更新激活状态
-                            document.querySelectorAll('.bg-thumbnail').forEach(t => t.classList.remove('active'));
-                            this.classList.add('active');
-                            
-                            showNotification('成功', '背景颜色已成功应用并保存', 'info');
+                            // 保存颜色到服务器
+                            apiClient.auth.updatePreferences({
+                                background_preference: `color:${color}`
+                            }).then(() => {
+                                // 更新激活状态
+                                document.querySelectorAll('.bg-thumbnail').forEach(t => t.classList.remove('active'));
+                                this.classList.add('active');
+                                
+                                showNotification('成功', '背景颜色已成功应用并保存', 'info');
+                            }).catch(err => {
+                                showNotification('错误', '保存背景颜色失败: ' + err.message, 'error');
+                                console.error('保存背景颜色失败:', err);
+                            });
                         } catch (err) {
                             showNotification('错误', '保存背景颜色失败: ' + err.message, 'error');
                             console.error('保存背景颜色失败:', err);

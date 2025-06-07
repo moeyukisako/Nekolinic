@@ -104,8 +104,19 @@ app.add_middleware(UserContextMiddleware)
 from .routes import router as api_router
 app.include_router(api_router, prefix="/api/v1")
 
-# 然后挂载前端静态文件 - 放在API路由之后
+# 挂载静态资源目录，使背景图片可以访问
 frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
+assets_dir = os.path.join(frontend_dir, "assets")
+
+# 确保assets目录存在
+if not os.path.exists(assets_dir):
+    os.makedirs(assets_dir, exist_ok=True)
+
+# 挂载assets目录
+if os.path.exists(assets_dir):
+    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+# 然后挂载前端静态文件 - 放在API路由之后
 if os.path.exists(frontend_dir):
     app.mount("/", StaticFiles(directory=frontend_dir, html=True), name="frontend")
 

@@ -1,4 +1,4 @@
-import { showLoading, showNotification, confirmDialog } from '../utils/ui.js';
+import { showLoading, confirmDialog } from '../utils/ui.js';
 import Modal from '../components/modal.js';
 import Pagination from '../components/pagination.js';
 import SearchBar from '../components/searchBar.js';
@@ -16,8 +16,8 @@ export default async function render(container, { signal }) {
             <div id="medicine-module-content">
                 <div class="table-header-controls">
                     <div class="search-input-group">
-                        <input type="text" id="medicine-search-input" placeholder="按药品名称、厂家搜索...">
-                        <button id="add-medicine-btn" class="search-addon-btn">添加新药品</button>
+                        <input type="text" id="medicine-search-input" data-i18n-placeholder="search_medicine_placeholder" placeholder="按药品名称、厂家搜索...">
+                        <button id="add-medicine-btn" class="search-addon-btn" data-i18n="add_new_medicine">添加新药品</button>
                     </div>
                 </div>
                 <div class="data-table-container">
@@ -25,11 +25,11 @@ export default async function render(container, { signal }) {
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>药品名称</th>
-                                    <th>规格</th>
-                                    <th>生产厂家</th>
-                                    <th>当前库存</th>
-                                    <th class="actions-column">操作</th>
+                                    <th data-i18n="medicine_name">药品名称</th>
+                                    <th data-i18n="specification">规格</th>
+                                    <th data-i18n="manufacturer">生产厂家</th>
+                                    <th data-i18n="current_stock">当前库存</th>
+                                    <th class="actions-column" data-i18n="actions">操作</th>
                                 </tr>
                             </thead>
                             <tbody id="medicine-table-body"></tbody>
@@ -41,6 +41,11 @@ export default async function render(container, { signal }) {
         </div>
     `;
 
+  // 翻译页面内容
+  if (window.translatePage) {
+    window.translatePage();
+  }
+  
   // 初始化加载数据
   await loadMedicines();
 
@@ -94,7 +99,10 @@ async function loadMedicines(searchTerm = '', page = 1) {
     const medicines = response.items || [];
     
     if (medicines.length === 0) {
-      tableBody.innerHTML = '<tr><td colspan="5" class="text-center">未找到相关药品信息</td></tr>';
+      tableBody.innerHTML = `<tr><td colspan="5" class="text-center" data-i18n="no_medicine_found">未找到相关药品信息</td></tr>`;
+      if (window.translatePage) {
+        window.translatePage();
+      }
       return;
     }
 
@@ -135,12 +143,17 @@ function renderMedicineTable(medicines, tableBody) {
       <td>${med.manufacturer || 'N/A'}</td>
       <td>${med.stock}</td>
       <td>
-        <a href="#" class="action-link edit" data-id="${med.id}" data-action="edit">编辑</a>
-        <a href="#" class="action-link delete" data-id="${med.id}" data-action="delete">删除</a>
+        <a href="#" class="action-link edit" data-id="${med.id}" data-action="edit" data-i18n="edit">编辑</a>
+        <a href="#" class="action-link delete" data-id="${med.id}" data-action="delete" data-i18n="delete">删除</a>
       </td>
     `;
     tableBody.appendChild(row);
   });
+  
+  // 翻译新添加的内容
+  if (window.translatePage) {
+    window.translatePage();
+  }
 }
 
 /**
@@ -168,43 +181,43 @@ function handleTableAction(e) {
  */
 function showMedicineFormModal(medicine = null) {
   const isEdit = !!medicine;
-  const title = isEdit ? '编辑药品' : '添加新药品';
+  const title = isEdit ? (window.getTranslation ? window.getTranslation('edit_medicine') : '编辑药品') : (window.getTranslation ? window.getTranslation('add_new_medicine') : '添加新药品');
   
   const form = document.createElement('form');
   form.id = 'medicine-form';
   form.innerHTML = `
     <div class="form-group">
-      <label for="medicine-name">药品名称</label>
+      <label for="medicine-name" data-i18n="medicine_name">药品名称</label>
       <input type="text" id="medicine-name" value="${medicine?.name || ''}" required>
     </div>
     <div class="form-group">
-      <label for="medicine-code">药品代码</label>
-      <input type="text" id="medicine-code" value="${medicine?.code || ''}" placeholder="留空自动生成">
+      <label for="medicine-code" data-i18n="medicine_code">药品代码</label>
+      <input type="text" id="medicine-code" value="${medicine?.code || ''}" data-i18n-placeholder="auto_generate_placeholder" placeholder="留空自动生成">
     </div>
     <div class="form-group">
-      <label for="medicine-specification">规格</label>
+      <label for="medicine-specification" data-i18n="specification">规格</label>
       <input type="text" id="medicine-specification" value="${medicine?.specification || ''}">
     </div>
     <div class="form-group">
-      <label for="medicine-manufacturer">生产厂家</label>
+      <label for="medicine-manufacturer" data-i18n="manufacturer">生产厂家</label>
       <input type="text" id="medicine-manufacturer" value="${medicine?.manufacturer || ''}">
     </div>
     <div class="form-group">
-      <label for="medicine-unit">单位</label>
+      <label for="medicine-unit" data-i18n="unit">单位</label>
       <select id="medicine-unit">
-        <option value="盒" ${medicine?.unit === '盒' ? 'selected' : ''}>盒</option>
-        <option value="瓶" ${medicine?.unit === '瓶' ? 'selected' : ''}>瓶</option>
-        <option value="片" ${medicine?.unit === '片' ? 'selected' : ''}>片</option>
-        <option value="支" ${medicine?.unit === '支' ? 'selected' : ''}>支</option>
-        <option value="袋" ${medicine?.unit === '袋' ? 'selected' : ''}>袋</option>
+        <option value="盒" ${medicine?.unit === '盒' ? 'selected' : ''} data-i18n="unit_box">盒</option>
+        <option value="瓶" ${medicine?.unit === '瓶' ? 'selected' : ''} data-i18n="unit_bottle">瓶</option>
+        <option value="片" ${medicine?.unit === '片' ? 'selected' : ''} data-i18n="unit_tablet">片</option>
+        <option value="支" ${medicine?.unit === '支' ? 'selected' : ''} data-i18n="unit_tube">支</option>
+        <option value="袋" ${medicine?.unit === '袋' ? 'selected' : ''} data-i18n="unit_bag">袋</option>
       </select>
     </div>
     <div class="form-group">
-      <label for="medicine-unit-price">单价（元）</label>
+      <label for="medicine-unit-price" data-i18n="unit_price">单价（元）</label>
       <input type="number" id="medicine-unit-price" step="0.01" value="${medicine?.unit_price || 0}" required>
     </div>
     <div class="form-group">
-      <label for="medicine-cost-price">成本价（元）</label>
+      <label for="medicine-cost-price" data-i18n="cost_price">成本价（元）</label>
       <input type="number" id="medicine-cost-price" step="0.01" value="${medicine?.cost_price || 0}">
     </div>
     ${isEdit ? `<input type="hidden" id="medicine-id" value="${medicine?.id || ''}">` : ''}
@@ -215,6 +228,11 @@ function showMedicineFormModal(medicine = null) {
     content: form,
     onConfirm: () => handleMedicineFormSubmit(isEdit, medicine)
   }).render();
+  
+  // 翻译模态框内容
+  if (window.translatePage) {
+    window.translatePage();
+  }
 }
 
 /**
@@ -234,12 +252,20 @@ async function handleMedicineFormSubmit(isEdit, medicine = null) {
   const idInput = document.getElementById('medicine-id');
   
   if (!nameInput.value.trim()) {
-    showNotification('错误', '药品名称不能为空', 'error');
+    window.showNotification(
+      window.getTranslation ? window.getTranslation('error') : '错误',
+      window.getTranslation ? window.getTranslation('medicine_name_required') : '药品名称不能为空',
+      'error'
+    );
     return false;
   }
   
   if (!unitPriceInput.value || parseFloat(unitPriceInput.value) < 0) {
-    showNotification('错误', '请输入有效的单价', 'error');
+    window.showNotification(
+      window.getTranslation ? window.getTranslation('error') : '错误',
+      window.getTranslation ? window.getTranslation('valid_unit_price_required') : '请输入有效的单价',
+      'error'
+    );
     return false;
   }
   
@@ -262,11 +288,19 @@ async function handleMedicineFormSubmit(isEdit, medicine = null) {
         throw new Error('无法获取有效的药品ID，请重新打开编辑窗口');
       }
       await apiClient.medicines.update(medicineId, medicineData);
-      showNotification('成功', '药品信息已更新', 'success');
+      window.showNotification(
+        window.getTranslation ? window.getTranslation('success') : '成功',
+        window.getTranslation ? window.getTranslation('medicine_updated') : '药品信息已更新',
+        'success'
+      );
     } else {
       // 添加模式：创建新药品
       await apiClient.medicines.create(medicineData);
-      showNotification('成功', '药品已添加', 'success');
+      window.showNotification(
+        window.getTranslation ? window.getTranslation('success') : '成功',
+        window.getTranslation ? window.getTranslation('medicine_added') : '药品已添加',
+        'success'
+      );
     }
     
     // 触发更新事件
@@ -274,7 +308,11 @@ async function handleMedicineFormSubmit(isEdit, medicine = null) {
     
     return true; // 允许模态框关闭
   } catch (error) {
-    showNotification('错误', `操作失败: ${error.message}`, 'error');
+    window.showNotification(
+      window.getTranslation ? window.getTranslation('error') : '错误',
+      `${window.getTranslation ? window.getTranslation('operation_failed') : '操作失败'}: ${error.message}`,
+      'error'
+    );
     return false; // 阻止模态框关闭
   }
 }
@@ -287,7 +325,11 @@ async function editMedicine(id) {
     const medicine = await apiClient.medicines.getById(id);
     showMedicineFormModal(medicine);
   } catch (error) {
-    showNotification('错误', `获取药品信息失败: ${error.message}`, 'error');
+    window.showNotification(
+      window.getTranslation ? window.getTranslation('error') : '错误',
+      `${window.getTranslation ? window.getTranslation('get_medicine_failed') : '获取药品信息失败'}: ${error.message}`,
+      'error'
+    );
   }
 }
 
@@ -300,10 +342,10 @@ async function deleteMedicine(id) {
   if (confirmed) {
     try {
       await apiClient.medicines.delete(id);
-      showNotification('成功', '药品已删除', 'success');
+      window.showNotification('成功', '药品已删除', 'success');
       window.eventBus.emit('medicine:updated');
     } catch (error) {
-      showNotification('错误', `删除失败: ${error.message}`, 'error');
+      window.showNotification('错误', `删除失败: ${error.message}`, 'error');
     }
   }
 }

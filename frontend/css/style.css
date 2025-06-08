@@ -1571,6 +1571,103 @@ legend {
     font-size: 0.9rem;
 }
 
+/* 现代化输入框样式 */
+.modern-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: var(--color-text-primary);
+    font-size: 14px;
+    font-family: var(--font-family-main);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.modern-input:focus {
+    outline: none;
+    border-color: #39c5bb;
+    box-shadow: 0 0 0 3px rgba(57, 197, 187, 0.1);
+    background-color: #ffffff;
+}
+
+.modern-input:hover {
+    border-color: #c1c7cd;
+}
+
+/* 现代化选择框样式 */
+.modern-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: var(--color-text-primary);
+    font-size: 14px;
+    font-family: var(--font-family-main);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    cursor: pointer;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23666" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    padding-right: 40px;
+}
+
+.modern-select:focus {
+    outline: none;
+    border-color: #39c5bb;
+    box-shadow: 0 0 0 3px rgba(57, 197, 187, 0.1);
+    background-color: #ffffff;
+}
+
+.modern-select:hover {
+    border-color: #c1c7cd;
+}
+
+/* 用户名显示文本样式 */
+.user-display-text {
+    padding: 12px 16px;
+    background-color: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    color: #495057;
+    font-size: 14px;
+    font-weight: 500;
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+}
+
+/* 暗色主题下的现代化输入框和选择框 */
+[data-theme="dark"] .modern-input,
+[data-theme="dark"] .modern-select {
+    background-color: #393e46;
+    border-color: #4a5058;
+    color: #eeeeee;
+}
+
+[data-theme="dark"] .modern-input:focus,
+[data-theme="dark"] .modern-select:focus {
+    border-color: #39c5bb;
+    background-color: #393e46;
+    box-shadow: 0 0 0 3px rgba(57, 197, 187, 0.2);
+}
+
+[data-theme="dark"] .modern-input:hover,
+[data-theme="dark"] .modern-select:hover {
+    border-color: #5a6068;
+}
+
+[data-theme="dark"] .user-display-text {
+    background-color: #2c3e50;
+    border-color: #34495e;
+    color: #bdc3c7;
+}
+
 .radio-group {
     display: flex;
     gap: calc(var(--spacing-unit) * 2);

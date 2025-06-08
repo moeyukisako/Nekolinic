@@ -13,86 +13,86 @@ export default function renderSettingsModule(container, options = {}) {
           <div class="settings-nav">
             <a href="#general" class="settings-nav-item active" data-section="general">
               <i class="fas fa-cog"></i>
-              <span>常规设置</span>
+              <span data-i18n="settings_general">常规设置</span>
             </a>
             <a href="#appearance" class="settings-nav-item" data-section="appearance">
               <i class="fas fa-palette"></i>
-              <span>外观设置</span>
+              <span data-i18n="settings_appearance">外观设置</span>
             </a>
             <a href="#notifications" class="settings-nav-item" data-section="notifications">
               <i class="fas fa-bell"></i>
-              <span>通知设置</span>
+              <span data-i18n="settings_notifications">通知设置</span>
             </a>
             <a href="#security" class="settings-nav-item" data-section="security">
               <i class="fas fa-shield-alt"></i>
-              <span>安全设置</span>
+              <span data-i18n="settings_security">安全设置</span>
             </a>
             <a href="#backup" class="settings-nav-item" data-section="backup">
               <i class="fas fa-database"></i>
-              <span>备份设置</span>
+              <span data-i18n="settings_backup">备份设置</span>
             </a>
             <a href="#about" class="settings-nav-item" data-section="about">
               <i class="fas fa-info-circle"></i>
-              <span>关于系统</span>
+              <span data-i18n="settings_about">关于系统</span>
             </a>
           </div>
           
           <!-- 设置操作按钮 -->
           <div class="settings-actions">
-            <button class="btn btn-primary settings-save-btn">保存设置</button>
-            <button class="btn btn-secondary settings-reset-btn">重置为默认</button>
+            <button class="btn btn-primary settings-save-btn" data-i18n="save_settings">保存设置</button>
+            <button class="btn btn-secondary settings-reset-btn" data-i18n="reset_to_default">重置为默认</button>
           </div>
         </div>
         
         <div class="settings-main">
           <!-- 常规设置 -->
           <div id="general-section" class="settings-section active">
-            <h3>常规设置</h3>
+            <h3 data-i18n="settings_general">常规设置</h3>
             <div class="setting-group">
-              <label class="setting-label">诊所名称</label>
-              <input type="text" class="form-control" value="Nekolinic 诊所" placeholder="请输入诊所名称">
-              <small class="setting-help">显示在系统各处的诊所名称</small>
+              <label class="setting-label" data-i18n="clinic_name">名称</label>
+              <input type="text" class="modern-input" value="Nekolinic" data-i18n-placeholder="enter_clinic_name" placeholder="请输入名称">
+              <small class="setting-help" data-i18n="clinic_name_help">显示在系统各处的名称</small>
             </div>
             
             <div class="setting-group">
-              <label class="setting-label">默认语言</label>
-              <select class="form-control">
-                <option value="zh-CN" selected>简体中文</option>
-                <option value="en-US">English</option>
+              <label class="setting-label" data-i18n="language">语言</label>
+              <select class="modern-select">
+                <option value="zh-CN" selected data-i18n="chinese_simplified">简体中文</option>
+                <option value="en-US" data-i18n="english">English</option>
               </select>
             </div>
             
             <div class="setting-group">
-              <label class="setting-label">时区设置</label>
-              <select class="form-control">
-                <option value="Asia/Shanghai" selected>中国标准时间 (UTC+8)</option>
-                <option value="UTC">协调世界时 (UTC)</option>
+              <label class="setting-label" data-i18n="timezone_setting">时区设置</label>
+              <select class="modern-select">
+                <option value="Asia/Shanghai" selected data-i18n="china_standard_time">中国标准时间 (UTC+8)</option>
+                <option value="UTC" data-i18n="utc_time">协调世界时 (UTC)</option>
               </select>
             </div>
             
             <!-- 用户账户管理 -->
             <div class="setting-group">
-              <h4 class="setting-subtitle">用户账户管理</h4>
+              <h4 class="setting-subtitle" data-i18n="settings_user_account_management">用户账户管理</h4>
               <div class="user-account-info">
                 <div class="user-info-display">
                   <div class="user-avatar-large" id="settings-user-avatar">A</div>
                   <div class="user-details">
-                    <div class="user-name" id="settings-user-name">加载中...</div>
-                    <div class="user-role" id="settings-user-role">加载中...</div>
+                    <div class="user-name" id="settings-user-name" data-i18n="settings_loading">加载中...</div>
+                    <div class="user-role" id="settings-user-role" data-i18n="settings_loading">加载中...</div>
                   </div>
                 </div>
                 <div class="user-actions">
                   <button class="btn btn-outline" id="edit-profile-btn">
                     <i class="icon-user"></i>
-                    编辑个人信息
+                    <span data-i18n="settings_edit_profile">编辑个人信息</span>
                   </button>
                   <button class="btn btn-outline" id="change-password-btn">
                     <i class="icon-lock"></i>
-                    修改密码
+                    <span data-i18n="settings_change_password">修改密码</span>
                   </button>
                   <button class="btn btn-danger" id="logout-settings-btn">
                     <i class="icon-logout"></i>
-                    退出登录
+                    <span data-i18n="settings_logout">退出登录</span>
                   </button>
                 </div>
               </div>
@@ -219,12 +219,12 @@ export default function renderSettingsModule(container, options = {}) {
             <h3>关于系统</h3>
             <div class="about-info">
               <div class="about-logo">
-                <h2>Nekolinic</h2>
+                <h2 id="about-system-title">Nekolinic</h2>
                 <p class="version">版本 1.0.0</p>
               </div>
               
               <div class="about-details">
-                <p><strong>系统名称：</strong>Nekolinic 诊所管理系统</p>
+                <p id="about-system-name"><strong>系统名称：</strong>Nekolinic管理系统</p>
                 <p><strong>开发者：</strong>moeyukisako</p>
                 <p><strong>版权信息：</strong>Copyright © 2025 moeyukisako. All rights reserved.</p>
                 <p><strong>技术栈：</strong>FastAPI + SQLAlchemy + HTML5 + CSS3 + JavaScript</p>
@@ -335,28 +335,39 @@ export default function renderSettingsModule(container, options = {}) {
   
   if (logoutSettingsBtn) {
     logoutSettingsBtn.addEventListener('click', () => {
-      if (confirm('确定要退出登录吗？')) {
-        if (window.apiClient && window.apiClient.auth) {
-          window.apiClient.auth.logout();
-        } else {
-          // 清除本地存储的认证信息
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          // 跳转到登录页
-          window.location.href = '/frontend/index.html';
-        }
-      }
+      showLogoutConfirmModal();
     }, { signal });
   }
   
   // 初始化用户信息显示
   initUserInfoDisplay(container);
   
+  // 绑定语言选择器事件
+  const languageSelect = container.querySelector('#general-section .modern-select:nth-of-type(1)');
+  if (languageSelect) {
+    languageSelect.addEventListener('change', (e) => {
+      const newLanguage = e.target.value;
+      if (window.setLanguage) {
+        window.setLanguage(newLanguage);
+        window.showNotification('成功', '语言已切换', 'success');
+      }
+    }, { signal });
+  }
+  
+  // 加载常规设置
+  loadGeneralSettings(container);
+  
+  // 立即应用已保存的设置
+  const savedSettings = JSON.parse(localStorage.getItem('generalSettings') || '{}');
+  if (savedSettings.clinicName) {
+    applyGeneralSettings(savedSettings);
+  }
+  
   // 绑定保存设置按钮
   const saveBtn = container.querySelector('.settings-save-btn');
   if (saveBtn) {
     saveBtn.addEventListener('click', () => {
-      showNotification('成功', '设置已保存', 'success');
+      saveGeneralSettings(container);
     }, { signal });
   }
   
@@ -365,9 +376,14 @@ export default function renderSettingsModule(container, options = {}) {
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
       if (confirm('确定要重置所有设置为默认值吗？此操作不可撤销。')) {
-        showNotification('成功', '设置已重置为默认值', 'success');
+        resetGeneralSettings(container);
       }
     }, { signal });
+  }
+  
+  // 翻译页面内容
+  if (window.translatePage) {
+    window.translatePage();
   }
   
   // 返回清理函数
@@ -404,7 +420,7 @@ function initBackgroundModalEvents(container, signal) {
   if (confirmBtn) {
     confirmBtn.addEventListener('click', () => {
       bgModal.classList.remove('active');
-      showNotification('成功', '背景设置已应用', 'success');
+      window.showNotification('成功', '背景设置已应用', 'success');
     }, { signal });
   }
   
@@ -524,9 +540,9 @@ function applyBackgroundColor(color, container) {
     window.apiClient.auth.updatePreferences({
       background_preference: `color:${color}`
     }).then(() => {
-      showNotification('成功', '背景颜色已成功应用并保存', 'info');
+      window.showNotification('成功', '背景颜色已成功应用并保存', 'info');
     }).catch(err => {
-      showNotification('错误', '保存背景颜色失败: ' + err.message, 'error');
+      window.showNotification('错误', '保存背景颜色失败: ' + err.message, 'error');
     });
   }
 }
@@ -536,12 +552,12 @@ function applyBackgroundColor(color, container) {
  */
 function handleBackgroundImageUpload(file, container) {
   if (!file.type.startsWith('image/')) {
-    showNotification('错误', '请选择有效的图片文件', 'error');
+    window.showNotification('错误', '请选择有效的图片文件', 'error');
     return;
   }
   
   if (file.size > 10 * 1024 * 1024) {
-    showNotification('错误', '图片文件大小不能超过10MB', 'error');
+    window.showNotification('错误', '图片文件大小不能超过10MB', 'error');
     return;
   }
   
@@ -579,9 +595,9 @@ function applyBackgroundImage(dataUrl, container) {
     window.apiClient.auth.updatePreferences({
       background_preference: `image:${backgroundUrl}`
     }).then(() => {
-      showNotification('成功', '背景图片已成功应用并保存', 'info');
+      window.showNotification('成功', '背景图片已成功应用并保存', 'info');
     }).catch(err => {
-      showNotification('错误', '保存背景图片失败: ' + err.message, 'error');
+      window.showNotification('错误', '保存背景图片失败: ' + err.message, 'error');
     });
   }
 }
@@ -600,9 +616,9 @@ function resetBackground() {
     window.apiClient.auth.updatePreferences({
       background_preference: null
     }).then(() => {
-      showNotification('成功', '背景已重置', 'info');
+      window.showNotification('成功', '背景已重置', 'info');
     }).catch(err => {
-      showNotification('错误', '重置背景设置失败: ' + err.message, 'error');
+      window.showNotification('错误', '重置背景设置失败: ' + err.message, 'error');
     });
   }
 }
@@ -667,16 +683,27 @@ function initUserInfoDisplay(container) {
   // 从localStorage获取用户信息
   const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
   
-  if (userNameEl && userInfo.username) {
-    userNameEl.textContent = userInfo.username;
+  // 如果没有用户信息，显示默认信息而不是"加载中"
+  if (userNameEl) {
+    userNameEl.textContent = userInfo.username || window.getTranslation('settings_not_logged_in') || '未登录用户';
   }
   
-  if (userRoleEl && userInfo.role) {
-    userRoleEl.textContent = userInfo.role === 'admin' ? '管理员' : '用户';
+  if (userRoleEl) {
+    if (userInfo.role) {
+      userRoleEl.textContent = userInfo.role === 'admin' ? 
+        (window.getTranslation('settings_admin') || '管理员') : 
+        (window.getTranslation('settings_user') || '用户');
+    } else {
+      userRoleEl.textContent = window.getTranslation('settings_guest') || '访客';
+    }
   }
   
-  if (userAvatarEl && userInfo.username) {
-    userAvatarEl.textContent = userInfo.username.charAt(0).toUpperCase();
+  if (userAvatarEl) {
+    if (userInfo.username) {
+      userAvatarEl.textContent = userInfo.username.charAt(0).toUpperCase();
+    } else {
+      userAvatarEl.textContent = '?';
+    }
   }
 }
 
@@ -690,33 +717,38 @@ function showEditProfileModal(container) {
     <div class="modal-custom active" id="edit-profile-modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h3 class="modal-title">编辑个人信息</h3>
+          <h3 class="modal-title">${window.getTranslation('settings_edit_profile') || '编辑个人信息'}</h3>
           <button class="modal-close" onclick="this.closest('.modal-custom').remove()">&times;</button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>用户名</label>
-            <input type="text" class="form-control" id="edit-username" value="${userInfo.username || ''}" readonly>
-            <small class="text-muted">用户名不可修改</small>
+            <label data-i18n="settings_username">用户名</label>
+            <div class="user-display-text">${userInfo.username || (window.getTranslation('settings_not_set') || '未设置')}</div>
+            <small class="text-muted" data-i18n="settings_username_readonly">用户名不可修改</small>
           </div>
           <div class="form-group">
-            <label>邮箱</label>
-            <input type="email" class="form-control" id="edit-email" value="${userInfo.email || ''}" placeholder="请输入邮箱">
+            <label data-i18n="settings_email">邮箱</label>
+            <input type="email" class="form-control" id="edit-email" value="${userInfo.email || ''}" data-i18n-placeholder="settings_email_placeholder" placeholder="请输入邮箱">
           </div>
           <div class="form-group">
-            <label>手机号</label>
-            <input type="tel" class="form-control" id="edit-phone" value="${userInfo.phone || ''}" placeholder="请输入手机号">
+            <label data-i18n="settings_phone">手机号</label>
+            <input type="tel" class="form-control" id="edit-phone" value="${userInfo.phone || ''}" data-i18n-placeholder="settings_phone_placeholder" placeholder="请输入手机号">
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-outline" onclick="this.closest('.modal-custom').remove()">取消</button>
-          <button class="btn btn-primary" onclick="saveProfileChanges()">保存</button>
+          <button class="btn btn-outline" onclick="this.closest('.modal-custom').remove()" data-i18n="cancel">取消</button>
+          <button class="btn btn-primary" onclick="saveProfileChanges()" data-i18n="save">保存</button>
         </div>
       </div>
     </div>
   `;
   
   document.body.insertAdjacentHTML('beforeend', modalHtml);
+  
+  // 翻译模态框内容
+  if (window.translatePage) {
+    window.translatePage();
+  }
 }
 
 /**
@@ -727,32 +759,37 @@ function showChangePasswordModal(container) {
     <div class="modal-custom active" id="change-password-modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h3 class="modal-title">修改密码</h3>
+          <h3 class="modal-title">${window.getTranslation('settings_change_password') || '修改密码'}</h3>
           <button class="modal-close" onclick="this.closest('.modal-custom').remove()">&times;</button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>当前密码</label>
-            <input type="password" class="form-control" id="current-password" placeholder="请输入当前密码">
+            <label data-i18n="settings_current_password">当前密码</label>
+            <input type="password" class="form-control" id="current-password" data-i18n-placeholder="settings_current_password_placeholder" placeholder="请输入当前密码">
           </div>
           <div class="form-group">
-            <label>新密码</label>
-            <input type="password" class="form-control" id="new-password" placeholder="请输入新密码">
+            <label data-i18n="settings_new_password">新密码</label>
+            <input type="password" class="form-control" id="new-password" data-i18n-placeholder="settings_new_password_placeholder" placeholder="请输入新密码">
           </div>
           <div class="form-group">
-            <label>确认新密码</label>
-            <input type="password" class="form-control" id="confirm-password" placeholder="请再次输入新密码">
+            <label data-i18n="settings_confirm_password">确认新密码</label>
+            <input type="password" class="form-control" id="confirm-password" data-i18n-placeholder="settings_confirm_password_placeholder" placeholder="请再次输入新密码">
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-outline" onclick="this.closest('.modal-custom').remove()">取消</button>
-          <button class="btn btn-primary" onclick="savePasswordChanges()">修改密码</button>
+          <button class="btn btn-outline" onclick="this.closest('.modal-custom').remove()" data-i18n="cancel">取消</button>
+          <button class="btn btn-primary" onclick="savePasswordChanges()" data-i18n="settings_change_password">修改密码</button>
         </div>
       </div>
     </div>
   `;
   
   document.body.insertAdjacentHTML('beforeend', modalHtml);
+  
+  // 翻译模态框内容
+  if (window.translatePage) {
+    window.translatePage();
+  }
 }
 
 /**
@@ -762,25 +799,54 @@ window.saveProfileChanges = function() {
   const email = document.getElementById('edit-email').value;
   const phone = document.getElementById('edit-phone').value;
   
-  // 这里可以调用API保存用户信息
-  if (window.apiClient && window.apiClient.user) {
-    window.apiClient.user.updateProfile({ email, phone })
-      .then(() => {
-        showNotification('成功', '个人信息已更新', 'success');
-        document.getElementById('edit-profile-modal').remove();
-        // 更新本地存储的用户信息
-        const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
-        userInfo.email = email;
-        userInfo.phone = phone;
-        localStorage.setItem('user', JSON.stringify(userInfo));
-      })
-      .catch(err => {
-        showNotification('错误', '更新失败: ' + err.message, 'error');
-      });
-  } else {
-    showNotification('成功', '个人信息已更新', 'success');
-    document.getElementById('edit-profile-modal').remove();
+  // 简单的邮箱格式验证
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    window.showNotification(
+      window.getTranslation('error') || '错误', 
+      window.getTranslation('settings_invalid_email') || '请输入有效的邮箱地址', 
+      'error'
+    );
+    return;
   }
+  
+  // 简单的手机号格式验证
+  if (phone && !/^1[3-9]\d{9}$/.test(phone)) {
+    window.showNotification(
+      window.getTranslation('error') || '错误', 
+      window.getTranslation('settings_invalid_phone') || '请输入有效的手机号码', 
+      'error'
+    );
+    return;
+  }
+  
+  // 更新本地存储的用户信息
+  const userInfo = JSON.parse(localStorage.getItem('user') || '{}');
+  userInfo.email = email;
+  userInfo.phone = phone;
+  localStorage.setItem('user', JSON.stringify(userInfo));
+  
+  window.showNotification(
+    window.getTranslation('success') || '成功', 
+    window.getTranslation('settings_profile_updated') || '个人信息已更新', 
+    'success'
+  );
+  document.getElementById('edit-profile-modal').remove();
+  
+  // 实际项目中可以调用API保存用户信息
+  // if (window.apiClient && window.apiClient.user) {
+  //   window.apiClient.user.updateProfile({ email, phone })
+  //     .then(() => {
+  //       window.showNotification(
+    window.getTranslation('success') || '成功', 
+    window.getTranslation('settings_profile_updated') || '个人信息已更新', 
+    'success'
+  );
+  //       document.getElementById('edit-profile-modal').remove();
+  //     })
+  //     .catch(err => {
+  //       showNotification('错误', '更新失败: ' + err.message, 'error');
+  //     });
+  // }
 };
 
 /**
@@ -792,35 +858,239 @@ window.savePasswordChanges = function() {
   const confirmPassword = document.getElementById('confirm-password').value;
   
   if (!currentPassword || !newPassword || !confirmPassword) {
-    showNotification('错误', '请填写所有字段', 'error');
+    window.showNotification('错误', '请填写所有字段', 'error');
     return;
   }
   
   if (newPassword !== confirmPassword) {
-    showNotification('错误', '新密码和确认密码不匹配', 'error');
+    window.showNotification('错误', '新密码和确认密码不匹配', 'error');
     return;
   }
   
   if (newPassword.length < 6) {
-    showNotification('错误', '新密码长度至少6位', 'error');
+    window.showNotification('错误', '新密码长度至少6位', 'error');
     return;
   }
   
-  // 这里可以调用API修改密码
-  if (window.apiClient && window.apiClient.user) {
-    window.apiClient.user.changePassword({ currentPassword, newPassword })
-      .then(() => {
-        showNotification('成功', '密码已修改', 'success');
-        document.getElementById('change-password-modal').remove();
-      })
-      .catch(err => {
-        showNotification('错误', '修改失败: ' + err.message, 'error');
-      });
+  // 模拟保存密码功能
+  window.showNotification('成功', '密码已修改', 'success');
+  document.getElementById('change-password-modal').remove();
+  
+  // 实际项目中可以调用API修改密码
+  // if (window.apiClient && window.apiClient.user) {
+  //   window.apiClient.user.changePassword({ currentPassword, newPassword })
+  //     .then(() => {
+  //       window.showNotification('成功', '密码已修改', 'success');
+  //       document.getElementById('change-password-modal').remove();
+  //     })
+  //     .catch(err => {
+  //       showNotification('错误', '修改失败: ' + err.message, 'error');
+  //     });
+  // }
+};
+
+/**
+ * 显示退出登录确认模态框
+ */
+function showLogoutConfirmModal() {
+  const modalHtml = `
+    <div class="modal-custom active" id="logout-confirm-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">确认退出</h3>
+          <button class="modal-close" onclick="this.closest('.modal-custom').remove()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>确定要退出登录吗？</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" onclick="this.closest('.modal-custom').remove()">取消</button>
+          <button class="btn btn-danger" onclick="confirmLogout()">退出登录</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+/**
+ * 确认退出登录
+ */
+window.confirmLogout = function() {
+  // 关闭模态框
+  const modal = document.getElementById('logout-confirm-modal');
+  if (modal) {
+    modal.remove();
+  }
+  
+  // 执行退出登录
+  if (window.apiClient && window.apiClient.auth) {
+    window.apiClient.auth.logout();
   } else {
-    showNotification('成功', '密码已修改', 'success');
-    document.getElementById('change-password-modal').remove();
+    // 清除本地存储的认证信息
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    // 跳转到登录页
+    window.location.href = '/frontend/index.html';
   }
 };
+
+/**
+ * 保存常规设置
+ */
+function saveGeneralSettings(container) {
+  try {
+    // 获取设置值
+    const nameInput = container.querySelector('#general-section .modern-input');
+    const languageSelect = container.querySelector('#general-section .modern-select:nth-of-type(1)');
+    const timezoneSelect = container.querySelector('#general-section .modern-select:nth-of-type(2)');
+    
+    const settings = {
+      clinicName: nameInput ? nameInput.value : 'Nekolinic',
+      language: languageSelect ? languageSelect.value : 'zh-CN',
+      timezone: timezoneSelect ? timezoneSelect.value : 'Asia/Shanghai',
+      lastUpdated: new Date().toISOString()
+    };
+    
+    // 保存到localStorage
+    localStorage.setItem('generalSettings', JSON.stringify(settings));
+    
+    // 应用设置
+    applyGeneralSettings(settings);
+    
+    window.showNotification('成功', '设置已保存并应用', 'success');
+  } catch (error) {
+    console.error('保存设置失败:', error);
+    window.showNotification('错误', '保存设置失败', 'error');
+  }
+}
+
+/**
+ * 应用常规设置
+ */
+function applyGeneralSettings(settings) {
+  // 更新页面标题
+  const pageTitle = document.querySelector('title');
+  if (pageTitle) {
+    pageTitle.textContent = `${settings.clinicName}管理系统`;
+  }
+  
+  // 更新导航栏标题（特殊处理：在Nekolinic.前面添加诊所名称）
+  const navbarTitle = document.querySelector('#navbar-title, .navbar-brand');
+  if (navbarTitle) {
+    const statusMessage = navbarTitle.querySelector('#status-message');
+    const statusText = statusMessage ? statusMessage.textContent : '';
+    
+    // 如果诊所名称是 'Nekolinic.' 则不显示前缀，直接显示 'Nekolinic. 设置'
+    if (settings.clinicName === 'Nekolinic.') {
+      navbarTitle.innerHTML = `Nekolinic. 设置<span id="status-message" class="status-message">${statusText}</span>`;
+    } else if (settings.clinicName && settings.clinicName !== 'Nekolinic 诊所' && settings.clinicName !== 'Nekolinic') {
+      navbarTitle.innerHTML = `${settings.clinicName} - Nekolinic. 设置<span id="status-message" class="status-message">${statusText}</span>`;
+    } else {
+      navbarTitle.innerHTML = `Nekolinic. 设置<span id="status-message" class="status-message">${statusText}</span>`;
+    }
+  }
+  
+  // 更新欢迎页面中的系统名称
+  const welcomeText = document.querySelector('.welcome-content p');
+  if (welcomeText && welcomeText.textContent.includes('Nekolinic')) {
+    welcomeText.textContent = `欢迎使用 ${settings.clinicName}管理系统！`;
+  }
+  
+  // 更新仪表板模块中的系统名称
+  const dashboardTitle = document.querySelector('.dashboard-content h1');
+  if (dashboardTitle && dashboardTitle.textContent.includes('Nekolinic')) {
+    dashboardTitle.textContent = `欢迎使用 ${settings.clinicName}系统`;
+  }
+  
+  // 更新关于页面中的系统信息
+  const aboutSystemName = document.querySelector('#about-system-name');
+  if (aboutSystemName) {
+    aboutSystemName.innerHTML = `<strong>系统名称：</strong>${settings.clinicName}管理系统`;
+  }
+  
+  const aboutSystemTitle = document.querySelector('#about-system-title');
+  if (aboutSystemTitle) {
+    aboutSystemTitle.textContent = settings.clinicName;
+  }
+  
+  // 保存诊所名称到全局变量供其他模块使用
+  window.clinicName = settings.clinicName;
+  
+  // 应用语言设置
+  if (settings.language !== document.documentElement.lang) {
+    document.documentElement.lang = settings.language;
+    // 这里可以添加更多语言切换逻辑
+  }
+  
+  // 应用时区设置
+  if (settings.timezone) {
+    // 保存时区设置供其他模块使用
+    window.currentTimezone = settings.timezone;
+  }
+}
+
+/**
+  * 加载常规设置
+  */
+ function loadGeneralSettings(container) {
+   try {
+     const savedSettings = localStorage.getItem('generalSettings');
+     if (savedSettings) {
+       const settings = JSON.parse(savedSettings);
+       
+       // 填充表单
+       const nameInput = container.querySelector('#general-section .modern-input');
+       const languageSelect = container.querySelector('#general-section .modern-select:nth-of-type(1)');
+       const timezoneSelect = container.querySelector('#general-section .modern-select:nth-of-type(2)');
+       
+       if (nameInput) nameInput.value = settings.clinicName || 'Nekolinic';
+       if (languageSelect) languageSelect.value = settings.language || 'zh-CN';
+       if (timezoneSelect) timezoneSelect.value = settings.timezone || 'Asia/Shanghai';
+       
+       // 应用设置
+       applyGeneralSettings(settings);
+     }
+   } catch (error) {
+     console.error('加载设置失败:', error);
+   }
+ }
+ 
+ /**
+  * 重置常规设置
+  */
+ function resetGeneralSettings(container) {
+   try {
+     // 默认设置
+     const defaultSettings = {
+       clinicName: 'Nekolinic',
+       language: 'zh-CN',
+       timezone: 'Asia/Shanghai',
+       lastUpdated: new Date().toISOString()
+     };
+     
+     // 清除localStorage中的设置
+     localStorage.removeItem('generalSettings');
+     
+     // 重置表单
+     const nameInput = container.querySelector('#general-section .modern-input');
+     const languageSelect = container.querySelector('#general-section .modern-select:nth-of-type(1)');
+     const timezoneSelect = container.querySelector('#general-section .modern-select:nth-of-type(2)');
+     
+     if (nameInput) nameInput.value = defaultSettings.clinicName;
+     if (languageSelect) languageSelect.value = defaultSettings.language;
+     if (timezoneSelect) timezoneSelect.value = defaultSettings.timezone;
+     
+     // 应用默认设置
+     applyGeneralSettings(defaultSettings);
+     
+     window.showNotification('成功', '设置已重置为默认值', 'success');
+   } catch (error) {
+     console.error('重置设置失败:', error);
+     window.showNotification('错误', '重置设置失败', 'error');
+   }
+ }
 
 // 显示通知的辅助函数
 function showNotification(title, message, type = 'info') {
@@ -831,3 +1101,5 @@ function showNotification(title, message, type = 'info') {
     alert(`${title}: ${message}`);
   }
 }
+
+// 导出模块

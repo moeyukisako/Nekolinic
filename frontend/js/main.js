@@ -52,6 +52,11 @@ function initApp() {
   // 绑定用户菜单
   bindUserMenu();
   
+  // 初始化国际化系统
+  if (window.initI18n) {
+    window.initI18n();
+  }
+  
   // 初始化背景设置
   initBackgroundSettings();
   
@@ -66,11 +71,17 @@ async function loadCurrentUser() {
   try {
     const user = await apiClient.auth.getCurrentUser();
     store.set('currentUser', user);
+    window.currentUser = user; // 缓存用户信息
     updateUserMenuDisplay(user);
+    
+    // 使用已获取的用户信息加载背景设置，避免重复API调用
+    loadUserBackgroundSetting(user);
   } catch (error) {
     console.error('获取用户信息失败:', error);
-    localStorage.removeItem('accessToken');
-    window.location.href = 'index.html';
+    // 如果获取用户信息失败，可能是token过期，重定向到登录页
+    if (error.message && error.message.includes('401')) {
+      window.location.href = 'index.html';
+    }
   }
 }
 
@@ -135,11 +146,13 @@ function bindSidebarNavigation() {
         // 为当前点击项添加 active 状态
         targetLink.classList.add('active');
         
-        // 获取中文模块名
-        const moduleName = targetLink.textContent.trim();
+        // 使用data-module属性获取模块名，而不是文本内容
+        const moduleName = targetLink.getAttribute('data-module');
         
         // 切换模块
-        switchModule(moduleName);
+        if (moduleName) {
+            switchModule(moduleName);
+        }
     });
 }
 
@@ -266,20 +279,30 @@ function updateNavbarTitle(moduleName) {
   const navbarTitle = document.getElementById('navbar-title');
   if (!navbarTitle) return;
   
-  // 模块名称映射
+  // 模块名称映射到翻译键
   const moduleNameMap = {
     '状态': '',
-    '患者': ' 患者',
-    '预约': ' 预约', 
-    '病历': ' 病历',
-    '药品': ' 药品',
-    '财务': ' 财务',
-    '报表': ' 报表',
-    '设置': ' 设置'
+    '患者': 'nav_patients',
+    '预约': 'nav_appointments', 
+    '病历': 'nav_medical_records',
+    '药品': 'nav_pharmacy',
+    '财务': 'nav_finance',
+    '报表': 'nav_reports',
+    '设置': 'nav_settings'
   };
   
-  // 获取对应的显示名称，如果是状态模块则不添加后缀
-  const displaySuffix = moduleNameMap[moduleName] || '';
+  // 获取对应的翻译键
+  const translationKey = moduleNameMap[moduleName];
+  let displaySuffix = '';
+  
+  if (translationKey && window.getTranslation) {
+    displaySuffix = ' ' + window.getTranslation(translationKey);
+  } else if (translationKey === '') {
+    displaySuffix = ''; // 状态模块不显示后缀
+  } else {
+    displaySuffix = ' ' + moduleName; // 后备方案
+  }
+  
   navbarTitle.textContent = 'Nekolinic.' + displaySuffix;
 }
 
@@ -312,7 +335,7 @@ function initBackgroundSettings() {
   const localBackgrounds = document.getElementById('local-backgrounds');
   const bgContainer = document.querySelector('.bg-container');
   
-  // 加载用户背景设置
+  // 加载用户背景设置（如果已有缓存的用户信息则使用，否则会自动获取）
   loadUserBackgroundSetting();
   
   // 背景设置面板切换
@@ -385,25 +408,55 @@ function initBackgroundSettings() {
 
 /**
  * 加载用户背景设置
+ * @param {object} user - 可选的用户对象，如果提供则使用，否则从全局状态获取
  */
-async function loadUserBackgroundSetting() {
+async function loadUserBackgroundSetting(user = null) {
   try {
-    const user = await apiClient.auth.getCurrentUser();
+    // 如果没有提供用户对象，尝试从全局状态获取
+    if (!user && window.currentUser) {
+      user = window.currentUser;
+    }
+    
+    // 如果仍然没有用户信息，则获取用户信息
+    if (!user) {
+      user = await apiClient.auth.getCurrentUser();
+      window.currentUser = user; // 缓存用户信息
+    }
+    
     const bgContainer = document.querySelector('.bg-container');
     const bgPreview = document.getElementById('bg-preview');
     
     if (user && user.background_preference) {
-      const backgroundUrl = user.background_preference;
-      document.documentElement.style.setProperty('--bg-image', `url(${backgroundUrl})`);
+      let backgroundUrl = user.background_preference;
       
-      if (bgContainer) {
-        bgContainer.style.backgroundImage = `url(${backgroundUrl})`;
+      // 处理不同类型的背景设置
+      if (backgroundUrl.startsWith('color:')) {
+        // 颜色背景
+        const color = backgroundUrl.replace('color:', '');
+        document.documentElement.style.setProperty('--bg-image', 'none');
+        document.body.style.backgroundColor = color;
+      } else if (backgroundUrl.startsWith('image:')) {
+        // 图片背景
+        backgroundUrl = backgroundUrl.replace('image:', '');
+        document.documentElement.style.setProperty('--bg-image', `url(${backgroundUrl})`);
+        document.body.style.backgroundColor = '';
+      } else {
+        // 直接的图片URL
+        document.documentElement.style.setProperty('--bg-image', `url(${backgroundUrl})`);
+        document.body.style.backgroundColor = '';
       }
-      if (bgPreview) bgPreview.style.backgroundImage = `url(${backgroundUrl})`;
+      
+      if (bgContainer && !backgroundUrl.startsWith('color:')) {
+        bgContainer.style.backgroundImage = `url(${backgroundUrl.replace('image:', '')})`;
+      }
+      if (bgPreview && !backgroundUrl.startsWith('color:')) {
+        bgPreview.style.backgroundImage = `url(${backgroundUrl.replace('image:', '')})`;
+      }
     } else {
       // 用户未设置背景时，使用默认背景
       const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
       document.documentElement.style.setProperty('--bg-image', defaultBg);
+      document.body.style.backgroundColor = '';
       
       if (bgContainer) {
         bgContainer.style.backgroundImage = defaultBg;
@@ -414,11 +467,15 @@ async function loadUserBackgroundSetting() {
     console.error('加载用户背景设置失败:', err);
     // 出错时也使用默认背景
     const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
+    document.documentElement.style.setProperty('--bg-image', defaultBg);
+    document.body.style.backgroundColor = '';
+    
     const bgContainer = document.querySelector('.bg-container');
     if (bgContainer) {
       bgContainer.style.backgroundImage = defaultBg;
     }
-    document.documentElement.style.setProperty('--bg-image', defaultBg);
+    const bgPreview = document.getElementById('bg-preview');
+    if (bgPreview) bgPreview.style.backgroundImage = defaultBg;
   }
 }
 

@@ -1,6 +1,6 @@
 // frontend/js/modules/patientManager.js
 
-import { showLoading, showNotification, confirmDialog } from '../utils/ui.js';
+import { showLoading, confirmDialog } from '../utils/ui.js';
 import { formatDate, formatDateTime } from '../utils/date.js';
 import Modal from '../components/modal.js';
 import Pagination from '../components/pagination.js';
@@ -25,20 +25,20 @@ export default async function render(container, { signal }) {
                 <div class="data-table-container">
                     <div class="table-header-controls">
                         <div class="search-input-group">
-                            <input type="text" id="patient-search-input" placeholder="按姓名搜索患者...">
-                            <button id="add-patient-btn" class="search-addon-btn">添加新患者</button>
+                            <input type="text" id="patient-search-input" data-i18n-placeholder="search_patients_placeholder" placeholder="按姓名搜索患者...">
+                            <button id="add-patient-btn" class="search-addon-btn" data-i18n="add_new_patient">添加新患者</button>
                         </div>
                     </div>
                     <div class="card">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>姓名</th>
-                                    <th>性别</th>
-                                    <th>出生日期</th>
-                                    <th>电话</th>
-                                    <th>操作</th>
+                                    <th data-i18n="patient_id">ID</th>
+                                    <th data-i18n="patient_name">姓名</th>
+                                    <th data-i18n="patient_gender">性别</th>
+                                    <th data-i18n="patient_birth_date">出生日期</th>
+                                    <th data-i18n="patient_phone">电话</th>
+                                    <th data-i18n="actions">操作</th>
                                 </tr>
                             </thead>
                             <tbody id="patient-table-body"></tbody>
@@ -49,6 +49,11 @@ export default async function render(container, { signal }) {
             </div>
         </div>
     `;
+    
+    // 翻译页面内容
+    if (window.translatePage) {
+        window.translatePage();
+    }
 
   // 绑定搜索功能
   const searchInput = document.getElementById('patient-search-input');
@@ -153,7 +158,10 @@ async function loadAndDisplayPatients(page = 1, query = '') {
     const patients = response.items || [];
     
     if (patients.length === 0) {
-      tableBody.innerHTML = '<tr><td colspan="6" class="text-center">未找到患者记录</td></tr>';
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center" data-i18n="no_patients_found">未找到患者记录</td></tr>`;
+      if (window.translatePage) {
+        window.translatePage();
+      }
       return;
     }
     
@@ -165,14 +173,14 @@ async function loadAndDisplayPatients(page = 1, query = '') {
       row.innerHTML = `
         <td>${patient.id}</td>
         <td>${patient.name || '-'}</td>
-        <td>${patient.gender === 'male' ? '男' : patient.gender === 'female' ? '女' : '其他'}</td>
+        <td>${patient.gender === 'male' ? (window.getTranslation ? window.getTranslation('gender_male') : '男') : patient.gender === 'female' ? (window.getTranslation ? window.getTranslation('gender_female') : '女') : (window.getTranslation ? window.getTranslation('gender_other') : '其他')}</td>
         <td>${patient.birth_date ? formatDate(patient.birth_date) : '-'}</td>
         <td>${patient.contact_number || '-'}</td>
         <td>
-          <a href="#" class="action-link view" data-action="view" data-id="${patient.id}">查看</a>
-          <a href="#" class="action-link edit" data-action="edit" data-id="${patient.id}">编辑</a>
-          <a href="#" class="action-link" data-action="view-records" data-id="${patient.id}">病历</a>
-          <a href="#" class="action-link delete" data-action="delete" data-id="${patient.id}" data-name="${patient.name || ''}">删除</a>
+          <a href="#" class="action-link view" data-action="view" data-id="${patient.id}" data-i18n="action_view">查看</a>
+          <a href="#" class="action-link edit" data-action="edit" data-id="${patient.id}" data-i18n="action_edit">编辑</a>
+          <a href="#" class="action-link" data-action="view-records" data-id="${patient.id}" data-i18n="action_medical_records">病历</a>
+          <a href="#" class="action-link delete" data-action="delete" data-id="${patient.id}" data-name="${patient.name || ''}" data-i18n="action_delete">删除</a>
         </td>
       `;
       tableBody.appendChild(row);
@@ -188,7 +196,7 @@ async function loadAndDisplayPatients(page = 1, query = '') {
     
   } catch (error) {
     console.error('加载患者数据失败', error);
-    tableBody.innerHTML = `<tr><td colspan="6" class="text-center">加载失败: ${error.message}</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="6" class="text-center">${window.getTranslation ? window.getTranslation('loading_failed') : '加载失败'}: ${error.message}</td></tr>`;
   }
 }
 
@@ -233,36 +241,41 @@ function showAddPatientModal() {
   form.id = 'patient-form';
   form.innerHTML = `
     <div class="form-group">
-      <label for="patient-name">姓名</label>
+      <label for="patient-name" data-i18n="patient_name">姓名</label>
       <input type="text" id="patient-name" required>
     </div>
     <div class="form-group">
-      <label for="patient-gender">性别</label>
+      <label for="patient-gender" data-i18n="patient_gender">性别</label>
       <select id="patient-gender">
-        <option value="male">男</option>
-        <option value="female">女</option>
-        <option value="other">其他</option>
+        <option value="male" data-i18n="gender_male">男</option>
+        <option value="female" data-i18n="gender_female">女</option>
+        <option value="other" data-i18n="gender_other">其他</option>
       </select>
     </div>
     <div class="form-group">
-      <label for="patient-birth-date">出生日期</label>
+      <label for="patient-birth-date" data-i18n="patient_birth_date">出生日期</label>
       <input type="date" id="patient-birth-date">
     </div>
     <div class="form-group">
-      <label for="patient-contact-number">联系电话</label>
+      <label for="patient-contact-number" data-i18n="patient_phone">联系电话</label>
       <input type="tel" id="patient-contact-number">
     </div>
     <div class="form-group">
-      <label for="patient-address">住址</label>
+      <label for="patient-address" data-i18n="patient_address">住址</label>
       <textarea id="patient-address" rows="2"></textarea>
     </div>
   `;
 
   const modal = new Modal({
-    title: '添加新患者',
+    title: window.getTranslation ? window.getTranslation('add_new_patient') : '添加新患者',
     content: form,
     onConfirm: () => handlePatientFormSubmit(false)
   }).render();
+  
+  // 翻译模态框内容
+  if (window.translatePage) {
+    window.translatePage();
+  }
 }
 
 /**
@@ -278,39 +291,44 @@ async function editPatient(id) {
     form.innerHTML = `
       <input type="hidden" id="patient-id" value="${patient.id}">
       <div class="form-group">
-        <label for="patient-name">姓名</label>
+        <label for="patient-name" data-i18n="patient_name">姓名</label>
         <input type="text" id="patient-name" value="${patient.name || ''}" required>
       </div>
       <div class="form-group">
-        <label for="patient-gender">性别</label>
+        <label for="patient-gender" data-i18n="patient_gender">性别</label>
         <select id="patient-gender">
-          <option value="male" ${patient.gender === 'male' ? 'selected' : ''}>男</option>
-          <option value="female" ${patient.gender === 'female' ? 'selected' : ''}>女</option>
-          <option value="other" ${patient.gender === 'other' ? 'selected' : ''}>其他</option>
+          <option value="male" ${patient.gender === 'male' ? 'selected' : ''} data-i18n="gender_male">男</option>
+          <option value="female" ${patient.gender === 'female' ? 'selected' : ''} data-i18n="gender_female">女</option>
+          <option value="other" ${patient.gender === 'other' ? 'selected' : ''} data-i18n="gender_other">其他</option>
         </select>
       </div>
       <div class="form-group">
-        <label for="patient-birth-date">出生日期</label>
+        <label for="patient-birth-date" data-i18n="patient_birth_date">出生日期</label>
         <input type="date" id="patient-birth-date" value="${patient.birth_date || ''}">
       </div>
       <div class="form-group">
-        <label for="patient-contact-number">联系电话</label>
+        <label for="patient-contact-number" data-i18n="patient_phone">联系电话</label>
         <input type="tel" id="patient-contact-number" value="${patient.contact_number || ''}">
       </div>
       <div class="form-group">
-        <label for="patient-address">住址</label>
+        <label for="patient-address" data-i18n="patient_address">住址</label>
         <textarea id="patient-address" rows="2">${patient.address || ''}</textarea>
       </div>
     `;
 
     const modal = new Modal({
-      title: '编辑患者信息',
+      title: window.getTranslation ? window.getTranslation('edit_patient_info') : '编辑患者信息',
       content: form,
       onConfirm: () => handlePatientFormSubmit(true)
     }).render();
     
+    // 翻译模态框内容
+    if (window.translatePage) {
+      window.translatePage();
+    }
+    
   } catch (error) {
-    showNotification('错误', `获取患者信息失败: ${error.message}`, 'error');
+    window.showNotification(window.getTranslation ? window.getTranslation('error') : '错误', `${window.getTranslation ? window.getTranslation('get_patient_info_failed') : '获取患者信息失败'}: ${error.message}`, 'error');
   }
 }
 
@@ -330,7 +348,7 @@ async function handlePatientFormSubmit(isEdit) {
   const idInput = isEdit ? document.getElementById('patient-id') : null;
   
   if (!nameInput.value.trim()) {
-    showNotification('错误', '患者姓名不能为空', 'error');
+    window.showNotification(window.getTranslation ? window.getTranslation('error') : '错误', window.getTranslation ? window.getTranslation('patient_name_required') : '患者姓名不能为空', 'error');
     return false; // 阻止模态框关闭
   }
   
@@ -345,10 +363,10 @@ async function handlePatientFormSubmit(isEdit) {
   try {
     if (isEdit && idInput) {
       await apiClient.patients.update(idInput.value, patientData);
-      showNotification('成功', '患者信息已更新', 'success');
+      window.showNotification('成功', '患者信息已更新', 'success');
     } else {
       await apiClient.patients.create(patientData);
-      showNotification('成功', '新患者已添加', 'success');
+      window.showNotification('成功', '新患者已添加', 'success');
     }
     
     // 触发更新事件
@@ -356,7 +374,7 @@ async function handlePatientFormSubmit(isEdit) {
     
     return true; // 允许模态框关闭
   } catch (error) {
-    showNotification('错误', `保存失败: ${error.message}`, 'error');
+    window.showNotification('错误', `保存失败: ${error.message}`, 'error');
     return false; // 阻止模态框关闭
   }
 }
@@ -373,10 +391,10 @@ async function deletePatient(id, name) {
   if (confirmed) {
     try {
       await apiClient.patients.delete(id);
-      showNotification('成功', '患者记录已删除', 'success');
+      window.showNotification('成功', '患者记录已删除', 'success');
       window.eventBus.emit('patient:updated');
     } catch (error) {
-      showNotification('错误', `删除失败: ${error.message}`, 'error');
+      window.showNotification('错误', `删除失败: ${error.message}`, 'error');
     }
   }
 }
@@ -400,7 +418,7 @@ async function viewPatient(id) {
           </tr>
           <tr>
             <th>性别</th>
-            <td>${patient.gender === 'male' ? '男' : patient.gender === 'female' ? '女' : '其他'}</td>
+            <td>${patient.gender === 'male' ? (window.getTranslation ? window.getTranslation('gender_male') : '男') : patient.gender === 'female' ? (window.getTranslation ? window.getTranslation('gender_female') : '女') : (window.getTranslation ? window.getTranslation('gender_other') : '其他')}</td>
           </tr>
           <tr>
             <th>出生日期</th>
@@ -429,6 +447,6 @@ async function viewPatient(id) {
     }).render();
     
   } catch (error) {
-    showNotification('错误', `获取患者信息失败: ${error.message}`, 'error');
+    window.showNotification(window.getTranslation ? window.getTranslation('error') : '错误', `${window.getTranslation ? window.getTranslation('get_patient_info_failed') : '获取患者信息失败'}: ${error.message}`, 'error');
   }
 }

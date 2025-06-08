@@ -1,6 +1,6 @@
 // frontend/js/modules/medicalRecords.js (已重构和修正)
 
-import { showLoading, showNotification, confirmDialog } from '../utils/ui.js';
+import { showLoading, confirmDialog } from '../utils/ui.js';
 import Modal from '../components/modal.js';
 import Pagination from '../components/pagination.js';
 import { formatDate, calculateAge } from '../utils/date.js';
@@ -25,7 +25,7 @@ export default async function render(container, { signal, payload }) {
             <div class="patients-sidebar">
               <div class="sidebar-header">
                 <div class="search-box">
-                  <input type="text" id="patient-search" placeholder="搜索患者...">
+                  <input type="text" id="patient-search" data-i18n-placeholder="search_patients_placeholder" placeholder="搜索患者...">
                 </div>
               </div>
               <div class="patients-list" id="patients-list"></div>
@@ -38,8 +38,8 @@ export default async function render(container, { signal, payload }) {
               <div class="editor-content" id="editor-content">
                 <div class="no-patient-selected">
                   <div class="placeholder-icon">📋</div>
-                  <h3>请选择患者</h3>
-                  <p>从左侧列表中选择一个患者来查看或编辑病历</p>
+                  <h3 data-i18n="select_patient">请选择患者</h3>
+                  <p data-i18n="select_patient_help">从左侧列表中选择一个患者来查看或编辑病历</p>
                 </div>
               </div>
             </div>
@@ -60,6 +60,11 @@ export default async function render(container, { signal, payload }) {
   
   initResizer(signal);
 
+  // 翻译页面内容
+  if (window.translatePage) {
+    window.translatePage();
+  }
+  
   // --- 使用 payload 初始化模块 ---
   const initialPatientId = payload?.patientId;
   if (initialPatientId) {
@@ -171,8 +176,8 @@ async function renderPatientList(page = 1, query = '', signal) {
         <div class="patient-info">
           <div class="patient-name">${patient.name || '未命名'}</div>
           <div class="patient-details">
-            <span>${patient.gender === 'male' ? '男' : '女'}</span>
-            <span>${patient.birth_date ? calculateAge(patient.birth_date) + '岁' : ''}</span>
+            <span>${patient.gender === 'male' ? (window.getTranslation ? window.getTranslation('gender_male') : '男') : (window.getTranslation ? window.getTranslation('gender_female') : '女')}</span>
+            <span>${patient.birth_date ? calculateAge(patient.birth_date) + (window.getTranslation ? window.getTranslation('age_suffix') : '岁') : ''}</span>
           </div>
         </div>
       </div>
@@ -238,7 +243,7 @@ async function renderMedicalRecordEditor(patientId, signal) {
       <div class="medical-record-form-wrapper">
         <div class="patient-header">
           <h3>${patient.name}</h3>
-          <p>${patient.gender === 'male' ? '男' : '女'}, ${calculateAge(patient.birth_date)}岁</p>
+          <p>${patient.gender === 'male' ? (window.getTranslation ? window.getTranslation('gender_male') : '男') : (window.getTranslation ? window.getTranslation('gender_female') : '女')}, ${calculateAge(patient.birth_date)}${window.getTranslation ? window.getTranslation('age_suffix') : '岁'}</p>
         </div>
         <form id="medical-record-form">
           <input type="hidden" id="record-id" value="${latestRecord?.id || ''}">
@@ -247,71 +252,71 @@ async function renderMedicalRecordEditor(patientId, signal) {
           
           <div class="form-row">
             <div class="form-group">
-              <label for="visit-date">就诊日期</label>
+              <label for="visit-date" data-i18n="visit_date">就诊日期</label>
               <input type="date" id="visit-date" value="${formatDate(latestRecord?.record_date || new Date())}" required>
             </div>
           </div>
 
           <div class="form-group">
-            <label for="chief-complaint">主诉</label>
-            <textarea id="chief-complaint" rows="2" placeholder="请描述患者的主要症状...">${latestRecord?.chief_complaint || ''}</textarea>
+            <label for="chief-complaint" data-i18n="chief_complaint">主诉</label>
+            <textarea id="chief-complaint" rows="2" data-i18n-placeholder="chief_complaint_placeholder" placeholder="请描述患者的主要症状...">${latestRecord?.chief_complaint || ''}</textarea>
           </div>
           
           <div class="form-group">
-            <label for="present-illness">现病史</label>
-            <textarea id="present-illness" rows="3" placeholder="请描述现病史...">${latestRecord?.present_illness || ''}</textarea>
+            <label for="present-illness" data-i18n="present_illness">现病史</label>
+            <textarea id="present-illness" rows="3" data-i18n-placeholder="present_illness_placeholder" placeholder="请描述现病史...">${latestRecord?.present_illness || ''}</textarea>
           </div>
           
           <div class="form-group">
-            <label for="past-history">既往史</label>
-            <textarea id="past-history" rows="2" placeholder="请描述既往病史...">${latestRecord?.past_history || ''}</textarea>
+            <label for="past-history" data-i18n="past_history">既往史</label>
+            <textarea id="past-history" rows="2" data-i18n-placeholder="past_history_placeholder" placeholder="请描述既往病史...">${latestRecord?.past_history || ''}</textarea>
           </div>
           
           <fieldset>
-            <legend>生命体征</legend>
+            <legend data-i18n="vital_signs">生命体征</legend>
             <div class="form-row">
               <div class="form-group">
-                <label for="temperature">体温(°C)</label>
-                <input type="number" id="temperature" step="0.1" placeholder="36.5" value="${latestRecord?.temperature || ''}">
+                <label for="temperature" data-i18n="temperature">体温(°C)</label>
+                <input type="number" id="temperature" step="0.1" data-i18n-placeholder="temperature_placeholder" placeholder="36.5" value="${latestRecord?.temperature || ''}">
               </div>
               <div class="form-group">
-                <label for="pulse">脉搏(次/分)</label>
-                <input type="number" id="pulse" placeholder="80" value="${latestRecord?.pulse || ''}">
+                <label for="pulse" data-i18n="pulse">脉搏(次/分)</label>
+                <input type="number" id="pulse" data-i18n-placeholder="pulse_placeholder" placeholder="80" value="${latestRecord?.pulse || ''}">
               </div>
               <div class="form-group">
-                <label for="respiratory-rate">呼吸(次/分)</label>
-                <input type="number" id="respiratory-rate" placeholder="20" value="${latestRecord?.respiratory_rate || ''}">
+                <label for="respiratory-rate" data-i18n="respiratory_rate">呼吸(次/分)</label>
+                <input type="number" id="respiratory-rate" data-i18n-placeholder="respiratory_rate_placeholder" placeholder="20" value="${latestRecord?.respiratory_rate || ''}">
               </div>
               <div class="form-group">
-                <label for="blood-pressure">血压(mmHg)</label>
-                <input type="text" id="blood-pressure" placeholder="120/80" value="${latestRecord?.blood_pressure || ''}">
+                <label for="blood-pressure" data-i18n="blood_pressure">血压(mmHg)</label>
+                <input type="text" id="blood-pressure" data-i18n-placeholder="blood_pressure_placeholder" placeholder="120/80" value="${latestRecord?.blood_pressure || ''}">
               </div>
             </div>
           </fieldset>
           
           <div class="form-group">
-            <label for="physical-examination">体格检查</label>
-            <textarea id="physical-examination" rows="3" placeholder="请描述体格检查结果...">${latestRecord?.physical_examination || ''}</textarea>
+            <label for="physical-examination" data-i18n="physical_examination">体格检查</label>
+            <textarea id="physical-examination" rows="3" data-i18n-placeholder="physical_examination_placeholder" placeholder="请描述体格检查结果...">${latestRecord?.physical_examination || ''}</textarea>
           </div>
           
           <div class="form-group">
-            <label for="diagnosis">诊断</label>
-            <textarea id="diagnosis" rows="2" placeholder="请输入诊断结果..." required>${latestRecord?.diagnosis || ''}</textarea>
+            <label for="diagnosis" data-i18n="diagnosis">诊断</label>
+            <textarea id="diagnosis" rows="2" data-i18n-placeholder="diagnosis_placeholder" placeholder="请输入诊断结果..." required>${latestRecord?.diagnosis || ''}</textarea>
           </div>
           
           <div class="form-group">
-            <label for="treatment-plan">治疗方案</label>
-            <textarea id="treatment-plan" rows="3" placeholder="请描述治疗方案...">${latestRecord?.treatment_plan || ''}</textarea>
+            <label for="treatment-plan" data-i18n="treatment_plan">治疗方案</label>
+            <textarea id="treatment-plan" rows="3" data-i18n-placeholder="treatment_plan_placeholder" placeholder="请描述治疗方案...">${latestRecord?.treatment_plan || ''}</textarea>
           </div>
 
           <div class="form-group">
-            <label for="prescription">处方</label>
-            <textarea id="prescription" rows="3" placeholder="请输入处方信息...">${latestRecord?.prescription || ''}</textarea>
+            <label for="prescription" data-i18n="prescription">处方</label>
+            <textarea id="prescription" rows="3" data-i18n-placeholder="prescription_placeholder" placeholder="请输入处方信息...">${latestRecord?.prescription || ''}</textarea>
           </div>
           
           <div class="form-group">
-            <label for="notes">备注</label>
-            <textarea id="notes" rows="2" placeholder="其他备注信息...">${latestRecord?.notes || ''}</textarea>
+            <label for="notes" data-i18n="notes">备注</label>
+            <textarea id="notes" rows="2" data-i18n-placeholder="notes_placeholder" placeholder="其他备注信息...">${latestRecord?.notes || ''}</textarea>
           </div>
           
           <div class="form-actions">
@@ -361,7 +366,7 @@ async function handleMedicalRecordSubmit(e, signal) {
   };
 
   if (!recordData.record_date || !recordData.diagnosis) {
-    showNotification('请填写就诊日期和诊断', 'error');
+    window.showNotification('错误', '请填写就诊日期和诊断', 'error');
     return;
   }
 
@@ -369,17 +374,17 @@ async function handleMedicalRecordSubmit(e, signal) {
     let savedRecord;
     if (recordId) {
       savedRecord = await apiClient.medicalRecords.update(recordId, recordData);
-      showNotification('病历已更新', 'success');
+      window.showNotification('成功', '病历已更新', 'success');
     } else {
       savedRecord = await apiClient.medicalRecords.create(recordData);
-      showNotification('病历已创建', 'success');
+      window.showNotification('成功', '病历已创建', 'success');
     }
     // 重新渲染，以确保数据同步
     await renderMedicalRecordEditor(patientId, signal);
   } catch (error) {
     if (signal?.aborted) return;
     console.error('保存病历失败', error);
-    showNotification(`保存失败: ${error.message}`, 'error');
+    window.showNotification('错误', `保存失败: ${error.message}`, 'error');
   }
 }
 

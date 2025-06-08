@@ -90,6 +90,26 @@ def client(db, admin_user):
         current_user_id.reset(token)
 
 @pytest.fixture(scope="function")
+def unauthenticated_client(db):
+    """
+    提供未认证的测试客户端，用于测试认证失败场景
+    """
+    # 只重写数据库依赖项，不重写认证依赖项
+    def override_get_db():
+        try:
+            yield db
+        finally:
+            pass
+    
+    app.dependency_overrides[get_db] = override_get_db
+    
+    with TestClient(app) as c:
+        yield c
+    
+    # 清理依赖项覆盖
+    app.dependency_overrides = {}
+
+@pytest.fixture(scope="function")
 def test_user(db):
     """
     创建测试用户
@@ -117,4 +137,4 @@ def admin_user(db):
         role="admin"
     )
     user = user_service.create(db, obj_in=user_in)
-    return user 
+    return user

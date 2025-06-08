@@ -93,28 +93,50 @@ export default async function render(container, { signal }) {
 }
 
 /**
- * 处理表格操作事件
+ * 处理表格操作事件 (已修正，更健壮)
  */
 function handleTableAction(e) {
-  const target = e.target;
-  if (!target.dataset.action) return;
+  console.log('handleTableAction triggered! Clicked element:', e.target); // 调试日志
   
-  const id = target.dataset.id;
-  const name = target.dataset.name || '';
-  const action = target.dataset.action;
+  // 1. 使用 .closest() 查找我们真正关心、带有 data-action 属性的链接。
+  //    这避免了直接使用 e.target 可能点到子元素或文本节点的问题。
+  const targetLink = e.target.closest('.action-link');
+
+  // 2. 如果点击的区域向上追溯也找不到 .action-link，则说明没点在有效区域，直接返回。
+  if (!targetLink) {
+    return;
+  }
+
+  // 3. (好习惯) 阻止<a>标签的默认跳转行为。
+  e.preventDefault();
+
+  // 4. 从找到的链接上安全地获取数据。
+  const { action, id, name } = targetLink.dataset;
+
+  // 如果链接上没有 data-action 属性，也直接返回。
+  if (!action) {
+    return;
+  }
   
+  // 5. 执行后续逻辑 (这部分不变)
   switch (action) {
     case 'edit':
       editPatient(id);
       break;
     case 'delete':
-      deletePatient(id, name);
+      deletePatient(id, name || '');
       break;
     case 'view':
       viewPatient(id);
       break;
     case 'view-records':
-      window.eventBus.emit('view:medical-records', { patientId: id });
+      console.log(`Action 'view-records' captured for patientId: ${id}. Calling switchModule...`); // 调试日志
+      // 直接调用全局的模块切换函数，并传递 patientId
+      if (window.switchModule) {
+        window.switchModule('病历', { patientId: id });
+      } else {
+        console.error('switchModule function is not available.');
+      }
       break;
   }
 }

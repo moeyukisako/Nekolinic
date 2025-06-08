@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Numeric, Date
+from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, ForeignKey, Numeric, Boolean
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from app.core.auditing import Auditable, register_audit_model
@@ -39,6 +39,8 @@ class BillHistory(Base):
     status = Column(String(20))
     patient_id = Column(Integer)
     medical_record_id = Column(Integer)
+    payment_method = Column(String, nullable=True)
+    provider_transaction_id = Column(String, nullable=True)
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
     created_by_id = Column(Integer)
@@ -78,6 +80,10 @@ class PaymentHistory(Base):
     payment_date = Column(DateTime)
     amount = Column(Numeric(10, 2))
     payment_method = Column(String(20))
+    payment_mode = Column(String(20))
+    provider_transaction_id = Column(String(100), nullable=True)
+    qr_code_url = Column(String(500), nullable=True)
+    qr_code_expires_at = Column(DateTime, nullable=True)
     bill_id = Column(Integer)
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
@@ -94,9 +100,23 @@ class BillStatus(str, enum.Enum):
 
 class PaymentMethod(str, enum.Enum):
     CASH = "cash"
-    CREDIT_CARD = "credit_card"
-    BANK_TRANSFER = "bank_transfer"
-    INSURANCE = "insurance"
+    ALIPAY = "alipay"
+    WECHAT = "wechat"
+    BANK_CARD = "bank_card"
+
+
+class PaymentMode(str, enum.Enum):
+    """支付模式"""
+    REDIRECT = "redirect"  # 跳转支付（原有模式）
+    QR_CODE = "qr_code"   # 二维码支付（新增模式）
+
+
+class PaymentSessionStatus(str, enum.Enum):
+    """支付会话状态"""
+    PENDING = "pending"      # 待支付
+    PAID = "paid"           # 已支付
+    EXPIRED = "expired"     # 已过期
+    CANCELLED = "cancelled" # 已取消
 
 # --- Main Business Models ---
 
@@ -129,6 +149,10 @@ class Bill(Base, Auditable):
     patient_id = Column(Integer, ForeignKey('patients.id'), nullable=False)
     medical_record_id = Column(Integer, ForeignKey('medical_records.id'), unique=True)
     
+    # 新增支付相关字段
+    payment_method = Column(String, nullable=True)  # 例如 'cash', 'alipay', 'wechat_pay'
+    provider_transaction_id = Column(String, nullable=True, index=True)  # 支付平台返回的交易号
+    
     # Audit fields
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
@@ -140,6 +164,7 @@ class Bill(Base, Auditable):
     medical_record = relationship("MedicalRecord")
     items = relationship("BillItem", back_populates="bill")
     payments = relationship("Payment", back_populates="bill")
+    payment_sessions = relationship("PaymentSession", back_populates="bill")
 
 @register_audit_model(BillItemHistory)
 class BillItem(Base, Auditable):
@@ -169,7 +194,12 @@ class Payment(Base, Auditable):
     payment_date = Column(DateTime, nullable=False)
     amount = Column(Numeric(10, 2), nullable=False)
     payment_method = Column(Enum(PaymentMethod), nullable=False)
+    payment_mode = Column(Enum(PaymentMode), default=PaymentMode.REDIRECT, nullable=False)  # 支付模式
+    provider_transaction_id = Column(String(100), nullable=True)  # 第三方支付平台的交易ID
+    qr_code_url = Column(String(500), nullable=True)  # 二维码链接（用于二维码支付）
+    qr_code_expires_at = Column(DateTime, nullable=True)  # 二维码过期时间
     
+    # Foreign keys
     bill_id = Column(Integer, ForeignKey('bills.id'), nullable=False)
     
     # Audit fields
@@ -178,5 +208,65 @@ class Payment(Base, Auditable):
     created_by_id = Column(Integer, ForeignKey('users.id'))
     updated_by_id = Column(Integer, ForeignKey('users.id'))
     deleted_at = Column(DateTime, nullable=True)
-
+    
+    # Relationships
     bill = relationship("Bill", back_populates="payments")
+
+
+class PaymentSession(Base, Auditable):
+    """支付会话表
+    
+    用于管理客户被扫支付的二维码会话，每个会话对应一个二维码
+    """
+    __tablename__ = 'payment_sessions'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # 关联的账单
+    bill_id = Column(Integer, ForeignKey('bills.id'), nullable=False, index=True)
+    
+    # 支付方式
+    payment_method = Column(Enum(PaymentMethod), nullable=False)
+    
+    # 二维码内容（支付链接）
+    qr_code_content = Column(Text, nullable=False)
+    
+    # 二维码过期时间
+    expires_at = Column(DateTime, nullable=False, index=True)
+    
+    # 会话状态
+    status = Column(Enum(PaymentSessionStatus), default=PaymentSessionStatus.PENDING, nullable=False, index=True)
+    
+    # 第三方支付平台的预支付订单号
+    prepay_id = Column(String(100), nullable=True)
+    
+    # 支付金额（冗余字段，便于查询）
+    amount = Column(Numeric(10, 2), nullable=False)
+    
+    # 超时时间（分钟）
+    timeout_minutes = Column(Integer, default=15, nullable=False)
+    
+    # 审计字段
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    updated_by_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    deleted_at = Column(DateTime, nullable=True)
+    
+    # 关系
+    bill = relationship("Bill", back_populates="payment_sessions")
+    created_by = relationship("User", foreign_keys=[created_by_id])
+    updated_by = relationship("User", foreign_keys=[updated_by_id])
+    
+    def __repr__(self):
+        return f"<PaymentSession(id={self.id}, bill_id={self.bill_id}, method={self.payment_method}, status={self.status})>"
+    
+    @property
+    def is_expired(self) -> bool:
+        """检查会话是否已过期"""
+        return datetime.utcnow() > self.expires_at
+    
+    @property
+    def is_active(self) -> bool:
+        """检查会话是否仍然有效"""
+        return self.status == PaymentSessionStatus.PENDING and not self.is_expired

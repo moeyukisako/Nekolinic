@@ -172,8 +172,11 @@ async function loadModuleRenderers() {
 
 /**
  * 切换模块
+ * @param {string} moduleName - 要切换到的模块名称
+ * @param {object} [payload={}] - 传递给模块的初始数据
  */
-async function switchModule(moduleName) {
+async function switchModule(moduleName, payload = {}) {
+  console.log(`switchModule called for module: ${moduleName} with payload:`, payload); // 调试日志
   const mainContent = document.querySelector('.main-content');
   if (!mainContent) return;
   
@@ -215,7 +218,8 @@ async function switchModule(moduleName) {
       
       // 调用模块渲染函数
       const cleanup = await moduleRenderers[moduleName](mainContent, { 
-        signal: abortController.signal 
+        signal: abortController.signal,
+        payload: payload 
       });
       
       // 保存清理函数
@@ -634,6 +638,9 @@ function showNotification(title, message, type = 'info') {
 
 // 在DOM加载完成后初始化应用
 document.addEventListener('DOMContentLoaded', initApp);
+
+// 将 switchModule 暴露到全局，以便其他模块可以调用
+window.switchModule = switchModule;
 
 // 导出主要函数以便测试
 export { initApp, switchModule };

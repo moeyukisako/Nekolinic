@@ -48,6 +48,19 @@ class AppointmentHistory(Base):
 
 # --- Main Business Models ---
 
+class Clinic(Base, Auditable):
+    __tablename__ = 'clinics'
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    address = Column(String(200))
+    contact_number = Column(String(20))
+    
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+    created_by_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    updated_by_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    deleted_at = Column(DateTime, nullable=True)
+
 @register_audit_model(DoctorHistory)
 class Doctor(Base, Auditable):
     __tablename__ = 'doctors'

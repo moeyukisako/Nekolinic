@@ -1,14 +1,26 @@
 from sqlalchemy.orm import Session
-from . import models, schemas
+from . import models
 from app.core.service_base import BaseService
 from app.core.exceptions import ResourceNotFoundException
+from app.clinic.models import Clinic, Doctor, Appointment
+from app.clinic.schemas import ClinicCreate, ClinicUpdate, DoctorCreate, DoctorUpdate, AppointmentCreate, AppointmentUpdate
 
-class DoctorService(BaseService[models.Doctor, schemas.DoctorCreate, schemas.DoctorUpdate]):
+class ClinicService(BaseService[Clinic, ClinicCreate, ClinicUpdate]):
+    def __init__(self):
+        super().__init__(Clinic)
+
+class DoctorService(BaseService[Doctor, DoctorCreate, DoctorUpdate]):
+    def __init__(self):
+        super().__init__(Doctor)
+        
     def get_by_user_id(self, db: Session, user_id: int):
         """根据用户ID查找医生"""
-        return db.query(self.model).filter(self.model.user_id == user_id).first()
+        return db.query(Doctor).filter(Doctor.user_id == user_id).first()
 
-class AppointmentService(BaseService[models.Appointment, schemas.AppointmentCreate, schemas.AppointmentUpdate]):
+class AppointmentService(BaseService[Appointment, AppointmentCreate, AppointmentUpdate]):
+    def __init__(self):
+        super().__init__(Appointment)
+        
     def get_by_doctor_id(self, db: Session, doctor_id: int, skip: int = 0, limit: int = 100):
         """获取指定医生的所有预约"""
         return db.query(self.model).filter(self.model.doctor_id == doctor_id).offset(skip).limit(limit).all()
@@ -24,8 +36,10 @@ class AppointmentService(BaseService[models.Appointment, schemas.AppointmentCrea
             raise ResourceNotFoundException(resource_id=id, resource_type="Appointment")
         
         # 修改状态为取消
-        appointment_update = schemas.AppointmentUpdate(status=models.AppointmentStatus.CANCELLED)
+        appointment_update = AppointmentUpdate(status=models.AppointmentStatus.CANCELLED)
         return self.update(db, db_obj=appointment, obj_in=appointment_update)
 
-doctor_service = DoctorService(models.Doctor)
-appointment_service = AppointmentService(models.Appointment)
+# 创建服务实例
+clinic_service = ClinicService()
+doctor_service = DoctorService()
+appointment_service = AppointmentService()

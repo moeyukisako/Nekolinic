@@ -19,6 +19,7 @@ from app.patient import models as patient_models
 from app.pharmacy import models as pharmacy_models
 
 from . import models, schemas
+from .payment_gateway import alipay_gateway, wechat_gateway
 
 class InsuranceService(BaseService[models.Insurance, schemas.InsuranceCreate, schemas.InsuranceUpdate]):
     """保险管理服务类"""
@@ -188,8 +189,35 @@ class BillingService:
         bill_items.append(consultation_item)
         total_amount += consultation_fee
 
-        # 添加药品费用 - 简化为暂时不获取处方药品
-        # 这部分在现实业务中需要从药房系统获取处方明细
+        # 添加药品费用 - 从处方明细获取药品信息
+        prescriptions = db.query(pharmacy_models.Prescription).filter(
+            pharmacy_models.Prescription.medical_record_id == medical_record_id,
+            pharmacy_models.Prescription.deleted_at.is_(None)
+        ).all()
+        
+        for prescription in prescriptions:
+            prescription_details = db.query(pharmacy_models.PrescriptionDetail).options(
+                joinedload(pharmacy_models.PrescriptionDetail.drug)
+            ).filter(
+                pharmacy_models.PrescriptionDetail.prescription_id == prescription.id,
+                pharmacy_models.PrescriptionDetail.deleted_at.is_(None)
+            ).all()
+            
+            for detail in prescription_details:
+                drug_item = models.BillItem(
+                    item_name=detail.drug.name,
+                    item_type="medication",
+                    quantity=detail.quantity,
+                    unit_price=detail.drug.unit_price,
+                    subtotal=detail.drug.unit_price * detail.quantity,
+                    bill_id=new_bill.id,
+                    created_at=now,
+                    updated_at=now,
+                    created_by_id=user_id,
+                    updated_by_id=user_id
+                )
+                bill_items.append(drug_item)
+                total_amount += drug_item.subtotal
         
         db.add_all(bill_items)
         
@@ -257,7 +285,117 @@ class BillingService:
         
         return bill
 
+class OnlinePaymentService:
+    """在线支付服务类"""
+    
+    def initiate_payment(self, bill: models.Bill, provider: str) -> str:
+        """发起在线支付"""
+        if provider.lower() == 'alipay':
+            return alipay_gateway.create_payment_url(bill)
+        elif provider.lower() == 'wechat_pay':
+            return wechat_gateway.create_payment_qr(bill)
+        else:
+            raise ValueError(f"不支持的支付提供商: {provider}")
+    
+    def process_alipay_notification(self, db: Session, notification_data: dict) -> models.Bill:
+        """处理支付宝回调通知"""
+        try:
+            # 提取关键信息
+            bill_id = int(notification_data.get('out_trade_no'))
+            trade_status = notification_data.get('trade_status')
+            trade_no = notification_data.get('trade_no')
+            total_amount = Decimal(notification_data.get('total_amount', '0'))
+            
+            # 使用数据库锁防止并发问题
+            bill = db.query(models.Bill).filter(
+                models.Bill.id == bill_id,
+                models.Bill.deleted_at.is_(None)
+            ).with_for_update().first()
+            
+            if not bill:
+                raise ResourceNotFoundException(resource_type="Bill", resource_id=bill_id)
+            
+            # 只有在交易成功且账单未支付时才处理
+            if trade_status == 'TRADE_SUCCESS' and bill.status != models.BillStatus.PAID:
+                # 获取当前用户ID，如果无法获取则使用系统用户ID
+                user_id = current_user_id.get()
+                if user_id is None:
+                    # 在回调处理中，如果无法获取当前用户，使用账单创建者ID
+                    user_id = bill.created_by_id
+                
+                # 检查是否已存在相同交易号的支付记录，避免重复处理
+                existing_payment = db.query(models.Payment).filter(
+                    models.Payment.bill_id == bill_id,
+                    models.Payment.payment_method == models.PaymentMethod.ALIPAY,
+                    models.Payment.provider_transaction_id == trade_no
+                ).first()
+                
+                if existing_payment:
+                    return bill  # 避免重复处理
+                
+                # 创建支付记录
+                payment = models.Payment(
+                    payment_date=datetime.now(UTC),
+                    amount=total_amount,
+                    payment_method=models.PaymentMethod.ALIPAY,
+                    provider_transaction_id=trade_no,
+                    bill_id=bill_id,
+                    created_at=datetime.now(UTC),
+                    updated_at=datetime.now(UTC),
+                    created_by_id=user_id,
+                    updated_by_id=user_id
+                )
+                
+                db.add(payment)
+                db.flush()  # 确保支付记录被保存
+                
+                # 计算总已支付金额
+                total_paid = db.query(func.sum(models.Payment.amount)).filter(
+                    models.Payment.bill_id == bill_id,
+                    models.Payment.deleted_at.is_(None)
+                ).scalar() or Decimal('0')
+                
+                # 根据已支付金额更新账单状态
+                if total_paid >= bill.total_amount:
+                    bill.status = models.BillStatus.PAID
+                elif total_paid > Decimal('0'):
+                    bill.status = models.BillStatus.PARTIALLY_PAID
+                else:
+                    bill.status = models.BillStatus.UNPAID
+                
+                # 更新账单信息
+                bill.updated_at = datetime.now(UTC)
+                bill.updated_by_id = user_id
+                
+                db.commit()
+                db.refresh(bill)
+            
+            return bill
+            
+        except Exception as e:
+            db.rollback()
+            # 对于并发情况下的常见错误，返回账单而不是抛出异常
+            if "duplicate" in str(e).lower() or "constraint" in str(e).lower():
+                # 可能是重复处理，尝试重新获取账单状态
+                try:
+                    bill = db.query(models.Bill).filter(
+                        models.Bill.id == int(notification_data.get('out_trade_no')),
+                        models.Bill.deleted_at.is_(None)
+                    ).first()
+                    if bill:
+                        return bill
+                except:
+                    pass
+            raise BusinessLogicException(f"处理支付宝通知失败: {str(e)}")
+    
+    def process_wechat_notification(self, db: Session, notification_data: dict) -> models.Bill:
+        """处理微信支付回调通知 (预留)"""
+        # TODO: 实现微信支付通知处理逻辑
+        pass
+
+
 # 实例化所有服务
 insurance_service = InsuranceService()
 payment_service = PaymentService()
 billing_service = BillingService()
+online_payment_service = OnlinePaymentService()

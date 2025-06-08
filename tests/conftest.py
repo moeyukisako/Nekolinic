@@ -117,4 +117,24 @@ def admin_user(db):
         role="admin"
     )
     user = user_service.create(db, obj_in=user_in)
-    return user 
+    return user
+
+@pytest.fixture(scope="function")
+def unauthenticated_client(db):
+    """
+    提供未认证的测试客户端
+    """
+    # 重写依赖项，使用测试数据库
+    def override_get_db():
+        try:
+            yield db
+        finally:
+            pass
+    
+    app.dependency_overrides[get_db] = override_get_db
+    
+    with TestClient(app) as c:
+        yield c
+    
+    # 清理依赖项覆盖
+    app.dependency_overrides = {}

@@ -6,17 +6,16 @@
  * 初始化认证页面
  */
 function initAuth() {
-  const authContainer = document.getElementById('auth-container');
-  const token = localStorage.getItem('accessToken');
-
-  if (token) {
-    checkAuthAndRenderUserInfo(authContainer);
+  // 检查当前页面是否为登录页面
+  if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+    // 在登录页面，检查是否已经登录
+    checkAuthStatus();
   } else {
-    renderLoginForm(authContainer);
+    // 在其他页面，验证登录状态
+    verifyAuthStatus();
   }
   
-  // 背景设置初始化总是执行
-  initBackgroundSettings();
+  // 背景设置初始化已移至main.js中统一处理
 }
 
 /**
@@ -119,109 +118,9 @@ function logout() {
   apiClient.auth.logout();
 }
 
-/**
- * 加载用户背景设置
- */
-async function loadUserBackgroundSetting() {
-  try {
-    const user = await apiClient.auth.getCurrentUser();
-    const bgContainer = document.querySelector('.bg-container');
-    const bgPreview = document.getElementById('bg-preview');
-    
-    if (user && user.background_preference) {
-      const backgroundUrl = user.background_preference;
-      document.documentElement.style.setProperty('--bg-image', `url(${backgroundUrl})`);
-      
-      if (bgContainer) {
-        bgContainer.style.backgroundImage = `url(${backgroundUrl})`;
-      }
-      if (bgPreview) bgPreview.style.backgroundImage = `url(${backgroundUrl})`;
-    } else {
-      // 用户未设置背景时，使用默认背景
-      const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
-      document.documentElement.style.setProperty('--bg-image', defaultBg);
-      
-      if (bgContainer) {
-        bgContainer.style.backgroundImage = defaultBg;
-      }
-      if (bgPreview) bgPreview.style.backgroundImage = defaultBg;
-    }
-  } catch (err) {
-    console.error('加载用户背景设置失败:', err);
-    // 出错时也使用默认背景
-    const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
-    const bgContainer = document.querySelector('.bg-container');
-    if (bgContainer) {
-      bgContainer.style.backgroundImage = defaultBg;
-    }
-    document.documentElement.style.setProperty('--bg-image', defaultBg);
-  }
-}
+// 用户背景设置加载已移至main.js中统一处理
 
-/**
- * 背景图片设置相关功能
- */
-function initBackgroundSettings() {
-  const bgContainer = document.querySelector('.bg-container');
-  const bgPreview = document.getElementById('bg-preview');
-  const bgSettingsTrigger = document.getElementById('bg-settings-trigger');
-  const bgSettingsPanel = document.getElementById('bg-settings-panel');
-  const fileInput = document.getElementById('bg-file-input');
-  const resetBgBtn = document.getElementById('reset-bg-btn');
-  
-  // 加载用户背景设置
-  loadUserBackgroundSetting();
-  
-  // 从LocalStorage加载保存的背景（作为备用）
-  const savedBgImage = localStorage.getItem('nekolinic-bg-image');
-  if (!savedBgImage && bgContainer) {
-    bgContainer.style.backgroundImage = 'url(assets/backgrounds/default_background.jpg)';
-  }
-  
-  // 背景设置面板切换
-  if (bgSettingsTrigger) {
-    bgSettingsTrigger.addEventListener('click', function() {
-      if (bgSettingsPanel) {
-        bgSettingsPanel.classList.toggle('active');
-      }
-    });
-  }
-  
-  // 点击其他区域关闭面板
-  document.addEventListener('click', function(event) {
-    if (!event.target.closest('.bg-settings') && 
-        bgSettingsPanel && 
-        bgSettingsPanel.classList.contains('active')) {
-      bgSettingsPanel.classList.remove('active');
-    }
-  });
-  
-  // 处理文件上传事件（如果有相关元素）
-  if (fileInput) {
-    fileInput.addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const imageUrl = event.target.result;
-          if (bgContainer) {
-            bgContainer.style.backgroundImage = `url(${imageUrl})`;
-          }
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  }
-  
-  // 重置背景按钮
-  if (resetBgBtn) {
-    resetBgBtn.addEventListener('click', function() {
-      if (bgContainer) {
-        bgContainer.style.backgroundImage = 'url(assets/backgrounds/default_background.jpg)';
-      }
-    });
-  }
-}
+// 背景设置功能已移至main.js中统一处理
 
 // 导出函数给全局使用
 window.enterSystem = enterSystem;

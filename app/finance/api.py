@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Path
+from fastapi import APIRouter, Depends, HTTPException, status, Path, Request
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 from typing import List
 from decimal import Decimal
@@ -8,8 +9,13 @@ from app.core.exceptions import ResourceNotFoundException, ValidationException, 
 from app.core import security
 from app.user import models as user_models
 from . import schemas, service
+from .payment_gateway import alipay_gateway
+from . import payment_session_routes
 
 router = APIRouter()
+
+# 注册支付会话子路由
+router.include_router(payment_session_routes.router)
 
 # --- 保险API端点 ---
 @router.post("/insurances/", response_model=schemas.Insurance)
@@ -170,3 +176,96 @@ def read_bill_payments(
         )
     
     return service.payment_service.get_by_bill(db=db, bill_id=bill_id)
+
+# --- 在线支付API端点 ---
+@router.post("/bills/{bill_id}/initiate-online-payment", response_model=schemas.OnlinePaymentResponse)
+def initiate_online_payment(
+    provider_data: schemas.OnlinePaymentInitiateRequest,
+    bill_id: int = Path(..., title="账单ID"),
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """发起在线支付 (需要认证)"""
+    # 检查账单是否存在
+    bill = service.billing_service.get_bill_with_details(db=db, bill_id=bill_id)
+    if not bill:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"账单ID {bill_id} 不存在"
+        )
+    
+    # 检查账单状态
+    if bill.status == service.models.BillStatus.PAID:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="此账单已支付完成"
+        )
+    
+    if bill.status == service.models.BillStatus.VOID:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="此账单已作废"
+        )
+    
+    try:
+        payment_url = service.online_payment_service.initiate_payment(
+            bill=bill, 
+            provider=provider_data.provider
+        )
+        
+        return schemas.OnlinePaymentResponse(
+            payment_url=payment_url,
+            bill_id=bill_id,
+            provider=provider_data.provider
+        )
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+@router.post("/webhooks/alipay", include_in_schema=False)
+async def alipay_webhook(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """支付宝异步回调接口"""
+    try:
+        # 获取form-data
+        form_data = await request.form()
+        notification_data = {k: v for k, v in form_data.items()}
+        
+        # 验证签名
+        is_valid = alipay_gateway.verify_notification(notification_data.copy())
+        
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid signature"
+            )
+        
+        # 处理支付通知
+        service.online_payment_service.process_alipay_notification(db, notification_data)
+        
+        # 必须返回 "success" 字符串，否则支付宝会重复通知
+        return PlainTextResponse("success")
+        
+    except Exception as e:
+        # 记录错误日志
+        print(f"处理支付宝回调失败: {e}")
+        # 即使处理失败，也返回 success，避免支付宝重复通知
+        return PlainTextResponse("success")
+
+@router.post("/webhooks/wechat", include_in_schema=False)
+async def wechat_webhook(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """微信支付异步回调接口 (预留)"""
+    try:
+        # TODO: 实现微信支付回调处理
+        return {"status": "success"}
+    except Exception as e:
+        print(f"处理微信支付回调失败: {e}")
+        return {"status": "success"}

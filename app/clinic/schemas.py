@@ -2,6 +2,24 @@ from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional, List
 
+# --- Clinic Schemas ---
+class ClinicBase(BaseModel):
+    name: str
+    address: Optional[str] = None
+    contact_number: Optional[str] = None
+
+class ClinicCreate(ClinicBase):
+    pass
+
+class ClinicUpdate(BaseModel):
+    name: Optional[str] = None
+    address: Optional[str] = None
+    contact_number: Optional[str] = None
+
+class Clinic(ClinicBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
 # --- Doctor Schemas ---
 class DoctorBase(BaseModel):
     name: str

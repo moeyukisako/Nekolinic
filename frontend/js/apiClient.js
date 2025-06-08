@@ -8,6 +8,8 @@ const API_BASE_URL = 'http://localhost:8000';
 
 let currentUser = null;
 
+// 防止重复处理401错误的标志
+let isHandling401 = false;
 
 // 封装一个能处理错误的、统一的fetch函数
 
@@ -39,20 +41,34 @@ async function apiRequest(endpoint, options = {}) {
 
 
         if (response.status === 401) {
+            // 防止并发请求重复处理401错误
+            if (isHandling401) {
+                // 等待一段时间后再抛出错误，避免并发请求立即失败
+                await new Promise(resolve => setTimeout(resolve, 200));
+                throw new Error('认证失败 (401)');
+            }
+            
+            isHandling401 = true;
+            
             // 检查当前页面是否为index.html，避免循环alert
             const currentPage = window.location.pathname;
             const isIndexPage = currentPage.endsWith('index.html') || currentPage === '/' || currentPage.endsWith('/');
             
-            if (!isIndexPage) {
-                alert('登录会话已过期，请重新登录。');
-            }
-            
+            // 清除token
             localStorage.removeItem('accessToken');
             
-            // 如果不在index页面，才进行重定向
+            // 只在非index页面显示提示和重定向
             if (!isIndexPage) {
-                window.location.href = '/index.html';
+                alert('登录会话已过期，请重新登录。');
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 300); // 增加延迟时间
             }
+            
+            // 延迟重置标志，确保其他并发请求有时间处理
+            setTimeout(() => {
+                isHandling401 = false;
+            }, 500);
             
             throw new Error('认证失败 (401)');
         }
@@ -127,6 +143,9 @@ const apiClient = {
             const data = await response.json();
 
             localStorage.setItem('accessToken', data.access_token);
+            
+            // 重置401处理标志
+            isHandling401 = false;
 
             return data;
 

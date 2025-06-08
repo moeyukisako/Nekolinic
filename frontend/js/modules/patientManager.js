@@ -96,8 +96,11 @@ export default async function render(container, { signal }) {
  * 处理表格操作事件
  */
 function handleTableAction(e) {
-  const target = e.target;
-  if (!target.dataset.action) return;
+  // 使用 closest 方法确保找到正确的链接元素，避免点击文本节点的问题
+  const target = e.target.closest('.action-link');
+  if (!target || !target.dataset.action) return;
+  
+  e.preventDefault();
   
   const id = target.dataset.id;
   const name = target.dataset.name || '';
@@ -114,7 +117,12 @@ function handleTableAction(e) {
       viewPatient(id);
       break;
     case 'view-records':
-      window.eventBus.emit('view:medical-records', { patientId: id });
+      // 直接调用全局的模块切换函数，并传递 patientId
+      if (window.switchModule) {
+        window.switchModule('病历', { patientId: id });
+      } else {
+        console.error('switchModule function is not available.');
+      }
       break;
   }
 }

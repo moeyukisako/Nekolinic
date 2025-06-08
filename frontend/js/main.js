@@ -153,12 +153,18 @@ async function loadModuleRenderers() {
     dashboardModule,
     patientModule,
     medicalRecordsModule,
-    medicineModule
+    medicineModule,
+    financeModule,
+    reportsModule,
+    settingsModule
   ] = await Promise.all([
     import('./modules/dashboard.js').catch(() => ({ default: fallbackRenderer('仪表盘') })),
     import('./modules/patientManager.js').catch(() => ({ default: fallbackRenderer('患者管理') })),
     import('./modules/medicalRecords.js').catch(() => ({ default: fallbackRenderer('病历管理') })),
-    import('./modules/medicineManager.js').catch(() => ({ default: fallbackRenderer('药品管理') }))
+    import('./modules/medicineManager.js').catch(() => ({ default: fallbackRenderer('药品管理') })),
+    import('./modules/financeManager.js').catch(() => ({ default: fallbackRenderer('财务管理') })),
+    import('./modules/reportsManager.js').catch(() => ({ default: fallbackRenderer('报表管理') })),
+    import('./modules/settingsManager.js').catch(() => ({ default: fallbackRenderer('设置管理') }))
   ]);
   
   // 模块映射
@@ -166,14 +172,19 @@ async function loadModuleRenderers() {
     '状态': dashboardModule.default,
     '患者': patientModule.default,
     '病历': medicalRecordsModule.default,
-    '药品': medicineModule.default
+    '药品': medicineModule.default,
+    '财务': financeModule.default,
+    '报表': reportsModule.default,
+    '设置': settingsModule.default
   };
 }
 
 /**
  * 切换模块
+ * @param {string} moduleName - 要切换到的模块名称
+ * @param {object} [payload={}] - 传递给模块的初始数据
  */
-async function switchModule(moduleName) {
+async function switchModule(moduleName, payload = {}) {
   const mainContent = document.querySelector('.main-content');
   if (!mainContent) return;
   
@@ -213,9 +224,10 @@ async function switchModule(moduleName) {
       // 创建AbortController用于清理事件
       const abortController = new AbortController();
       
-      // 调用模块渲染函数
+      // 调用模块渲染函数，传递payload
       const cleanup = await moduleRenderers[moduleName](mainContent, { 
-        signal: abortController.signal 
+        signal: abortController.signal,
+        payload: payload
       });
       
       // 保存清理函数
@@ -576,64 +588,93 @@ function initModalSystem() {
 }
 
 /**
- * 显示通知模态框
+ * 在顶部导航栏显示状态信息
  */
 function showNotification(title, message, type = 'info') {
-  const modal = document.getElementById('notification-modal');
-  const modalTitle = document.getElementById('modal-title');
-  const modalBody = document.getElementById('modal-body');
-  const confirmBtn = document.getElementById('modal-confirm');
-  const cancelBtn = document.getElementById('modal-cancel');
+  const statusElement = document.getElementById('status-message');
   
-  if (!modal || !modalTitle || !modalBody) {
-    console.warn('模态框元素未找到，使用浏览器alert');
-    alert(`${title}: ${message}`);
-    return;
-  }
-  
-  modalTitle.textContent = title;
-  modalBody.innerHTML = message;
-  modal.setAttribute('data-type', type);
-  
-  // 重置按钮事件为默认行为
-  if (confirmBtn) {
-    confirmBtn.onclick = function() {
-      modal.classList.remove('active');
-    };
-  }
-  
-  // 根据类型配置按钮
-  if (type === 'info') {
-    if (confirmBtn) {
-      confirmBtn.textContent = '确定';
-      confirmBtn.style.display = '';
+  if (!statusElement) {
+    // 如果找不到状态元素，回退到原来的模态框方式
+    const modal = document.getElementById('notification-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+    const confirmBtn = document.getElementById('modal-confirm');
+    const cancelBtn = document.getElementById('modal-cancel');
+    
+    if (!modal || !modalTitle || !modalBody) {
+      console.warn('模态框元素未找到，使用浏览器alert');
+      alert(`${title}: ${message}`);
+      return;
     }
-    if (cancelBtn) cancelBtn.style.display = 'none';
-  } else if (type === 'confirm') {
+    
+    modalTitle.textContent = title;
+    modalBody.innerHTML = message;
+    modal.setAttribute('data-type', type);
+    
+    // 重置按钮事件为默认行为
     if (confirmBtn) {
-      confirmBtn.textContent = '确定';
-      confirmBtn.style.display = '';
+      confirmBtn.onclick = function() {
+        modal.classList.remove('active');
+      };
     }
-    if (cancelBtn) cancelBtn.style.display = '';
-  } else if (type === 'form') {
-    if (confirmBtn) {
-      confirmBtn.textContent = '保存';
-      confirmBtn.style.display = '';
-    }
-    if (cancelBtn) cancelBtn.style.display = '';
-  } else {
-    if (confirmBtn) {
-      confirmBtn.textContent = '确定';
-      confirmBtn.style.display = '';
-    }
-    if (cancelBtn) cancelBtn.style.display = 'none';
-  }
-  
-  modal.classList.add('active');
-}
+    
+    // 根据类型配置按钮
+     if (type === 'info') {
+       if (confirmBtn) {
+         confirmBtn.textContent = '确定';
+         confirmBtn.style.display = '';
+       }
+       if (cancelBtn) cancelBtn.style.display = 'none';
+     } else if (type === 'confirm') {
+       if (confirmBtn) {
+         confirmBtn.textContent = '确定';
+         confirmBtn.style.display = '';
+       }
+       if (cancelBtn) cancelBtn.style.display = '';
+     } else if (type === 'form') {
+       if (confirmBtn) {
+         confirmBtn.textContent = '保存';
+         confirmBtn.style.display = '';
+       }
+       if (cancelBtn) cancelBtn.style.display = '';
+     } else {
+       if (confirmBtn) {
+         confirmBtn.textContent = '确定';
+         confirmBtn.style.display = '';
+       }
+       if (cancelBtn) cancelBtn.style.display = 'none';
+     }
+     
+     modal.classList.add('active');
+     return;
+   }
+   
+   // 在状态栏显示消息
+   let displayMessage = message;
+   if (type === 'success') {
+     displayMessage = '✓ ' + message;
+   } else if (type === 'error') {
+     displayMessage = '✗ ' + message;
+   }
+   
+   statusElement.textContent = displayMessage;
+   statusElement.classList.add('show');
+   
+   // 1秒后隐藏消息
+   setTimeout(() => {
+     statusElement.classList.remove('show');
+     setTimeout(() => {
+       statusElement.textContent = '';
+     }, 300); // 等待淡出动画完成
+   }, 1000);
+ }
 
 // 在DOM加载完成后初始化应用
 document.addEventListener('DOMContentLoaded', initApp);
 
+// 将 switchModule 和 showNotification 暴露到全局，以便其他模块可以调用
+window.switchModule = switchModule;
+window.showNotification = showNotification;
+
 // 导出主要函数以便测试
-export { initApp, switchModule };
+export { initApp, switchModule, showNotification };

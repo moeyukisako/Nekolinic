@@ -11,7 +11,7 @@ import os
 class Settings(BaseSettings):
     """应用配置类，使用pydantic管理配置"""
     # 数据库设置
-    DATABASE_URL: str = os.getenv("TEST_DATABASE_URL", "sqlite:///./nekolinic.db")
+    DATABASE_URL: str = "sqlite:///./nekolinic.db"
     
     # 安全设置
     SECRET_KEY: str = "nejJQoMlyQnNWcRaJrEXNTnFV3w_ht5i7eAyJlQ7Z3I"  # 生产环境应更换
@@ -34,9 +34,23 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Nekolinic"
     API_V1_STR: str = "/api/v1"
     
+    # 支付宝配置
+    ALIPAY_APP_ID: str = "your_alipay_app_id"
+    ALIPAY_APP_PRIVATE_KEY_STRING: str = "-----BEGIN RSA PRIVATE KEY-----\nyour_private_key_content_here\n-----END RSA PRIVATE KEY-----"
+    ALIPAY_PUBLIC_KEY_STRING: str = "-----BEGIN PUBLIC KEY-----\nyour_public_key_content_here\n-----END PUBLIC KEY-----"
+    
+    # 微信支付配置 (预留)
+    WECHAT_APP_ID: str = "your_wechat_app_id"
+    WECHAT_MCH_ID: str = "your_merchant_id"
+    WECHAT_API_KEY: str = "your_api_key"
+    
+    # 应用URL配置
+    APP_FRONTEND_URL: str = "http://localhost:8000"
+    APP_BACKEND_URL: str = "http://localhost:8000"
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
 
 # 创建全局设置实例
-settings = Settings() 
+settings = Settings()

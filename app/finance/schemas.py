@@ -43,6 +43,7 @@ class PaymentBase(BaseModel):
     payment_date: datetime
     amount: Decimal
     payment_method: str
+    provider_transaction_id: Optional[str] = None
 
 class PaymentCreate(PaymentBase):
     bill_id: int
@@ -51,6 +52,7 @@ class PaymentUpdate(BaseModel):
     payment_date: Optional[datetime] = None
     amount: Optional[Decimal] = None
     payment_method: Optional[str] = None
+    provider_transaction_id: Optional[str] = None
 
 class Payment(PaymentBase):
     id: int
@@ -96,6 +98,25 @@ class BillSummary(BaseModel):
     patient_id: int
     medical_record_id: int
     model_config = ConfigDict(from_attributes=True)
+
+# --- 在线支付相关 Schemas ---
+class OnlinePaymentInitiateRequest(BaseModel):
+    provider: str  # e.g., "alipay", "wechat_pay"
+
+class OnlinePaymentResponse(BaseModel):
+    payment_url: str
+    bill_id: int
+    provider: str
+
+class PaymentNotificationData(BaseModel):
+    """支付平台回调通知数据"""
+    out_trade_no: str  # 商户订单号 (对应bill_id)
+    trade_no: str  # 支付平台交易号
+    trade_status: str  # 交易状态
+    total_amount: str  # 支付金额
+    buyer_email: Optional[str] = None
+    buyer_id: Optional[str] = None
+    gmt_payment: Optional[str] = None  # 支付时间
 
 class PaymentResponse(Payment):
     pass

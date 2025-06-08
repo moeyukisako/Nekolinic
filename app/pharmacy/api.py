@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Dict
 from app.core.database import get_db
 from app.core import security
+from app.core.schemas import PaginatedResponse
 from app.user import models as user_models
 from . import schemas, service
 
@@ -25,7 +26,7 @@ def create_drug(
         )
     return service.drug_service.create(db=db, obj_in=drug_in)
 
-@router.get("/drugs/", response_model=List[schemas.Drug])
+@router.get("/drugs/", response_model=PaginatedResponse[schemas.Drug])
 def read_drugs(
     skip: int = 0,
     limit: int = 100,
@@ -33,7 +34,7 @@ def read_drugs(
     current_user: user_models.User = Depends(security.get_current_active_user)
 ):
     """获取所有药品 (需要认证)"""
-    return service.drug_service.get_multi(db, skip=skip, limit=limit)
+    return service.drug_service.get_paginated(db, skip=skip, limit=limit)
 
 @router.get("/drugs/{drug_id}", response_model=schemas.Drug)
 def read_drug(
@@ -250,7 +251,7 @@ def create_medicine(
         )
     return service.drug_service.create(db=db, obj_in=drug_in)
 
-@router.get("/medicines/", response_model=List[schemas.Drug])
+@router.get("/medicines/", response_model=PaginatedResponse[schemas.Drug])
 def read_medicines(
     skip: int = 0,
     limit: int = 100,
@@ -261,8 +262,8 @@ def read_medicines(
     """获取所有药品 (medicines别名路由)"""
     if search:
         # 如果有搜索参数，使用搜索功能
-        return service.drug_service.search_by_name(db, name=search, skip=skip, limit=limit)
-    return service.drug_service.get_multi(db, skip=skip, limit=limit)
+        return service.drug_service.search_by_name_paginated(db, name=search, skip=skip, limit=limit)
+    return service.drug_service.get_paginated(db, skip=skip, limit=limit)
 
 @router.get("/medicines/{medicine_id}", response_model=schemas.Drug)
 def read_medicine(

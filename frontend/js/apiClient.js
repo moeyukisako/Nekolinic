@@ -287,14 +287,14 @@ const apiClient = {
             const skip = (page - 1) * limit;
             const params = new URLSearchParams({ skip, limit });
             if (search) params.append('search', search);
-            const medicines = await apiRequest(`/api/v1/pharmacy/medicines/?${params.toString()}`);
+            const response = await apiRequest(`/api/v1/pharmacy/medicines/?${params.toString()}`);
             
-            // 转换为前端期望的分页格式
+            // 后端现在返回正确的分页格式，直接返回
             return {
-                items: medicines,
-                total_pages: Math.ceil(medicines.length / limit) || 1,
+                items: response.items,
+                total_pages: Math.ceil(response.total / limit) || 1,
                 current_page: page,
-                total_items: medicines.length
+                total_items: response.total
             };
         },
         /**
@@ -396,3 +396,6 @@ const apiClient = {
 
 // 确保在所有脚本中都能访问到
 window.apiClient = apiClient;
+
+// ES6模块导出
+export default apiClient;

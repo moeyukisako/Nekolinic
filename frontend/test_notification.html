@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试通知功能</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .navbar-brand {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .status-message {
+            font-size: 0.8rem;
+            font-weight: normal;
+            color: rgba(255, 255, 255, 0.9);
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .status-message.show {
+            opacity: 1;
+        }
+        
+        .status-message.text-success {
+            color: #28a745 !important;
+        }
+        
+        .status-message.text-danger {
+            color: #dc3545 !important;
+        }
+        
+        .status-message.text-warning {
+            color: #ffc107 !important;
+        }
+        
+        .status-message.text-info {
+            color: #17a2b8 !important;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-warning { background-color: #ffc107; color: black; }
+        .btn-info { background-color: #17a2b8; color: white; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-brand">Nekolinic. <span id="status-message" class="status-message"></span></div>
+    </div>
+    
+    <h1>测试通知功能</h1>
+    <p>点击下面的按钮测试不同类型的通知：</p>
+    
+    <div class="test-buttons">
+        <button class="btn-success" onclick="testNotification('success')">成功通知</button>
+        <button class="btn-danger" onclick="testNotification('error')">错误通知</button>
+        <button class="btn-warning" onclick="testNotification('warning')">警告通知</button>
+        <button class="btn-info" onclick="testNotification('info')">信息通知</button>
+    </div>
+    
+    <script type="module">
+        // 导入showNotification函数
+        import { showNotification } from './js/utils/ui.js';
+        
+        // 将函数绑定到全局作用域以便按钮调用
+        window.showNotification = showNotification;
+        
+        // 测试函数
+        window.testNotification = function(type) {
+            const messages = {
+                success: '操作成功完成！',
+                error: '发生了一个错误！',
+                warning: '这是一个警告消息！',
+                info: '这是一条信息提示！'
+            };
+            
+            showNotification(messages[type], type);
+        };
+        
+        // 页面加载完成后自动测试一次
+        setTimeout(() => {
+            showNotification('页面加载完成，通知功能正常工作！', 'info');
+        }, 1000);
+    </script>
+</body>
+</html>

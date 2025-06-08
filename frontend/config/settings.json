@@ -1,0 +1,24 @@
+{
+  "theme": "auto",
+  "language": "zh-CN",
+  "background": {
+    "type": "default",
+    "url": "",
+    "brightness": 1.0,
+    "blur": 0
+  },
+  "notifications": {
+    "desktop": true,
+    "sound": true,
+    "email": false
+  },
+  "preferences": {
+    "autoSave": true,
+    "showTooltips": true,
+    "sessionTimeout": 30
+  },
+  "backup": {
+    "autoBackup": false,
+    "frequency": "daily"
+  }
+}

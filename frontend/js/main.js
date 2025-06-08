@@ -2,6 +2,8 @@
 
 import eventBus from './utils/eventBus.js';
 import store from './utils/store.js';
+import { showLoading, showNotification } from './utils/ui.js';
+import configManager from './utils/configManager.js';
 
 // 稍后导入模块
 // import renderDashboard from './modules/dashboard.js';
@@ -52,8 +54,8 @@ function initApp() {
   // 绑定用户菜单
   bindUserMenu();
   
-  // 初始化背景设置
-  initBackgroundSettings();
+  // 初始化配置管理器
+  initConfigManager();
   
   // 初始化模态框
   initModalSystem();
@@ -141,8 +143,8 @@ function bindSidebarNavigation() {
         // 为当前点击项添加 active 状态
         targetLink.classList.add('active');
         
-        // 获取中文模块名
-        const moduleName = targetLink.textContent.trim();
+        // 获取模块名（使用data-module属性）
+        const moduleName = targetLink.getAttribute('data-module');
         
         // 切换模块
         switchModule(moduleName);
@@ -164,13 +166,34 @@ async function loadModuleRenderers() {
     reportsModule,
     settingsModule
   ] = await Promise.all([
-    import('./modules/dashboard.js').catch(() => ({ default: fallbackRenderer('仪表盘') })),
-    import('./modules/patientManager.js').catch(() => ({ default: fallbackRenderer('患者管理') })),
-    import('./modules/medicalRecords.js').catch(() => ({ default: fallbackRenderer('病历管理') })),
-    import('./modules/medicineManager.js').catch(() => ({ default: fallbackRenderer('药品管理') })),
-    import('./modules/financeManager.js').catch(() => ({ default: fallbackRenderer('财务管理') })),
-    import('./modules/reportsManager.js').catch(() => ({ default: fallbackRenderer('报表管理') })),
-    import('./modules/settingsManager.js').catch(() => ({ default: fallbackRenderer('设置管理') }))
+    import('./modules/dashboard.js').catch((err) => { 
+      console.error('Failed to load dashboard module:', err); 
+      return { default: fallbackRenderer('仪表盘') }; 
+    }),
+    import('./modules/patientManager.js').catch((err) => { 
+      console.error('Failed to load patientManager module:', err); 
+      return { default: fallbackRenderer('患者管理') }; 
+    }),
+    import('./modules/medicalRecords.js').catch((err) => { 
+      console.error('Failed to load medicalRecords module:', err); 
+      return { default: fallbackRenderer('病历管理') }; 
+    }),
+    import('./modules/medicineManager.js').catch((err) => { 
+      console.error('Failed to load medicineManager module:', err); 
+      return { default: fallbackRenderer('药品管理') }; 
+    }),
+    import('./modules/financeManager.js').catch((err) => { 
+      console.error('Failed to load financeManager module:', err); 
+      return { default: fallbackRenderer('财务管理') }; 
+    }),
+    import('./modules/reportsManager.js').catch((err) => { 
+      console.error('Failed to load reportsManager module:', err); 
+      return { default: fallbackRenderer('报表管理') }; 
+    }),
+    import('./modules/settingsManager.js').catch((err) => { 
+      console.error('Failed to load settingsManager module:', err); 
+      return { default: fallbackRenderer('设置管理') }; 
+    })
   ]);
   
   // 模块映射
@@ -286,7 +309,23 @@ function updateNavbarTitle(moduleName) {
   
   // 获取对应的显示名称，如果是状态模块则不添加后缀
   const displaySuffix = moduleNameMap[moduleName] || '';
+  
+  // 保留status-message元素，只更新文本部分
+  const statusMessage = navbarTitle.querySelector('#status-message');
   navbarTitle.textContent = 'Nekolinic.' + displaySuffix;
+  
+  // 重新添加status-message元素
+  if (statusMessage) {
+    navbarTitle.appendChild(document.createTextNode(' '));
+    navbarTitle.appendChild(statusMessage);
+  } else {
+    // 如果status-message不存在，创建一个新的
+    const newStatusMessage = document.createElement('span');
+    newStatusMessage.id = 'status-message';
+    newStatusMessage.className = 'status-message';
+    navbarTitle.appendChild(document.createTextNode(' '));
+    navbarTitle.appendChild(newStatusMessage);
+  }
 }
 
 /**
@@ -307,9 +346,9 @@ function fallbackRenderer(moduleName) {
 }
 
 /**
- * 初始化背景设置
+ * 初始化背景设置UI交互
  */
-function initBackgroundSettings() {
+function initBackgroundSettingsUI() {
   const bgSettingsTrigger = document.getElementById('bg-settings-trigger');
   const bgSettingsPanel = document.getElementById('bg-settings-panel');
   const bgPreview = document.getElementById('bg-preview');
@@ -367,9 +406,9 @@ function initBackgroundSettings() {
               })
             }).then(user => {
               document.documentElement.style.setProperty('--bg-image', `url(${user.background_preference})`);
-              showNotification('成功', '背景图片已成功应用并保存', 'info');
+              showNotification('背景图片已成功应用并保存', 'success');
             }).catch(err => {
-              showNotification('错误', '保存背景图片失败: ' + err.message, 'error');
+              showNotification('保存背景图片失败: ' + err.message, 'error');
             });
           });
         };
@@ -464,9 +503,9 @@ function resetBackground() {
   apiClient.auth.updatePreferences({
     background_preference: null
   }).then(() => {
-    showNotification('成功', '背景已重置', 'info');
+    showNotification('背景已重置', 'success');
   }).catch(err => {
-    showNotification('错误', '重置背景设置失败: ' + err.message, 'error');
+    showNotification('重置背景设置失败: ' + err.message, 'error');
   });
 }
 
@@ -520,9 +559,9 @@ function loadLocalBackgrounds() {
         // 更新激活状态
         document.querySelectorAll('.bg-thumbnail').forEach(t => t.classList.remove('active'));
         this.classList.add('active');
-        showNotification('成功', '背景颜色已成功应用并保存', 'info');
+        showNotification('背景颜色已成功应用并保存', 'success');
       }).catch(err => {
-        showNotification('错误', '保存背景颜色失败: ' + err.message, 'error');
+        showNotification('保存背景颜色失败: ' + err.message, 'error');
       });
     });
   });
@@ -578,6 +617,53 @@ function compressImage(dataUrl, callback, maxWidth = 8000, maxHeight = 6000, qua
 }
 
 /**
+ * 初始化配置管理器
+ */
+async function initConfigManager() {
+  try {
+    // 初始化配置管理器
+    await configManager.init();
+    console.log('配置管理器初始化完成');
+    
+    // 初始化背景设置UI（保留原有的UI交互逻辑）
+    initBackgroundSettingsUI();
+    
+  } catch (error) {
+     console.error('配置管理器初始化失败:', error);
+     // 降级到原有的初始化方式
+     initBackgroundSettingsUI();
+     initThemeSettingsLegacy();
+   }
+}
+
+/**
+ * 传统主题设置初始化（降级使用）
+ */
+function initThemeSettingsLegacy() {
+  try {
+    const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+    const savedTheme = settings['theme-select'];
+    
+    if (savedTheme) {
+      document.body.className = document.body.className.replace(/theme-\w+/g, '');
+      if (savedTheme !== 'auto') {
+        document.body.classList.add(`theme-${savedTheme}`);
+      } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
+      }
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
+    }
+  } catch (error) {
+    console.error('加载主题设置失败:', error);
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
+  }
+}
+
+/**
  * 初始化模态框系统
  */
 function initModalSystem() {
@@ -606,87 +692,7 @@ function initModalSystem() {
   }
 }
 
-/**
- * 在顶部导航栏显示状态信息
- */
-function showNotification(title, message, type = 'info') {
-  const statusElement = document.getElementById('status-message');
-  
-  if (!statusElement) {
-    // 如果找不到状态元素，回退到原来的模态框方式
-    const modal = document.getElementById('notification-modal');
-    const modalTitle = document.getElementById('modal-title');
-    const modalBody = document.getElementById('modal-body');
-    const confirmBtn = document.getElementById('modal-confirm');
-    const cancelBtn = document.getElementById('modal-cancel');
-    
-    if (!modal || !modalTitle || !modalBody) {
-      console.warn('模态框元素未找到，使用浏览器alert');
-      alert(`${title}: ${message}`);
-      return;
-    }
-    
-    modalTitle.textContent = title;
-    modalBody.innerHTML = message;
-    modal.setAttribute('data-type', type);
-    
-    // 重置按钮事件为默认行为
-    if (confirmBtn) {
-      confirmBtn.onclick = function() {
-        modal.classList.remove('active');
-      };
-    }
-    
-    // 根据类型配置按钮
-     if (type === 'info') {
-       if (confirmBtn) {
-         confirmBtn.textContent = '确定';
-         confirmBtn.style.display = '';
-       }
-       if (cancelBtn) cancelBtn.style.display = 'none';
-     } else if (type === 'confirm') {
-       if (confirmBtn) {
-         confirmBtn.textContent = '确定';
-         confirmBtn.style.display = '';
-       }
-       if (cancelBtn) cancelBtn.style.display = '';
-     } else if (type === 'form') {
-       if (confirmBtn) {
-         confirmBtn.textContent = '保存';
-         confirmBtn.style.display = '';
-       }
-       if (cancelBtn) cancelBtn.style.display = '';
-     } else {
-       if (confirmBtn) {
-         confirmBtn.textContent = '确定';
-         confirmBtn.style.display = '';
-       }
-       if (cancelBtn) cancelBtn.style.display = 'none';
-     }
-     
-     modal.classList.add('active');
-     return;
-   }
-   
-   // 在状态栏显示消息
-   let displayMessage = message;
-   if (type === 'success') {
-     displayMessage = '✓ ' + message;
-   } else if (type === 'error') {
-     displayMessage = '✗ ' + message;
-   }
-   
-   statusElement.textContent = displayMessage;
-   statusElement.classList.add('show');
-   
-   // 1秒后隐藏消息
-   setTimeout(() => {
-     statusElement.classList.remove('show');
-     setTimeout(() => {
-       statusElement.textContent = '';
-     }, 300); // 等待淡出动画完成
-   }, 1000);
- }
+
 
 // 在DOM加载完成后初始化应用
 document.addEventListener('DOMContentLoaded', initApp);

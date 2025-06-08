@@ -366,7 +366,7 @@ async function handleMedicalRecordSubmit(e, signal) {
   };
 
   if (!recordData.record_date || !recordData.diagnosis) {
-    window.showNotification('错误', '请填写就诊日期和诊断', 'error');
+    window.showNotification('请填写就诊日期和诊断', 'error');
     return;
   }
 
@@ -374,10 +374,10 @@ async function handleMedicalRecordSubmit(e, signal) {
     let savedRecord;
     if (recordId) {
       savedRecord = await apiClient.medicalRecords.update(recordId, recordData);
-      window.showNotification('成功', '病历已更新', 'success');
+      window.showNotification('病历已更新', 'success');
     } else {
       savedRecord = await apiClient.medicalRecords.create(recordData);
-      window.showNotification('成功', '病历已创建', 'success');
+      window.showNotification('病历已创建', 'success');
     }
     // 重新渲染，以确保数据同步
     await renderMedicalRecordEditor(patientId, signal);

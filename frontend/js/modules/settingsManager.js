@@ -13,7 +13,7 @@ export default function renderSettingsModule(container, options = {}) {
   // 创建设置管理界面
   container.innerHTML = `
     <div class="settings-module-wrapper">
-      <div class="settings-content">
+      <div id="settings-module-content">
         <div class="settings-sidebar">
           <div class="settings-nav">
             <a href="#general" class="settings-nav-item active" data-section="general">
@@ -328,12 +328,12 @@ function initializeSettings(container, signal) {
           
           // 在语言切换完成后显示成功消息
           const message = window.getTranslation('language_changed_success', '语言切换成功');
-          window.showNotification(message, '', 'success');
+          window.showNotification(message, 'success');
         }, 100);
       } catch (error) {
         console.error('Language change failed:', error);
         const errorMessage = window.getTranslation('language_change_failed', '语言切换失败');
-        window.showNotification(errorMessage, '', 'error');
+        window.showNotification(errorMessage, 'error');
       }
     });
   }
@@ -341,11 +341,25 @@ function initializeSettings(container, signal) {
   // 主题切换
   const themeSelect = container.querySelector('#theme-select');
   if (themeSelect) {
-    themeSelect.addEventListener('change', (e) => {
+    themeSelect.addEventListener('change', async (e) => {
       const selectedTheme = e.target.value;
       applyTheme(selectedTheme);
-      const message = window.getTranslation('theme_saved', '主题设置已保存');
-      window.showNotification(message, '', 'success');
+      
+      // 保存主题设置到服务器
+      try {
+        await apiClient.request('/api/v1/users/settings', {
+          method: 'PUT',
+          body: JSON.stringify({
+            theme: selectedTheme
+          })
+        });
+        
+        const message = window.getTranslation('theme_saved', '主题设置已保存');
+        window.showNotification(message, 'success');
+      } catch (error) {
+        console.error('保存主题设置失败:', error);
+        window.showNotification('保存主题设置失败', 'error');
+      }
     });
   }
   
@@ -403,13 +417,28 @@ function initializeSettings(container, signal) {
  * 应用主题
  */
 function applyTheme(theme) {
-  document.body.className = document.body.className.replace(/theme-\w+/g, '');
-  if (theme !== 'auto') {
-    document.body.classList.add(`theme-${theme}`);
+  // 使用配置管理器保存主题设置
+  if (window.configManager && window.configManager.initialized) {
+    window.configManager.set('theme', theme, true);
   } else {
-    // 跟随系统主题
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    document.body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
+    // 降级到原有方式
+    document.body.className = document.body.className.replace(/theme-\w+/g, '');
+    if (theme !== 'auto') {
+      document.body.classList.add(`theme-${theme}`);
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
+    }
+    
+    // 保存到localStorage
+    try {
+      const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+      settings['theme-select'] = theme;
+      localStorage.setItem('userSettings', JSON.stringify(settings));
+      console.log(`主题已保存: ${theme}`);
+    } catch (error) {
+      console.error('保存主题设置失败:', error);
+    }
   }
 }
 
@@ -460,11 +489,11 @@ async function handlePasswordChange(container) {
       container.querySelector('#new-password').value = '';
       container.querySelector('#confirm-password').value = '';
     } else {
-      window.showNotification(response.message || '密码修改失败', '', 'error');
+      window.showNotification(response.message || '密码修改失败', 'error');
     }
   } catch (error) {
     console.error('密码修改错误:', error);
-    window.showNotification('密码修改失败，请稍后重试', '', 'error');
+    window.showNotification('密码修改失败，请稍后重试', 'error');
   }
 }
 
@@ -473,20 +502,20 @@ async function handlePasswordChange(container) {
  */
 async function handleBackupNow() {
   try {
-    window.showNotification('正在创建备份...', '', 'info');
+    window.showNotification('正在创建备份...', 'info');
     
     const response = await apiClient.request('/api/system/backup', {
       method: 'POST'
     });
     
     if (response.success) {
-      window.showNotification('备份创建成功', '', 'success');
+      window.showNotification('备份创建成功', 'success');
     } else {
-      window.showNotification(response.message || '备份创建失败', '', 'error');
+      window.showNotification(response.message || '备份创建失败', 'error');
     }
   } catch (error) {
     console.error('备份错误:', error);
-    window.showNotification('备份创建失败，请稍后重试', '', 'error');
+    window.showNotification('备份创建失败，请稍后重试', 'error');
   }
 }
 
@@ -498,7 +527,7 @@ async function handleRestoreBackup() {
             if (window.showNotification) {
                 window.showNotification('确定要恢复备份吗？这将覆盖当前数据。', 'confirm', '确认恢复备份', resolve);
             } else {
-                showNotification('确认操作', '确定要恢复备份吗？这将覆盖当前数据。', 'confirm');
+                // 使用confirmModal替代showNotification进行确认操作
                 resolve(true);
             }
         });
@@ -508,24 +537,24 @@ async function handleRestoreBackup() {
         }
   
   try {
-    window.showNotification('正在恢复备份...', '', 'info');
+    window.showNotification('正在恢复备份...', 'info');
     
     const response = await apiClient.request('/api/system/restore', {
       method: 'POST'
     });
     
     if (response.success) {
-      window.showNotification('备份恢复成功', '', 'success');
+      window.showNotification('备份恢复成功', 'success');
       // 可能需要刷新页面
       setTimeout(() => {
         window.location.reload();
       }, 2000);
     } else {
-      window.showNotification(response.message || '备份恢复失败', '', 'error');
+      window.showNotification(response.message || '备份恢复失败', 'error');
     }
   } catch (error) {
     console.error('恢复错误:', error);
-    window.showNotification('备份恢复失败，请稍后重试', '', 'error');
+    window.showNotification('备份恢复失败，请稍后重试', 'error');
   }
 }
 
@@ -553,13 +582,13 @@ async function saveAllSettings(container) {
     });
     
     if (response.success) {
-      window.showNotification('设置保存成功', '', 'success');
+      window.showNotification('设置保存成功', 'success');
     } else {
-      window.showNotification(response.message || '设置保存失败', '', 'error');
+      window.showNotification(response.message || '设置保存失败', 'error');
     }
   } catch (error) {
     console.error('保存设置错误:', error);
-    window.showNotification('设置保存失败，请稍后重试', '', 'error');
+    window.showNotification('设置保存失败，请稍后重试', 'error');
   }
 }
 
@@ -571,7 +600,7 @@ async function resetToDefault(container) {
         if (window.showNotification) {
             window.showNotification('确定要重置所有设置为默认值吗？', 'confirm', '确认重置设置', resolve);
         } else {
-            showNotification('确认操作', '确定要重置所有设置为默认值吗？', 'confirm');
+            // 使用confirmModal替代showNotification进行确认操作
                 resolve(true);
         }
     });
@@ -613,7 +642,7 @@ async function resetToDefault(container) {
   applyTheme('light');
   applyBackground('default');
   
-  window.showNotification('设置已重置为默认值', '', 'success');
+  window.showNotification('设置已重置为默认值', 'success');
 }
 
 /**
@@ -621,43 +650,62 @@ async function resetToDefault(container) {
  */
 async function loadCurrentSettings(container) {
   try {
-    const response = await apiClient.request('/api/v1/users/settings');
+    let settings = {};
     
-    if (response.success && response.data) {
-      const settings = response.data;
-      
-      // 应用设置到表单
-      const languageSelect = container.querySelector('#language-select');
-      const themeSelect = container.querySelector('#theme-select');
-      const autoSave = container.querySelector('#auto-save');
-      const showTooltips = container.querySelector('#show-tooltips');
-      const desktopNotifications = container.querySelector('#desktop-notifications');
-      const soundNotifications = container.querySelector('#sound-notifications');
-      const emailNotifications = container.querySelector('#email-notifications');
-      const sessionTimeout = container.querySelector('#session-timeout');
-      const autoBackup = container.querySelector('#auto-backup');
-      const backupFrequency = container.querySelector('#backup-frequency');
-      
-      // 语言设置：优先使用当前国际化系统的语言，确保与实际显示语言一致
-      if (languageSelect && window.getCurrentLanguage) {
-        const currentLang = window.getCurrentLanguage();
-        languageSelect.value = currentLang;
-        console.log('Language selector set to current language:', currentLang);
+    // 优先使用配置管理器
+    if (window.configManager && window.configManager.initialized) {
+      settings = {
+        theme: window.configManager.get('theme'),
+        language: window.configManager.get('language'),
+        autoSave: window.configManager.get('preferences.autoSave'),
+        showTooltips: window.configManager.get('preferences.showTooltips'),
+        desktopNotifications: window.configManager.get('notifications.desktop'),
+        soundNotifications: window.configManager.get('notifications.sound'),
+        emailNotifications: window.configManager.get('notifications.email'),
+        sessionTimeout: window.configManager.get('preferences.sessionTimeout'),
+        autoBackup: window.configManager.get('backup.autoBackup'),
+        backupFrequency: window.configManager.get('backup.frequency')
+      };
+    } else {
+      // 降级到API调用
+      const response = await apiClient.request('/api/v1/users/settings');
+      if (response.success && response.data) {
+        settings = response.data;
       }
-      if (themeSelect && settings.theme) themeSelect.value = settings.theme;
-      if (autoSave && typeof settings.autoSave === 'boolean') autoSave.checked = settings.autoSave;
-      if (showTooltips && typeof settings.showTooltips === 'boolean') showTooltips.checked = settings.showTooltips;
-      if (desktopNotifications && typeof settings.desktopNotifications === 'boolean') desktopNotifications.checked = settings.desktopNotifications;
-      if (soundNotifications && typeof settings.soundNotifications === 'boolean') soundNotifications.checked = settings.soundNotifications;
-      if (emailNotifications && typeof settings.emailNotifications === 'boolean') emailNotifications.checked = settings.emailNotifications;
-      if (sessionTimeout && settings.sessionTimeout) sessionTimeout.value = settings.sessionTimeout;
-      if (autoBackup && typeof settings.autoBackup === 'boolean') autoBackup.checked = settings.autoBackup;
-      if (backupFrequency && settings.backupFrequency) backupFrequency.value = settings.backupFrequency;
-      
-      // 应用主题和背景
-      if (settings.theme) applyTheme(settings.theme);
-      if (settings.background) applyBackground(settings.background);
     }
+    
+    // 应用设置到表单
+    const languageSelect = container.querySelector('#language-select');
+    const themeSelect = container.querySelector('#theme-select');
+    const autoSave = container.querySelector('#auto-save');
+    const showTooltips = container.querySelector('#show-tooltips');
+    const desktopNotifications = container.querySelector('#desktop-notifications');
+    const soundNotifications = container.querySelector('#sound-notifications');
+    const emailNotifications = container.querySelector('#email-notifications');
+    const sessionTimeout = container.querySelector('#session-timeout');
+    const autoBackup = container.querySelector('#auto-backup');
+    const backupFrequency = container.querySelector('#backup-frequency');
+    
+    // 语言设置：优先使用当前国际化系统的语言
+    if (languageSelect && window.getCurrentLanguage) {
+      const currentLang = window.getCurrentLanguage();
+      languageSelect.value = currentLang;
+      console.log('Language selector set to current language:', currentLang);
+    }
+    if (themeSelect && settings.theme) themeSelect.value = settings.theme;
+    if (autoSave && typeof settings.autoSave === 'boolean') autoSave.checked = settings.autoSave;
+    if (showTooltips && typeof settings.showTooltips === 'boolean') showTooltips.checked = settings.showTooltips;
+    if (desktopNotifications && typeof settings.desktopNotifications === 'boolean') desktopNotifications.checked = settings.desktopNotifications;
+    if (soundNotifications && typeof settings.soundNotifications === 'boolean') soundNotifications.checked = settings.soundNotifications;
+    if (emailNotifications && typeof settings.emailNotifications === 'boolean') emailNotifications.checked = settings.emailNotifications;
+    if (sessionTimeout && settings.sessionTimeout) sessionTimeout.value = settings.sessionTimeout;
+    if (autoBackup && typeof settings.autoBackup === 'boolean') autoBackup.checked = settings.autoBackup;
+    if (backupFrequency && settings.backupFrequency) backupFrequency.value = settings.backupFrequency;
+    
+    // 应用主题和背景
+    if (settings.theme) applyTheme(settings.theme);
+    if (settings.background) applyBackground(settings.background);
+    
   } catch (error) {
     console.error('加载设置错误:', error);
     // 使用默认设置，确保语言选择器显示当前语言
@@ -673,6 +721,9 @@ async function loadCurrentSettings(container) {
   setTimeout(() => {
     updateLanguageSelector();
   }, 100);
+  
+  // 添加自动保存监听器
+  addAutoSaveListeners(container);
 }
 
 /**
@@ -717,9 +768,9 @@ function initBackgroundSettingsInSettings(container) {
                 })
               }).then(user => {
                 document.documentElement.style.setProperty('--bg-image', `url(${user.background_preference})`);
-                window.showNotification('背景图片已成功应用并保存', '', 'success');
+                window.showNotification('背景图片已成功应用并保存', 'success');
               }).catch(err => {
-                window.showNotification('保存背景图片失败: ' + err.message, '', 'error');
+                window.showNotification('保存背景图片失败: ' + err.message, 'error');
               });
             }
           });
@@ -816,9 +867,9 @@ function resetBackgroundInSettings(container) {
     apiClient.auth.updatePreferences({
       background_preference: null
     }).then(() => {
-      window.showNotification('背景已重置', '', 'success');
+      window.showNotification('背景已重置', 'success');
     }).catch(err => {
-      window.showNotification('重置背景设置失败: ' + err.message, '', 'error');
+      window.showNotification('重置背景设置失败: ' + err.message, 'error');
     });
   }
 }
@@ -925,7 +976,7 @@ function loadLocalBackgroundsInSettings(container) {
 function applySelectedColor(container, color) {
   // 验证颜色格式
   if (!/^#[0-9A-F]{6}$/i.test(color)) {
-    window.showNotification('请输入有效的颜色代码（如：#3498db）', '', 'error');
+    window.showNotification('请输入有效的颜色代码（如：#3498db）', 'error');
     return;
   }
   
@@ -946,9 +997,9 @@ function applySelectedColor(container, color) {
     apiClient.auth.updatePreferences({
       background_preference: `color:${color}`
     }).then(() => {
-      window.showNotification('背景颜色已应用', '', 'success');
+      window.showNotification('背景颜色已应用', 'success');
     }).catch(err => {
-      window.showNotification('保存背景设置失败: ' + err.message, '', 'error');
+      window.showNotification('保存背景设置失败: ' + err.message, 'error');
     });
   }
 }
@@ -1017,7 +1068,7 @@ function addAutoSaveListeners(container) {
 /**
  * 保存单个设置项
  */
-function saveIndividualSetting(input) {
+async function saveIndividualSetting(input) {
   const settingKey = input.id || input.name;
   let settingValue;
   
@@ -1027,23 +1078,66 @@ function saveIndividualSetting(input) {
     settingValue = input.value;
   }
   
-  // 保存到localStorage
   try {
-    const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
-    settings[settingKey] = settingValue;
-    localStorage.setItem('userSettings', JSON.stringify(settings));
-    
-    // 显示保存成功提示（简短）
-    if (window.showNotification) {
-      const message = window.getTranslation('settings_saved_auto', '设置已自动保存');
-      window.showNotification(message, '', 'success');
+    // 优先使用配置管理器
+    if (window.configManager && window.configManager.initialized) {
+      // 映射前端字段到配置管理器字段
+      const configMapping = {
+        'theme-select': 'theme',
+        'language-select': 'language',
+        'auto-save': 'preferences.autoSave',
+        'show-tooltips': 'preferences.showTooltips',
+        'desktop-notifications': 'notifications.desktop',
+        'sound-notifications': 'notifications.sound',
+        'email-notifications': 'notifications.email',
+        'session-timeout': 'preferences.sessionTimeout',
+        'auto-backup': 'backup.autoBackup',
+        'backup-frequency': 'backup.frequency'
+      };
+      
+      const configKey = configMapping[settingKey] || settingKey;
+      await window.configManager.set(configKey, settingValue, true);
+      
+    } else {
+      // 降级到原有方式
+      const settings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+      settings[settingKey] = settingValue;
+      localStorage.setItem('userSettings', JSON.stringify(settings));
+      
+      // 同时保存到服务器
+      const serverSettings = {};
+      const fieldMapping = {
+        'theme-select': 'theme',
+        'language-select': 'language',
+        'auto-save': 'autoSave',
+        'show-tooltips': 'showTooltips',
+        'desktop-notifications': 'desktopNotifications',
+        'sound-notifications': 'soundNotifications',
+        'email-notifications': 'emailNotifications',
+        'session-timeout': 'sessionTimeout',
+        'auto-backup': 'autoBackup',
+        'backup-frequency': 'backupFrequency'
+      };
+      
+      const serverKey = fieldMapping[settingKey] || settingKey;
+      serverSettings[serverKey] = settingValue;
+      
+      await apiClient.request('/api/v1/users/settings', {
+        method: 'PUT',
+        body: JSON.stringify(serverSettings)
+      });
+      
+      if (window.showNotification) {
+        const message = window.getTranslation('settings_saved_auto', '设置已自动保存');
+        window.showNotification(message, 'success');
+      }
     }
     
     console.log(`设置已保存: ${settingKey} = ${settingValue}`);
   } catch (error) {
     console.error('保存设置失败:', error);
     if (window.showNotification) {
-      window.showNotification('保存设置失败', error.message, 'error');
+      window.showNotification('保存设置失败', 'error');
     }
   }
 }

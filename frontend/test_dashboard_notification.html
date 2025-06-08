@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试Dashboard通知功能</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .navbar-brand {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .status-message {
+            font-size: 0.8rem;
+            font-weight: normal;
+            color: rgba(255, 255, 255, 0.9);
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .status-message.show {
+            opacity: 1;
+        }
+        
+        .status-message.text-success {
+            color: #28a745 !important;
+        }
+        
+        .status-message.text-danger {
+            color: #dc3545 !important;
+        }
+        
+        .status-message.text-warning {
+            color: #ffc107 !important;
+        }
+        
+        .status-message.text-info {
+            color: #17a2b8 !important;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-warning { background-color: #ffc107; color: black; }
+        .btn-info { background-color: #17a2b8; color: white; }
+        .btn-test { background-color: #6c757d; color: white; }
+        
+        .debug-info {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+        }
+        
+        .debug-info h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .debug-output {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-brand">Nekolinic Dashboard Test. <span id="status-message" class="status-message"></span></div>
+    </div>
+    
+    <h1>测试Dashboard通知功能</h1>
+    <p>这个页面模拟dashboard的环境来测试showNotification功能：</p>
+    
+    <div class="test-buttons">
+        <button class="btn-success" onclick="testNotification('success')">成功通知</button>
+        <button class="btn-danger" onclick="testNotification('error')">错误通知</button>
+        <button class="btn-warning" onclick="testNotification('warning')">警告通知</button>
+        <button class="btn-info" onclick="testNotification('info')">信息通知</button>
+        <button class="btn-test" onclick="debugShowNotification()">调试showNotification</button>
+    </div>
+    
+    <div class="debug-info">
+        <h3>调试信息</h3>
+        <div id="debug-output" class="debug-output">等待测试...
+</div>
+    </div>
+    
+    <script type="module">
+        // 导入showNotification函数（模拟dashboard环境）
+        import { showNotification } from './js/utils/ui.js';
+        
+        // 将函数绑定到全局作用域（模拟main.js的行为）
+        window.showNotification = showNotification;
+        
+        // 调试输出函数
+        function debugLog(message) {
+            const debugOutput = document.getElementById('debug-output');
+            const timestamp = new Date().toLocaleTimeString();
+            debugOutput.textContent += `[${timestamp}] ${message}\n`;
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+        }
+        
+        // 测试函数
+        window.testNotification = function(type) {
+            const messages = {
+                success: '操作成功完成！',
+                error: '发生了一个错误！',
+                warning: '这是一个警告消息！',
+                info: '这是一条信息提示！'
+            };
+            
+            debugLog(`调用 showNotification("${messages[type]}", "${type}")`);
+            
+            try {
+                showNotification(messages[type], type);
+                debugLog('showNotification 调用成功');
+            } catch (error) {
+                debugLog(`showNotification 调用失败: ${error.message}`);
+            }
+        };
+        
+        // 调试showNotification函数
+        window.debugShowNotification = function() {
+            debugLog('=== 开始调试 showNotification ===');
+            
+            // 检查函数是否存在
+            debugLog(`window.showNotification 存在: ${typeof window.showNotification}`);
+            debugLog(`showNotification 函数: ${showNotification}`);
+            
+            // 检查DOM元素
+            const statusElement = document.getElementById('status-message');
+            debugLog(`status-message 元素存在: ${!!statusElement}`);
+            
+            if (statusElement) {
+                debugLog(`status-message 当前类名: ${statusElement.className}`);
+                debugLog(`status-message 当前文本: "${statusElement.textContent}"`);
+            }
+            
+            // 测试基本调用
+            try {
+                debugLog('尝试调用 showNotification...');
+                showNotification('调试测试消息', 'info');
+                debugLog('showNotification 调用完成');
+            } catch (error) {
+                debugLog(`调用失败: ${error.message}`);
+                debugLog(`错误堆栈: ${error.stack}`);
+            }
+            
+            debugLog('=== 调试完成 ===');
+        };
+        
+        // 页面加载完成后的初始化
+        debugLog('页面加载完成');
+        debugLog(`showNotification 函数已绑定到 window: ${typeof window.showNotification}`);
+        
+        // 自动测试一次
+        setTimeout(() => {
+            debugLog('执行自动测试...');
+            testNotification('info');
+        }, 1000);
+    </script>
+</body>
+</html>

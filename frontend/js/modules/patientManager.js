@@ -1,7 +1,7 @@
 // frontend/js/modules/patientManager.js
 
 import apiClient from '../apiClient.js';
-import { showLoading, confirmDialog } from '../utils/ui.js';
+import { showNotification, showLoading, hideLoading, debounce, confirmDialog, createModal, confirmModal } from '../utils/ui.js';
 import { formatDate, formatDateTime } from '../utils/date.js';
 import Pagination from '../components/pagination.js';
 import SearchBar from '../components/searchBar.js';
@@ -237,7 +237,7 @@ function renderPagination(query = '') {
  * 显示添加患者模态框
  */
 function showAddPatientModal() {
-  showNotification('添加患者', '请在患者管理界面直接添加新患者', 'info');
+  showNotification('请在患者管理界面直接添加新患者', 'info');
   // 可以在这里添加直接在页面中显示表单的逻辑
 }
 
@@ -249,41 +249,75 @@ async function editPatient(id) {
   try {
     const patient = await apiClient.patients.getById(id);
     
-    const form = document.createElement('form');
-    form.id = 'patient-form';
-    form.innerHTML = `
-      <input type="hidden" id="patient-id" value="${patient.id}">
-      <div class="form-group">
-        <label for="patient-name" data-i18n="patient_name">姓名</label>
-        <input type="text" id="patient-name" value="${patient.name || ''}" required>
-      </div>
-      <div class="form-group">
-        <label for="patient-gender" data-i18n="patient_gender">性别</label>
-        <select id="patient-gender">
-          <option value="male" ${patient.gender === 'male' ? 'selected' : ''} data-i18n="gender_male">男</option>
-          <option value="female" ${patient.gender === 'female' ? 'selected' : ''} data-i18n="gender_female">女</option>
-          <option value="other" ${patient.gender === 'other' ? 'selected' : ''} data-i18n="gender_other">其他</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="patient-birth-date" data-i18n="patient_birth_date">出生日期</label>
-        <input type="date" id="patient-birth-date" value="${patient.birth_date || ''}">
-      </div>
-      <div class="form-group">
-        <label for="patient-contact-number" data-i18n="patient_phone">联系电话</label>
-        <input type="tel" id="patient-contact-number" value="${patient.contact_number || ''}">
-      </div>
-      <div class="form-group">
-        <label for="patient-address" data-i18n="patient_address">住址</label>
-        <textarea id="patient-address" rows="2">${patient.address || ''}</textarea>
-      </div>
+    const content = `
+      <form id="edit-patient-form">
+        <div class="mb-3">
+          <label for="edit-patient-name" class="form-label">姓名 *</label>
+          <input type="text" class="form-control" id="edit-patient-name" value="${patient.name || ''}" required>
+        </div>
+        <div class="mb-3">
+          <label for="edit-patient-gender" class="form-label">性别 *</label>
+          <select class="form-select" id="edit-patient-gender" required>
+            <option value="male" ${patient.gender === 'male' ? 'selected' : ''}>男</option>
+            <option value="female" ${patient.gender === 'female' ? 'selected' : ''}>女</option>
+            <option value="other" ${patient.gender === 'other' ? 'selected' : ''}>其他</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="edit-patient-birth-date" class="form-label">出生日期</label>
+          <input type="date" class="form-control" id="edit-patient-birth-date" value="${patient.birth_date || ''}">
+        </div>
+        <div class="mb-3">
+          <label for="edit-patient-contact" class="form-label">联系电话</label>
+          <input type="tel" class="form-control" id="edit-patient-contact" value="${patient.contact_number || ''}">
+        </div>
+        <div class="mb-3">
+          <label for="edit-patient-address" class="form-label">住址</label>
+          <textarea class="form-control" id="edit-patient-address" rows="3">${patient.address || ''}</textarea>
+        </div>
+      </form>
     `;
 
-    showNotification('编辑患者', '请在患者管理界面直接编辑患者信息', 'info');
-    // 可以在这里添加直接在页面中显示编辑表单的逻辑
+    const modalInstance = createModal(`编辑患者 - ${patient.name}`, content, {
+      size: 'lg',
+      footerButtons: [
+        { text: '取消', class: 'btn-secondary', action: 'cancel' },
+        { text: '保存', class: 'btn-primary', action: 'save' }
+      ],
+      onButtonClick: async (action, modal) => {
+        if (action === 'save') {
+          const form = modal.querySelector('#edit-patient-form');
+          const formData = new FormData(form);
+          
+          const updatedPatient = {
+            name: modal.querySelector('#edit-patient-name').value.trim(),
+            gender: modal.querySelector('#edit-patient-gender').value,
+            birth_date: modal.querySelector('#edit-patient-birth-date').value || null,
+            contact_number: modal.querySelector('#edit-patient-contact').value.trim() || null,
+            address: modal.querySelector('#edit-patient-address').value.trim() || null
+          };
+          
+          if (!updatedPatient.name) {
+            showNotification('请填写患者姓名', 'warning');
+            return;
+          }
+          
+          try {
+            await apiClient.patients.update(id, updatedPatient);
+            showNotification('患者信息已更新', 'success');
+            window.eventBus.emit('patient:updated');
+            modalInstance.hide();
+          } catch (error) {
+            showNotification(`更新失败: ${error.message}`, 'error');
+          }
+        }
+      }
+    });
+    
+    modalInstance.show();
     
   } catch (error) {
-    window.showNotification(window.getTranslation ? window.getTranslation('error') : '错误', `${window.getTranslation ? window.getTranslation('get_patient_info_failed') : '获取患者信息失败'}: ${error.message}`, 'error');
+    showNotification(`获取患者信息失败: ${error.message}`, 'error');
   }
 }
 
@@ -318,10 +352,10 @@ async function handlePatientFormSubmit(isEdit) {
   try {
     if (isEdit && idInput) {
       await apiClient.patients.update(idInput.value, patientData);
-      window.showNotification('成功', '患者信息已更新', 'success');
+      window.showNotification('患者信息已更新', 'success');
     } else {
       await apiClient.patients.create(patientData);
-      window.showNotification('成功', '新患者已添加', 'success');
+      window.showNotification('新患者已添加', 'success');
     }
     
     // 触发更新事件
@@ -341,15 +375,19 @@ async function handlePatientFormSubmit(isEdit) {
  */
 async function deletePatient(id, name) {
   const message = `确定要删除患者 "${name || id}" 吗？此操作不可恢复，且将删除与该患者相关的所有记录。`;
-  const confirmed = await confirmDialog('确认删除', message);
+  const confirmed = await confirmModal('确认删除', message, {
+    confirmText: '删除',
+    confirmClass: 'btn-danger',
+    cancelText: '取消'
+  });
   
   if (confirmed) {
     try {
       await apiClient.patients.delete(id);
-      window.showNotification('成功', '患者记录已删除', 'success');
+      showNotification('患者记录已删除', 'success');
       window.eventBus.emit('patient:updated');
     } catch (error) {
-      window.showNotification('错误', `删除失败: ${error.message}`, 'error');
+      showNotification(`删除失败: ${error.message}`, 'error');
     }
   }
 }
@@ -362,18 +400,16 @@ async function viewPatient(id) {
   try {
     const patient = await apiClient.patients.getById(id);
     
-    const content = document.createElement('div');
-    content.className = 'patient-detail-view';
-    content.innerHTML = `
-      <table class="patient-detail-table">
+    const content = `
+      <table class="table table-bordered">
         <tbody>
           <tr>
-            <th>姓名</th>
+            <th style="width: 30%;">姓名</th>
             <td>${patient.name || '-'}</td>
           </tr>
           <tr>
             <th>性别</th>
-            <td>${patient.gender === 'male' ? (window.getTranslation ? window.getTranslation('gender_male') : '男') : patient.gender === 'female' ? (window.getTranslation ? window.getTranslation('gender_female') : '女') : (window.getTranslation ? window.getTranslation('gender_other') : '其他')}</td>
+            <td>${patient.gender === 'male' ? '男' : patient.gender === 'female' ? '女' : '其他'}</td>
           </tr>
           <tr>
             <th>出生日期</th>
@@ -395,10 +431,16 @@ async function viewPatient(id) {
       </table>
     `;
 
-    showNotification('患者详情', '患者信息已在主界面显示', 'info');
-    // 可以在这里添加直接在页面中显示详情的逻辑
+    const modalInstance = createModal(`患者详情 - ${patient.name}`, content, {
+      size: 'lg',
+      footerButtons: [
+        { text: '关闭', class: 'btn-secondary', action: 'close' }
+      ]
+    });
+    
+    modalInstance.show();
     
   } catch (error) {
-    window.showNotification(window.getTranslation ? window.getTranslation('error') : '错误', `${window.getTranslation ? window.getTranslation('get_patient_info_failed') : '获取患者信息失败'}: ${error.message}`, 'error');
+    showNotification(`获取患者信息失败: ${error.message}`, 'error');
   }
 }

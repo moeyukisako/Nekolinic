@@ -1,4 +1,4 @@
-import { showLoading, confirmDialog } from '../utils/ui.js';
+import { showLoading, confirmDialog, createModal, confirmModal } from '../utils/ui.js';
 import apiClient from '../apiClient.js';
 import Pagination from '../components/pagination.js';
 import SearchBar from '../components/searchBar.js';
@@ -223,8 +223,32 @@ function showMedicineFormModal(medicine = null) {
     ${isEdit ? `<input type="hidden" id="medicine-id" value="${medicine?.id || ''}">` : ''}
   `;
 
-  showNotification(isEdit ? '编辑药品' : '添加药品', '请在药品管理界面直接操作', 'info');
-  // 可以在这里添加直接在页面中显示表单的逻辑
+  // 创建模态框
+  const modalInstance = createModal(title, form, {
+    size: 'lg',
+    footerButtons: [
+      { text: '取消', class: 'btn-secondary', action: 'cancel' },
+      { text: isEdit ? '更新' : '添加', class: 'btn-primary', action: 'submit' }
+    ],
+    onButtonClick: async (action, modal) => {
+      if (action === 'submit') {
+        const success = await handleMedicineFormSubmit(isEdit, medicine);
+        if (success) {
+          modalInstance.hide();
+        }
+      } else if (action === 'cancel') {
+        modalInstance.hide();
+      }
+    }
+  });
+
+  // 显示模态框
+  modalInstance.show();
+
+  // 翻译模态框内容
+  if (window.translatePage) {
+    window.translatePage();
+  }
 }
 
 /**
@@ -329,12 +353,16 @@ async function editMedicine(id) {
  * 删除药品
  */
 async function deleteMedicine(id) {
-  const confirmed = await confirmDialog('确认删除', '确定要删除这个药品吗？此操作不可恢复。');
+  const confirmed = await confirmModal('确认删除', '确定要删除这个药品吗？此操作不可恢复。', {
+    confirmText: '删除',
+    confirmClass: 'btn-danger',
+    cancelText: '取消'
+  });
   
   if (confirmed) {
     try {
       await apiClient.medicines.delete(id);
-      window.showNotification('成功', '药品已删除', 'success');
+      window.showNotification('药品已删除', 'success');
       window.eventBus.emit('medicine:updated');
     } catch (error) {
       window.showNotification('错误', `删除失败: ${error.message}`, 'error');

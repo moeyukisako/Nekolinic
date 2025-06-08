@@ -142,12 +142,52 @@
             color: white;
             text-decoration: underline;
         }
+        
+        /* 状态消息样式 */
+        .status-message {
+            font-size: 0.8rem;
+            font-weight: normal;
+            color: rgba(255, 255, 255, 0.9);
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border-radius: 5px;
+            z-index: 9999;
+        }
+        
+        .status-message.show {
+            opacity: 1;
+        }
+        
+        .status-message.text-success {
+            color: #28a745 !important;
+        }
+        
+        .status-message.text-danger {
+            color: #dc3545 !important;
+        }
+        
+        .status-message.text-warning {
+            color: #ffc107 !important;
+        }
+        
+        .status-message.text-info {
+            color: #17a2b8 !important;
+        }
     </style>
 </head>
 <body>
     <!-- 背景图片容器 -->
     <div class="bg-container"></div>
     <div class="bg-overlay"></div>
+    
+    <!-- 状态消息元素，用于通知功能 -->
+    <div id="status-message" class="status-message"></div>
     
     <div class="welcome-container">
         <div class="welcome-content">
@@ -165,5 +205,60 @@
 
     <script type="module" src="js/apiClient.js"></script>
 <script type="module" src="js/auth.js"></script>
+<script type="module">
+// 背景初始化
+import apiClient from './js/apiClient.js';
+
+// 加载用户背景设置
+async function loadUserBackgroundSetting() {
+  try {
+    const user = await apiClient.auth.getCurrentUser();
+    const bgContainer = document.querySelector('.bg-container');
+    
+    if (user && user.background_preference) {
+      let backgroundUrl = user.background_preference;
+      
+      if (backgroundUrl.startsWith('color:')) {
+        const color = backgroundUrl.replace('color:', '');
+        document.body.style.backgroundColor = color;
+        if (bgContainer) bgContainer.style.backgroundImage = 'none';
+      } else {
+        if (backgroundUrl.startsWith('image:')) {
+          backgroundUrl = backgroundUrl.replace('image:', '');
+        }
+        document.documentElement.style.setProperty('--bg-image', `url(${backgroundUrl})`);
+        if (bgContainer) {
+          bgContainer.style.backgroundImage = `url(${backgroundUrl})`;
+        }
+        document.body.style.backgroundColor = '';
+      }
+    } else {
+      // 用户未设置背景时，使用默认背景
+      const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
+      document.documentElement.style.setProperty('--bg-image', defaultBg);
+      if (bgContainer) {
+        bgContainer.style.backgroundImage = defaultBg;
+      }
+      document.body.style.backgroundColor = '';
+    }
+  } catch (err) {
+    console.log('用户未登录或加载背景设置失败，使用默认背景');
+    // 出错时也使用默认背景
+    const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
+    const bgContainer = document.querySelector('.bg-container');
+    if (bgContainer) {
+      bgContainer.style.backgroundImage = defaultBg;
+    }
+    document.documentElement.style.setProperty('--bg-image', defaultBg);
+    document.body.style.backgroundColor = '';
+  }
+}
+
+// 在DOM加载完成后初始化背景
+document.addEventListener('DOMContentLoaded', () => {
+  // 延迟一点加载背景，确保页面元素已准备好
+  setTimeout(loadUserBackgroundSetting, 100);
+});
+</script>
 </body>
 </html>

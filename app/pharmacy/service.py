@@ -29,6 +29,17 @@ class DrugService(BaseService[models.Drug, schemas.DrugCreate, schemas.DrugUpdat
             .limit(limit)
             .all()
         )
+    
+    def search_by_name_paginated(self, db: Session, *, name: str, skip: int = 0, limit: int = 100) -> Dict:
+        """根据药品名称搜索药品（分页格式）"""
+        query = db.query(models.Drug).filter(models.Drug.name.ilike(f"%{name}%"))
+        total = query.count()
+        items = query.offset(skip).limit(limit).all()
+        
+        return {
+            "total": total,
+            "items": items
+        }
 
 class PrescriptionService(BaseService[models.Prescription, schemas.PrescriptionCreate, schemas.PrescriptionUpdate]):
     def __init__(self):

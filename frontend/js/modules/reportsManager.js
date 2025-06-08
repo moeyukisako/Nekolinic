@@ -8,7 +8,8 @@ export default function renderReportsModule(container, options = {}) {
   // 创建报表管理界面
   container.innerHTML = `
     <div class="reports-module-wrapper">
-      <div class="reports-grid">
+      <div id="reports-module-content">
+        <div class="reports-grid">
         <div class="report-card">
           <div class="report-icon">
             <i class="fas fa-user-friends"></i>
@@ -103,6 +104,7 @@ export default function renderReportsModule(container, options = {}) {
           </table>
         </div>
       </div>
+      </div>
     </div>
   `;
   
@@ -128,7 +130,7 @@ export default function renderReportsModule(container, options = {}) {
         btn.disabled = false;
         
         // 显示成功提示
-        window.showNotification('成功', `${reportTitle}生成完成`, 'success');
+        window.showNotification(`${reportTitle}生成完成`, 'success');
       }, 2000);
     }, { signal });
   });
@@ -139,16 +141,6 @@ export default function renderReportsModule(container, options = {}) {
   };
 }
 
-// 显示通知的辅助函数
-function showNotification(title, message, type = 'info') {
-  // 这里可以调用全局的通知系统
-  if (window.showNotification) {
-    window.showNotification(title, message, type);
-  } else {
-    if (window.showNotification) {
-            window.showNotification(message, 'error', title);
-        } else {
-            showNotification(title, message, 'error');
-        }
-  }
-}
+// 使用全局的showNotification函数
+// 注意：全局showNotification只接受两个参数：(message, type)
+// 如果需要显示标题，可以将标题包含在消息中

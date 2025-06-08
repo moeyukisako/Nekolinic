@@ -50,7 +50,7 @@ export default function renderFinanceModule(container, options = {}) {
         </div>
       </div>
       
-      <div class="finance-content">
+      <div id="finance-module-content">
         <div class="finance-tabs">
           <button class="tab-btn active" data-tab="billing" data-i18n="billing_management">账单管理</button>
           <button class="tab-btn" data-tab="income" data-i18n="income_statistics">收入统计</button>

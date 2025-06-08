@@ -27,7 +27,7 @@
 
 .sidebar-header {
   padding: 15px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #919191;
   background: transparent;
   margin: 0;
 }
@@ -46,7 +46,7 @@
 .search-box input {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid #919191;
   border-radius: 6px;
   font-size: 14px;
   outline: none;
@@ -69,7 +69,7 @@
   padding: 10px 15px;
   margin: 0;
   border: none;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #919191;
   border-radius: 0;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -178,6 +178,206 @@
   box-shadow: 0 4px 12px rgba(57, 197, 187, 0.15);
 }
 
+.theme-dark .patient-header {
+  background: linear-gradient(135deg, rgba(45, 47, 47, 0.9) 0%, rgba(50, 47, 49, 0.9) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f7fafc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dark .medical-record-editor {
+  background: rgba(45, 47, 47, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+.theme-dark .patient-basic-info {
+  background: rgba(45, 47, 47, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+.theme-dark .patient-basic-info span {
+  background: rgba(45, 47, 47, 0.8);
+  color: #f7fafc;
+}
+
+/* 深色主题下的病历管理样式 */
+.theme-dark .search-box input {
+    background-color: #2d2d30;
+    color: #cccccc;
+    border-color: #919191;
+}
+
+.theme-dark .search-box input:focus {
+    border-color: #b30074;
+    box-shadow: 0 0 0 3px rgba(179, 0, 116, 0.1);
+}
+
+.theme-dark .patients-sidebar {
+  background: linear-gradient(180deg, #6B6B6B 0%, #322f31 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .patient-item {
+  background: rgba(45, 47, 47, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+.theme-dark .patient-item:hover {
+  background: rgba(45, 47, 47, 0.9);
+}
+
+.theme-dark .patient-item.active {
+  background: #b30074;
+  border-left: 3px solid #b30074;
+}
+
+.theme-dark .patient-name {
+  color: #f7fafc;
+}
+
+.theme-dark .patient-item.active .patient-name {
+  color: white;
+}
+
+.theme-dark .patient-info {
+  color: #a0aec0;
+}
+
+.theme-dark .patient-info span {
+  background: rgba(45, 47, 47, 0.6);
+  color: #e2e8f0;
+}
+
+.theme-dark .form-group label {
+    color: #cccccc;
+}
+
+.theme-dark .form-group input,
+.theme-dark .form-group textarea {
+    background-color: #2d2d30;
+    color: #cccccc;
+    border-color: #919191;
+}
+
+.theme-dark .form-group input:focus,
+.theme-dark .form-group textarea:focus {
+    border-color: #b30074;
+    box-shadow: 0 0 0 2px rgba(179, 0, 116, 0.2);
+}
+
+.theme-dark .btn {
+    color: white;
+}
+
+.theme-dark .btn-primary {
+    background-color: #b30074;
+    color: white;
+}
+
+.theme-dark .btn-primary:hover {
+    background-color: #9b3c66;
+}
+
+.theme-dark .btn-outline {
+    background-color: transparent;
+    color: #cccccc;
+    border-color: #919191;
+}
+
+.theme-dark .btn-outline:hover {
+    background-color: #3e3e42;
+    color: white;
+}
+
+/* 兼容性：保留旧的data-theme属性 */
+[data-theme="dark"] .search-box input {
+    background-color: #2d2d30;
+    color: #cccccc;
+    border-color: #919191;
+}
+
+[data-theme="dark"] .search-box input:focus {
+    border-color: #b30074;
+    box-shadow: 0 0 0 3px rgba(179, 0, 116, 0.1);
+}
+
+[data-theme="dark"] .patient-item {
+    background-color: #2d2d30;
+    color: #cccccc;
+    border-bottom: 1px solid #919191;
+}
+
+[data-theme="dark"] .patient-item:hover {
+    background-color: #3e3e42;
+}
+
+[data-theme="dark"] .patient-item.active {
+    background-color: #b30074;
+    color: white;
+    border-left: 3px solid #b30074;
+}
+
+[data-theme="dark"] .patient-name {
+    color: #e5e5e5;
+}
+
+[data-theme="dark"] .patient-item.active .patient-name {
+    color: white;
+}
+
+[data-theme="dark"] .patient-info {
+    color: #b0b0b0;
+}
+
+[data-theme="dark"] .patient-info span {
+    background-color: #3e3e42;
+    color: #e5e5e5;
+}
+
+[data-theme="dark"] .form-group label {
+    color: #cccccc;
+}
+
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group textarea {
+    background-color: #2d2d30;
+    color: #cccccc;
+    border-color: #919191;
+}
+
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-group textarea:focus {
+    border-color: #b30074;
+    box-shadow: 0 0 0 2px rgba(179, 0, 116, 0.2);
+}
+
+[data-theme="dark"] .btn {
+    color: white;
+}
+
+[data-theme="dark"] .btn-primary {
+    background-color: #b30074;
+    color: white;
+}
+
+[data-theme="dark"] .btn-primary:hover {
+    background-color: #9b3c66;
+}
+
+[data-theme="dark"] .btn-outline {
+    background-color: transparent;
+    color: #cccccc;
+    border-color: #919191;
+}
+
+[data-theme="dark"] .btn-outline:hover {
+    background-color: #3e3e42;
+    color: white;
+}
+
 .patient-header h3 {
   margin: 0 0 12px 0;
   font-size: 26px;
@@ -230,7 +430,7 @@
 .form-group input,
 .form-group textarea {
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid #919191;
   border-radius: 6px;
   font-size: 14px;
   font-family: inherit;
@@ -285,7 +485,7 @@
 .btn-outline {
   background: transparent;
   color: #6b7280;
-  border: 1px solid #d1d5db;
+  border: 1px solid #919191;
 }
 
 .btn-outline:hover {
@@ -364,6 +564,17 @@
   padding: 15px;
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
+}
+
+/* 深色主题 - 翻页组件 */
+.theme-dark #patients-pagination {
+  background-color: #2d2d30;
+  border-top: 1px solid #919191;
+}
+
+[data-theme="dark"] #patients-pagination {
+  background-color: #2d2d30;
+  border-top: 1px solid #919191;
 }
 
 /* 响应式设计 */

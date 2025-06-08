@@ -19,7 +19,17 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24小时
     
     # CORS设置
-    CORS_ORIGINS: List[str] = ["*"]  # 生产环境应限制为特定域名
+    CORS_ORIGINS: List[str] = [
+        "null",  # 允许来自本地文件系统直接打开的页面
+        "http://localhost",
+        "http://localhost:8000",
+        "http://localhost:8080",
+        "http://localhost:5500",
+        "http://127.0.0.1",
+        "http://127.0.0.1:8000",
+        "http://127.0.0.1:8080",
+        "http://127.0.0.1:5500",
+    ]
     
     # 业务参数
     # 财务参数

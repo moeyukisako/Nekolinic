@@ -1,7 +1,7 @@
-// frontend/js/modules/medicalRecords.js (已重构和修正)
+// frontend/js/modules/medicalRecords.js
 
+import apiClient from '../apiClient.js';
 import { showLoading, confirmDialog } from '../utils/ui.js';
-import Modal from '../components/modal.js';
 import Pagination from '../components/pagination.js';
 import { formatDate, calculateAge } from '../utils/date.js';
 

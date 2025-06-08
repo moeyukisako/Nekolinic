@@ -23,4 +23,4 @@ if __name__ == "__main__":
     # 启动一个线程来打开浏览器
     threading.Thread(target=open_browser).start()
     # 启动服务器
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,8 +1,8 @@
 // frontend/js/modules/patientManager.js
 
+import apiClient from '../apiClient.js';
 import { showLoading, confirmDialog } from '../utils/ui.js';
 import { formatDate, formatDateTime } from '../utils/date.js';
-import Modal from '../components/modal.js';
 import Pagination from '../components/pagination.js';
 import SearchBar from '../components/searchBar.js';
 
@@ -237,45 +237,8 @@ function renderPagination(query = '') {
  * 显示添加患者模态框
  */
 function showAddPatientModal() {
-  const form = document.createElement('form');
-  form.id = 'patient-form';
-  form.innerHTML = `
-    <div class="form-group">
-      <label for="patient-name" data-i18n="patient_name">姓名</label>
-      <input type="text" id="patient-name" required>
-    </div>
-    <div class="form-group">
-      <label for="patient-gender" data-i18n="patient_gender">性别</label>
-      <select id="patient-gender">
-        <option value="male" data-i18n="gender_male">男</option>
-        <option value="female" data-i18n="gender_female">女</option>
-        <option value="other" data-i18n="gender_other">其他</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label for="patient-birth-date" data-i18n="patient_birth_date">出生日期</label>
-      <input type="date" id="patient-birth-date">
-    </div>
-    <div class="form-group">
-      <label for="patient-contact-number" data-i18n="patient_phone">联系电话</label>
-      <input type="tel" id="patient-contact-number">
-    </div>
-    <div class="form-group">
-      <label for="patient-address" data-i18n="patient_address">住址</label>
-      <textarea id="patient-address" rows="2"></textarea>
-    </div>
-  `;
-
-  const modal = new Modal({
-    title: window.getTranslation ? window.getTranslation('add_new_patient') : '添加新患者',
-    content: form,
-    onConfirm: () => handlePatientFormSubmit(false)
-  }).render();
-  
-  // 翻译模态框内容
-  if (window.translatePage) {
-    window.translatePage();
-  }
+  showNotification('添加患者', '请在患者管理界面直接添加新患者', 'info');
+  // 可以在这里添加直接在页面中显示表单的逻辑
 }
 
 /**
@@ -316,16 +279,8 @@ async function editPatient(id) {
       </div>
     `;
 
-    const modal = new Modal({
-      title: window.getTranslation ? window.getTranslation('edit_patient_info') : '编辑患者信息',
-      content: form,
-      onConfirm: () => handlePatientFormSubmit(true)
-    }).render();
-    
-    // 翻译模态框内容
-    if (window.translatePage) {
-      window.translatePage();
-    }
+    showNotification('编辑患者', '请在患者管理界面直接编辑患者信息', 'info');
+    // 可以在这里添加直接在页面中显示编辑表单的逻辑
     
   } catch (error) {
     window.showNotification(window.getTranslation ? window.getTranslation('error') : '错误', `${window.getTranslation ? window.getTranslation('get_patient_info_failed') : '获取患者信息失败'}: ${error.message}`, 'error');
@@ -440,11 +395,8 @@ async function viewPatient(id) {
       </table>
     `;
 
-    const modal = new Modal({
-      title: '患者详情',
-      content: content,
-      showFooter: false,
-    }).render();
+    showNotification('患者详情', '患者信息已在主界面显示', 'info');
+    // 可以在这里添加直接在页面中显示详情的逻辑
     
   } catch (error) {
     window.showNotification(window.getTranslation ? window.getTranslation('error') : '错误', `${window.getTranslation ? window.getTranslation('get_patient_info_failed') : '获取患者信息失败'}: ${error.message}`, 'error');

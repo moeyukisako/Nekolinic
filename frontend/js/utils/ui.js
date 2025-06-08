@@ -104,58 +104,12 @@ export function debounce(func, delay = 300) {
  */
 export function confirmDialog(title, message) {
   return new Promise((resolve) => {
-    // 创建模态框元素
-    const modal = document.createElement('div');
-    modal.className = 'modal confirm-modal';
-    modal.innerHTML = `
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4>${title}</h4>
-          <span class="close-modal">&times;</span>
-        </div>
-        <div class="modal-body">
-          <p>${message}</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary cancel-btn">取消</button>
-          <button class="btn btn-primary confirm-btn">确认</button>
-        </div>
-      </div>
-    `;
-    
-    // 添加到页面
-    document.body.appendChild(modal);
-    
-    // 显示模态框
-    setTimeout(() => modal.classList.add('active'), 10);
-    
-    // 按钮事件
-    const closeBtn = modal.querySelector('.close-modal');
-    const cancelBtn = modal.querySelector('.cancel-btn');
-    const confirmBtn = modal.querySelector('.confirm-btn');
-    
-    // 关闭函数
-    function close() {
-      modal.classList.remove('active');
-      setTimeout(() => {
-        document.body.removeChild(modal);
-      }, 300);
-    }
-    
-    // 绑定事件
-    closeBtn.addEventListener('click', () => {
-      close();
-      resolve(false);
-    });
-    
-    cancelBtn.addEventListener('click', () => {
-      close();
-      resolve(false);
-    });
-    
-    confirmBtn.addEventListener('click', () => {
-      close();
+    // 使用顶部通知栏显示确认消息
+    if (window.showNotification) {
+      window.showNotification(title, message, 'confirm');
       resolve(true);
-    });
+    } else {
+      // 回退到简单的confirm
+      resolve(confirm(`${title}: ${message}`));
+    }
   });
-} 

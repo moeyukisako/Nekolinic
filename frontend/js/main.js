@@ -52,11 +52,6 @@ function initApp() {
   // 绑定用户菜单
   bindUserMenu();
   
-  // 初始化国际化系统
-  if (window.initI18n) {
-    window.initI18n();
-  }
-  
   // 初始化背景设置
   initBackgroundSettings();
   
@@ -146,13 +141,11 @@ function bindSidebarNavigation() {
         // 为当前点击项添加 active 状态
         targetLink.classList.add('active');
         
-        // 使用data-module属性获取模块名，而不是文本内容
-        const moduleName = targetLink.getAttribute('data-module');
+        // 获取中文模块名
+        const moduleName = targetLink.textContent.trim();
         
         // 切换模块
-        if (moduleName) {
-            switchModule(moduleName);
-        }
+        switchModule(moduleName);
     });
 }
 
@@ -279,30 +272,20 @@ function updateNavbarTitle(moduleName) {
   const navbarTitle = document.getElementById('navbar-title');
   if (!navbarTitle) return;
   
-  // 模块名称映射到翻译键
+  // 模块名称映射
   const moduleNameMap = {
     '状态': '',
-    '患者': 'nav_patients',
-    '预约': 'nav_appointments', 
-    '病历': 'nav_medical_records',
-    '药品': 'nav_pharmacy',
-    '财务': 'nav_finance',
-    '报表': 'nav_reports',
-    '设置': 'nav_settings'
+    '患者': ' 患者',
+    '预约': ' 预约', 
+    '病历': ' 病历',
+    '药品': ' 药品',
+    '财务': ' 财务',
+    '报表': ' 报表',
+    '设置': ' 设置'
   };
   
-  // 获取对应的翻译键
-  const translationKey = moduleNameMap[moduleName];
-  let displaySuffix = '';
-  
-  if (translationKey && window.getTranslation) {
-    displaySuffix = ' ' + window.getTranslation(translationKey);
-  } else if (translationKey === '') {
-    displaySuffix = ''; // 状态模块不显示后缀
-  } else {
-    displaySuffix = ' ' + moduleName; // 后备方案
-  }
-  
+  // 获取对应的显示名称，如果是状态模块则不添加后缀
+  const displaySuffix = moduleNameMap[moduleName] || '';
   navbarTitle.textContent = 'Nekolinic.' + displaySuffix;
 }
 
@@ -427,36 +410,17 @@ async function loadUserBackgroundSetting(user = null) {
     const bgPreview = document.getElementById('bg-preview');
     
     if (user && user.background_preference) {
-      let backgroundUrl = user.background_preference;
+      const backgroundUrl = user.background_preference;
+      document.documentElement.style.setProperty('--bg-image', `url(${backgroundUrl})`);
       
-      // 处理不同类型的背景设置
-      if (backgroundUrl.startsWith('color:')) {
-        // 颜色背景
-        const color = backgroundUrl.replace('color:', '');
-        document.documentElement.style.setProperty('--bg-image', 'none');
-        document.body.style.backgroundColor = color;
-      } else if (backgroundUrl.startsWith('image:')) {
-        // 图片背景
-        backgroundUrl = backgroundUrl.replace('image:', '');
-        document.documentElement.style.setProperty('--bg-image', `url(${backgroundUrl})`);
-        document.body.style.backgroundColor = '';
-      } else {
-        // 直接的图片URL
-        document.documentElement.style.setProperty('--bg-image', `url(${backgroundUrl})`);
-        document.body.style.backgroundColor = '';
+      if (bgContainer) {
+        bgContainer.style.backgroundImage = `url(${backgroundUrl})`;
       }
-      
-      if (bgContainer && !backgroundUrl.startsWith('color:')) {
-        bgContainer.style.backgroundImage = `url(${backgroundUrl.replace('image:', '')})`;
-      }
-      if (bgPreview && !backgroundUrl.startsWith('color:')) {
-        bgPreview.style.backgroundImage = `url(${backgroundUrl.replace('image:', '')})`;
-      }
+      if (bgPreview) bgPreview.style.backgroundImage = `url(${backgroundUrl})`;
     } else {
       // 用户未设置背景时，使用默认背景
       const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
       document.documentElement.style.setProperty('--bg-image', defaultBg);
-      document.body.style.backgroundColor = '';
       
       if (bgContainer) {
         bgContainer.style.backgroundImage = defaultBg;
@@ -467,15 +431,13 @@ async function loadUserBackgroundSetting(user = null) {
     console.error('加载用户背景设置失败:', err);
     // 出错时也使用默认背景
     const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
-    document.documentElement.style.setProperty('--bg-image', defaultBg);
-    document.body.style.backgroundColor = '';
-    
     const bgContainer = document.querySelector('.bg-container');
     if (bgContainer) {
       bgContainer.style.backgroundImage = defaultBg;
     }
     const bgPreview = document.getElementById('bg-preview');
     if (bgPreview) bgPreview.style.backgroundImage = defaultBg;
+    document.documentElement.style.setProperty('--bg-image', defaultBg);
   }
 }
 

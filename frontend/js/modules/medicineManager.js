@@ -1,5 +1,5 @@
 import { showLoading, confirmDialog } from '../utils/ui.js';
-import Modal from '../components/modal.js';
+import apiClient from '../apiClient.js';
 import Pagination from '../components/pagination.js';
 import SearchBar from '../components/searchBar.js';
 
@@ -223,16 +223,8 @@ function showMedicineFormModal(medicine = null) {
     ${isEdit ? `<input type="hidden" id="medicine-id" value="${medicine?.id || ''}">` : ''}
   `;
 
-  const modal = new Modal({
-    title: title,
-    content: form,
-    onConfirm: () => handleMedicineFormSubmit(isEdit, medicine)
-  }).render();
-  
-  // 翻译模态框内容
-  if (window.translatePage) {
-    window.translatePage();
-  }
+  showNotification(isEdit ? '编辑药品' : '添加药品', '请在药品管理界面直接操作', 'info');
+  // 可以在这里添加直接在页面中显示表单的逻辑
 }
 
 /**

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
-from typing import Optional
+from typing import Optional, Dict, Any
 
 # --- Token 相关 ---
 class Token(BaseModel):
@@ -16,6 +16,7 @@ class UserBase(BaseModel):
     role: str = "user"
     is_active: bool = True
     background_preference: Optional[str] = None
+    preferences: Optional[Dict[str, Any]] = None
 
 class UserCreate(UserBase):
     username: str
@@ -28,6 +29,7 @@ class UserUpdate(BaseModel):
     role: Optional[str] = None
     is_active: Optional[bool] = None
     background_preference: Optional[str] = None
+    preferences: Optional[Dict[str, Any]] = None
 
 class User(UserBase):
     id: int
@@ -37,4 +39,5 @@ class User(UserBase):
 
 # --- 用户偏好更新 ---
 class UserPreferenceUpdate(BaseModel):
-    background_preference: Optional[str] = None 
+    background_preference: Optional[str] = None
+    preferences: Optional[Dict[str, Any]] = None

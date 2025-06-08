@@ -204,7 +204,57 @@ const translations = {
     'settings_new_password_placeholder': '请输入新密码',
     'settings_confirm_password_placeholder': '请再次输入新密码',
     'settings_invalid_email': '请输入有效的邮箱地址',
-    'settings_invalid_phone': '请输入有效的手机号码'
+    'settings_invalid_phone': '请输入有效的手机号码',
+    'system_actions': '系统操作',
+    'reset_help': '将所有设置恢复为默认值',
+    'language_settings': '语言设置',
+    'select_language': '选择语言',
+    'chinese': '中文',
+    'english': 'English',
+    'japanese': '日本語',
+    'system_preferences': '系统偏好',
+    'auto_save': '自动保存',
+    'show_tooltips': '显示提示',
+    'theme_settings': '主题设置',
+    'select_theme': '选择主题',
+    'light_theme': '浅色主题',
+    'dark_theme': '深色主题',
+    'auto_theme': '跟随系统',
+    'background_settings': '背景设置',
+    'local_image': '本地图片',
+    'choose_image_file': '选择图片文件',
+    'preset_backgrounds': '预设背景',
+    'reset_background': '重置背景',
+    'notification_preferences': '通知偏好',
+    'desktop_notifications': '桌面通知',
+    'sound_notifications': '声音通知',
+    'email_notifications': '邮件通知',
+    'password_settings': '密码设置',
+    'current_password': '当前密码',
+    'new_password': '新密码',
+    'confirm_password': '确认密码',
+    'change_password': '修改密码',
+    'session_settings': '会话设置',
+    'session_timeout': '会话超时（分钟）',
+    'backup_options': '备份选项',
+    'auto_backup': '自动备份',
+    'backup_frequency': '备份频率',
+    'daily': '每日',
+    'weekly': '每周',
+    'monthly': '每月',
+    'backup_now': '立即备份',
+    'restore_backup': '恢复备份',
+    'system_info': '系统信息',
+    'system_name': '系统名称',
+    'version': '版本',
+    'build_date': '构建日期',
+    'choose_color': '选择颜色',
+    'apply_color': '应用颜色',
+    'preset_colors': '预设颜色',
+    'settings_saved_auto': '设置已自动保存',
+    'language_changed_success': '语言切换成功',
+    'language_change_failed': '语言切换失败',
+    'theme_saved': '主题设置已保存'
   },
   
   'en-US': {
@@ -411,7 +461,57 @@ const translations = {
     'settings_new_password_placeholder': 'Please enter new password',
     'settings_confirm_password_placeholder': 'Please enter new password again',
     'settings_invalid_email': 'Please enter a valid email address',
-    'settings_invalid_phone': 'Please enter a valid phone number'
+    'settings_invalid_phone': 'Please enter a valid phone number',
+    'system_actions': 'System Actions',
+    'reset_help': 'Reset all settings to default values',
+    'language_settings': 'Language Settings',
+    'select_language': 'Select Language',
+    'chinese': '中文',
+    'english': 'English',
+    'japanese': '日本語',
+    'system_preferences': 'System Preferences',
+    'auto_save': 'Auto Save',
+    'show_tooltips': 'Show Tooltips',
+    'theme_settings': 'Theme Settings',
+    'select_theme': 'Select Theme',
+    'light_theme': 'Light Theme',
+    'dark_theme': 'Dark Theme',
+    'auto_theme': 'Follow System',
+    'background_settings': 'Background Settings',
+    'local_image': 'Local Image',
+    'choose_image_file': 'Choose Image File',
+    'preset_backgrounds': 'Preset Backgrounds',
+    'reset_background': 'Reset Background',
+    'notification_preferences': 'Notification Preferences',
+    'desktop_notifications': 'Desktop Notifications',
+    'sound_notifications': 'Sound Notifications',
+    'email_notifications': 'Email Notifications',
+    'password_settings': 'Password Settings',
+    'current_password': 'Current Password',
+    'new_password': 'New Password',
+    'confirm_password': 'Confirm Password',
+    'change_password': 'Change Password',
+    'session_settings': 'Session Settings',
+    'session_timeout': 'Session Timeout (minutes)',
+    'backup_options': 'Backup Options',
+    'auto_backup': 'Auto Backup',
+    'backup_frequency': 'Backup Frequency',
+    'daily': 'Daily',
+    'weekly': 'Weekly',
+    'monthly': 'Monthly',
+    'backup_now': 'Backup Now',
+    'restore_backup': 'Restore Backup',
+    'system_info': 'System Information',
+    'system_name': 'System Name',
+    'version': 'Version',
+    'build_date': 'Build Date',
+    'choose_color': 'Choose Color',
+    'apply_color': 'Apply Color',
+    'preset_colors': 'Preset Colors',
+    'settings_saved_auto': 'Settings saved automatically',
+    'language_changed_success': 'Language changed successfully',
+    'language_change_failed': 'Language change failed',
+    'theme_saved': 'Theme settings saved'
   }
 };
 
@@ -437,14 +537,23 @@ function setLanguage(language) {
   if (translations[language]) {
     currentLanguage = language;
     localStorage.setItem('language', language);
-  }
-}
+    
+    // 立即翻译页面
+    translatePage();
+    
+    // 更新HTML lang属性
+    document.documentElement.lang = language;
+    
+    return true;
+   }
+   return false;
+ }
 
-/**
- * 获取当前语言
- * @returns {string} 当前语言代码
- */
-function getCurrentLanguage() {
+ /**
+  * 获取当前语言
+  * @returns {string} 当前语言代码
+  */
+ function getCurrentLanguage() {
   return currentLanguage;
 }
 

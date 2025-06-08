@@ -145,6 +145,10 @@ function showNotification(title, message, type = 'info') {
   if (window.showNotification) {
     window.showNotification(title, message, type);
   } else {
-    alert(`${title}: ${message}`);
+    if (window.showNotification) {
+            window.showNotification(message, 'error', title);
+        } else {
+            showNotification(title, message, 'error');
+        }
   }
 }

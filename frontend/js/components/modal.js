@@ -159,15 +159,19 @@ export default class Modal {
    * @param {string} message - 消息内容
    * @param {Function} [onConfirm] - 确认回调
    * @param {Function} [onCancel] - 取消回调
-   * @returns {Modal} 模态框实例
+   * @returns {Promise} 返回Promise以保持兼容性
    */
   static confirm(title, message, onConfirm, onCancel) {
-    return new Modal({
-      title: title,
-      content: `<p class="confirm-message">${message}</p>`,
-      onConfirm: onConfirm,
-      onCancel: onCancel
-    }).render();
+    if (window.showNotification) {
+      window.showNotification(title, message, 'info');
+      if (onConfirm) onConfirm();
+      return Promise.resolve(true);
+    }
+    // 降级到原生confirm
+    const result = confirm(`${title}: ${message}`);
+    if (result && onConfirm) onConfirm();
+    if (!result && onCancel) onCancel();
+    return Promise.resolve(result);
   }
   
   /**
@@ -175,14 +179,17 @@ export default class Modal {
    * @param {string} title - 标题
    * @param {string} message - 消息内容
    * @param {Function} [onClose] - 关闭回调
-   * @returns {Modal} 模态框实例
+   * @returns {Promise} 返回Promise以保持兼容性
    */
   static alert(title, message, onClose) {
-    return new Modal({
-      title: title,
-      content: `<p class="alert-message">${message}</p>`,
-      showFooter: false,
-      onConfirm: onClose
-    }).render();
+    if (window.showNotification) {
+      window.showNotification(title, message, 'info');
+      if (onClose) onClose();
+      return Promise.resolve();
+    }
+    // 降级到原生alert
+    alert(`${title}: ${message}`);
+    if (onClose) onClose();
+    return Promise.resolve();
   }
 }

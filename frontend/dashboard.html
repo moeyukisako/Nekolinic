@@ -10,7 +10,7 @@
     <style>
         /* 顶部导航栏样式 */
         .navbar {
-            background: rgba(57, 197, 187, 0.8); /* 80%不透明度的#39c5bb颜色 */
+            background: linear-gradient(135deg, #2da2d4 0%, #39c5bb 100%);
             color: white;
             padding: 1rem 1rem; /* 增加10px高度 */
             display: flex;
@@ -531,34 +531,7 @@
         </div>
     </div>
 
-    <!-- 背景设置按钮 -->
-    <div class="bg-settings">
-        <button class="bg-settings-trigger" id="bg-settings-trigger">
-            <i class="fas fa-image"></i>
-        </button>
-        <div class="bg-settings-panel" id="bg-settings-panel">
-            <h4>背景设置</h4>
-            <div class="bg-preview" id="bg-preview"></div>
-            <div class="form-group">
-                <label>本地图片</label>
-                <div class="file-upload-container">
-                    <label for="bg-file-input" class="file-upload-btn">
-                        选择图片文件
-                        <input type="file" id="bg-file-input" accept="image/*" style="display:none">
-                    </label>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>预设背景</label>
-                <div class="local-backgrounds" id="local-backgrounds">
-                    <div class="loading-backgrounds">加载中...</div>
-                </div>
-            </div>
-            <div class="form-actions">
-                <button class="btn btn-secondary btn-sm" id="reset-bg-btn">重置背景</button>
-            </div>
-        </div>
-    </div>
+
 
     <!-- 通用通知模态框 -->
     <div class="modal-custom" id="notification-modal">
@@ -577,9 +550,9 @@
         </div>
     </div>
 
-    <script src="js/apiClient.js"></script>
-    <script src="utils/i18n.js"></script>
-    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/apiClient.js"></script>
+<script type="module" src="utils/i18n.js"></script>
+<script type="module" src="js/main.js"></script>
 
     
     <!-- 版权信息栏 -->

@@ -10,11 +10,15 @@ from pathlib import Path
 from datetime import datetime
 
 from . import schemas, service
+from .settings_api import router as settings_router
 from app.core.database import get_db
 from app.core.security import create_access_token, get_current_active_user
 from app.core.config import settings
 
 router = APIRouter()
+
+# 包含设置相关的路由
+router.include_router(settings_router, prefix="")
 
 @router.post("/", response_model=schemas.User)
 def create_user(
@@ -150,4 +154,4 @@ async def upload_background_image(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"无法保存背景图片: {str(e)}"
-        ) 
+        )

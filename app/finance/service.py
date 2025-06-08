@@ -374,6 +374,18 @@ class OnlinePaymentService:
             
         except Exception as e:
             db.rollback()
+            # 对于并发情况下的常见错误，返回账单而不是抛出异常
+            if "duplicate" in str(e).lower() or "constraint" in str(e).lower():
+                # 可能是重复处理，尝试重新获取账单状态
+                try:
+                    bill = db.query(models.Bill).filter(
+                        models.Bill.id == int(notification_data.get('out_trade_no')),
+                        models.Bill.deleted_at.is_(None)
+                    ).first()
+                    if bill:
+                        return bill
+                except:
+                    pass
             raise BusinessLogicException(f"处理支付宝通知失败: {str(e)}")
     
     def process_wechat_notification(self, db: Session, notification_data: dict) -> models.Bill:

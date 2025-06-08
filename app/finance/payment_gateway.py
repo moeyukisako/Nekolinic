@@ -219,7 +219,7 @@ class WechatPayGateway:
     def create_payment_qr(self, bill: models.Bill) -> str:
         """为账单生成微信支付二维码 (预留)"""
         # TODO: 实现微信支付二维码生成逻辑
-        pass
+        raise ValueError("微信支付暂未实现")
     
     def create_qr_payment(self, bill: models.Bill, timeout_minutes: int = 15) -> Dict[str, Any]:
         """创建微信Native支付二维码

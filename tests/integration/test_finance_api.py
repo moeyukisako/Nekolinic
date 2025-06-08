@@ -17,8 +17,7 @@ def test_patient(db: Session):
         name="Test Patient",
         gender="male",
         birth_date=date(1990, 1, 1),
-        phone="1234567890",
-        email="patient@test.com",
+        contact_number="1234567890",
         address="Test Address"
     )
     db.add(patient)
@@ -180,4 +179,4 @@ def test_partial_payment_updates_status(client: TestClient, db: Session, test_bi
         headers={"Authorization": f"Bearer {token}"}
     )
     assert bill_response.status_code == 200
-    assert bill_response.json()["status"] == "partially_paid" 
+    assert bill_response.json()["status"] == "partially_paid"

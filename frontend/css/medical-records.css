@@ -28,7 +28,7 @@
 .sidebar-header {
   padding: 15px;
   border-bottom: 1px solid #919191;
-  background: transparent;
+  background: rgba(45, 47, 47, 0.8);
   margin: 0;
 }
 
@@ -211,7 +211,7 @@
 
 .theme-dark .search-box input:focus {
     border-color: #b30074;
-    box-shadow: 0 0 0 3px rgba(179, 0, 116, 0.1);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
 }
 
 .theme-dark .patients-sidebar {
@@ -301,7 +301,7 @@
 
 [data-theme="dark"] .search-box input:focus {
     border-color: #b30074;
-    box-shadow: 0 0 0 3px rgba(179, 0, 116, 0.1);
+    box-shadow: 0 0 0 2px rgba(179, 0, 116, 0.2);
 }
 
 [data-theme="dark"] .patient-item {

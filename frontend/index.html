@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>欢迎使用 Nekolinic 诊所管理系统</title>
+    <title data-i18n="index_welcome_title">欢迎使用 Nekolinic 诊所管理系统</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -56,13 +56,35 @@
         
         /* 登录表单和用户信息共享样式 */
         .login-box, .user-info {
-            background: rgba(255, 255, 255, 0.35);
-            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
             padding: 3rem 2rem;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
             width: 100%;
             text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .login-box:hover, .user-info:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 深色主题下的登录框样式 */
+        [data-theme="dark"] .login-box,
+        [data-theme="dark"] .user-info {
+            background: rgba(30, 30, 30, 0.4);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        [data-theme="dark"] .login-box:hover,
+        [data-theme="dark"] .user-info:hover {
+            background: rgba(30, 30, 30, 0.6);
+            border-color: rgba(255, 255, 255, 0.2);
         }
         
         .login-logo {
@@ -80,27 +102,118 @@
         }
         
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             width: 100%;
+            text-align: left;
+        }
+        
+        .form-group:last-of-type {
+            margin-bottom: 0;
         }
 
         .welcome-auth-container input[type="text"],
         .welcome-auth-container input[type="password"] {
-            background: rgba(255, 255, 255, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
             color: white;
-            width: 100%; /* 宽度调整为100% */
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .welcome-auth-container input[type="text"]:focus,
+        .welcome-auth-container input[type="password"]:focus {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .welcome-auth-container input[type="text"].error,
+        .welcome-auth-container input[type="password"].error {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
         
         .welcome-auth-container input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+        }
+        
+        /* 深色主题下的输入框样式 */
+        [data-theme="dark"] .welcome-auth-container input[type="text"],
+        [data-theme="dark"] .welcome-auth-container input[type="password"] {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        [data-theme="dark"] .welcome-auth-container input[type="text"]:focus,
+        [data-theme="dark"] .welcome-auth-container input[type="password"]:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
         }
 
         .login-button, .enter-btn {
-            width: 50%; /* 按钮宽度调整 */
+            width: 60%;
             margin: 30px auto 0;
-            height: calc(2.4rem * 1.3);
+            height: 48px;
             display: block;
+            background: linear-gradient(135deg, #2da2d4 0%, #39c5bb 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-button:hover, .enter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .login-button:active, .enter-btn:active {
+            transform: translateY(0);
+        }
+        
+        .login-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .login-button::before, .enter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .login-button:hover::before, .enter-btn:hover::before {
+            left: 100%;
+        }
+        
+        /* 深色主题下的按钮样式 */
+        [data-theme="dark"] .login-button,
+        [data-theme="dark"] .enter-btn {
+            background: linear-gradient(135deg, #b30074 0%, #9b3c66 100%);
         }
         
         .user-avatar {
@@ -125,8 +238,15 @@
         
         .text-danger {
             color: #ff6b6b !important;
-            font-weight: bold;
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+            font-weight: 600;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            font-size: 13px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 6px;
+            backdrop-filter: blur(10px);
         }
         
         .logout-link {
@@ -143,41 +263,278 @@
             text-decoration: underline;
         }
         
-        /* 状态消息样式 */
-        .status-message {
-            font-size: 0.8rem;
-            font-weight: normal;
-            color: rgba(255, 255, 255, 0.9);
-            margin-left: 10px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        /* 表单通知样式 */
+        .form-notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 10px 15px;
-            border-radius: 5px;
-            z-index: 9999;
+            max-width: 350px;
+            min-width: 280px;
+            background: var(--color-bg-card, rgba(255, 255, 255, 0.95));
+            border: 1px solid var(--color-border, rgba(255, 255, 255, 0.2));
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(20px);
+            z-index: 10002;
+            opacity: 0;
+            transform: translateX(100%) scale(0.9);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 14px;
+            line-height: 1.5;
         }
         
-        .status-message.show {
+        .form-notification.show {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+        
+        .form-notification.success {
+            border-left: 4px solid #28a745;
+            color: var(--color-text-primary, #333);
+        }
+        
+        .form-notification.error {
+            border-left: 4px solid #dc3545;
+            color: var(--color-text-primary, #333);
+        }
+        
+        .form-notification.warning {
+            border-left: 4px solid #ffc107;
+            color: var(--color-text-primary, #333);
+        }
+        
+        .form-notification.info {
+            border-left: 4px solid #17a2b8;
+            color: var(--color-text-primary, #333);
+        }
+        
+        .form-notification-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .form-notification-icon {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        .form-notification-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--color-text-primary, #666);
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .form-notification-close:hover {
             opacity: 1;
         }
         
-        .status-message.text-success {
-            color: #28a745 !important;
+        .form-notification-body {
+            font-size: 13px;
+            opacity: 0.9;
         }
         
-        .status-message.text-danger {
-            color: #dc3545 !important;
+        /* 深色主题适配 */
+        [data-theme="dark"] .form-notification {
+            background: var(--color-bg-card, rgba(30, 30, 30, 0.95));
+            border-color: var(--color-border, rgba(255, 255, 255, 0.1));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
         
-        .status-message.text-warning {
-            color: #ffc107 !important;
+        /* 移动端响应式 */
+        @media (max-width: 768px) {
+            .form-notification {
+                top: 15px;
+                right: 15px;
+                left: 15px;
+                max-width: none;
+                min-width: auto;
+                padding: 14px 16px;
+                font-size: 13px;
+            }
+            
+            .form-notification-header {
+                margin-bottom: 6px;
+            }
+            
+            .form-notification-body {
+                font-size: 12px;
+            }
         }
         
-        .status-message.text-info {
-            color: #17a2b8 !important;
+        /* 语言切换图标样式 */
+        .language-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10000;
+            transition: all 0.3s ease;
+            user-select: none;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .language-toggle:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .language-toggle:active {
+            transform: translateY(0);
+        }
+        
+        .language-icon {
+            width: 28px;
+            height: 28px;
+            transition: all 0.3s ease;
+            opacity: 0.8;
+        }
+        
+        .language-toggle:hover .language-icon {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        
+        /* 深色主题下的语言图标样式 */
+        [data-theme="dark"] .language-toggle {
+            background: rgba(30, 30, 30, 0.9);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        [data-theme="dark"] .language-toggle:hover {
+            background: rgba(30, 30, 30, 1);
+        }
+        
+        [data-theme="dark"] .language-icon {
+            filter: brightness(0) invert(1);
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .language-toggle {
+                bottom: 15px;
+                right: 15px;
+                width: 42px;
+                height: 42px;
+                border-radius: 10px;
+            }
+            
+            .language-icon {
+                width: 24px;
+                height: 24px;
+            }
+        }
+        
+        /* 语言选择框样式 */
+        .language-selector {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: var(--color-bg-card, rgba(255, 255, 255, 0.95));
+            border: 1px solid var(--color-border, rgba(255, 255, 255, 0.2));
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 140px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(20px);
+            z-index: 10001;
+            display: none;
+            opacity: 0;
+            transform: translateY(10px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .language-selector.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        
+        .language-option {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            color: var(--color-text-primary, #333);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .language-option:hover {
+            background: var(--color-bg-hover, rgba(0, 0, 0, 0.05));
+            transform: translateX(2px);
+        }
+        
+        .language-option.active {
+            background: var(--color-accent-primary, #007bff);
+            color: white;
+        }
+        
+        .language-option .flag {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        .language-option .lang-text {
+            flex: 1;
+        }
+        
+        /* 深色主题适配 */
+        [data-theme="dark"] .language-selector {
+            background: var(--color-bg-card, rgba(30, 30, 30, 0.95));
+            border-color: var(--color-border, rgba(255, 255, 255, 0.1));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        [data-theme="dark"] .language-option:hover {
+            background: var(--color-bg-hover, rgba(255, 255, 255, 0.1));
+        }
+        
+        /* 移动端响应式 */
+        @media (max-width: 768px) {
+            .language-selector {
+                bottom: 70px;
+                right: 15px;
+                min-width: 120px;
+                border-radius: 10px;
+                padding: 6px;
+                box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+            }
+            
+            .language-option {
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+            
+            .language-option .flag {
+                font-size: 14px;
+                margin-right: 6px;
+            }
         }
     </style>
 </head>
@@ -186,21 +543,39 @@
     <div class="bg-container"></div>
     <div class="bg-overlay"></div>
     
-    <!-- 状态消息元素，用于通知功能 -->
-    <div id="status-message" class="status-message"></div>
+
+    
+    <!-- 语言切换图标 -->
+    <div id="language-toggle" class="language-toggle" onclick="showLanguageSelector()" title="切换语言 / Switch Language">
+        <img src="assets/icons/language_icon.png" alt="Language" class="language-icon">
+    </div>
+    
+    <!-- 语言选择框 -->
+    <div id="language-selector" class="language-selector">
+        <div class="language-option" data-lang="zh-CN" onclick="selectLanguage('zh-CN')">
+            <span class="flag">🇨🇳</span>
+            <span class="lang-text">中文</span>
+        </div>
+        <div class="language-option" data-lang="en-US" onclick="selectLanguage('en-US')">
+            <span class="flag">🇺🇸</span>
+            <span class="lang-text">English</span>
+        </div>
+        <div class="language-option" data-lang="ja-JP" onclick="selectLanguage('ja-JP')">
+            <span class="flag">🇯🇵</span>
+            <span class="lang-text">日本語</span>
+        </div>
+    </div>
     
     <div class="welcome-container">
         <div class="welcome-content">
             <div class="welcome-auth-container" id="auth-container">
-                <div class="loader" style="text-align: center; color: white;">加载中...</div>
+                <div class="loader" style="text-align: center; color: white;" data-i18n="index_loading">加载中...</div>
+            </div>
+            <!-- 版权信息 -->
+            <div class="copyright-info" data-i18n="index_copyright">
+                Nekolinic Version <span class="version-code">&lt;versioncode&gt;</span>, Copyright moeyukisako 2025.
             </div>
         </div>
-    </div>
-
-
-
-    <div class="copyright-bar">
-        Nekolinic Version <span class="version-code">&lt;versioncode&gt;</span>, Copyright moeyukisako 2025.
     </div>
 
     <script type="module" src="js/apiClient.js"></script>
@@ -208,6 +583,73 @@
 <script type="module">
 // 背景初始化
 import apiClient from './js/apiClient.js';
+import configManager from './js/utils/configManager.js';
+
+// 将 configManager 暴露到全局
+window.configManager = configManager;
+
+// 语言选择框函数
+window.showLanguageSelector = function() {
+  const selector = document.getElementById('language-selector');
+  if (selector) {
+    // 更新当前语言的选中状态
+    updateLanguageSelection();
+    
+    selector.style.display = 'block';
+    requestAnimationFrame(() => {
+      selector.classList.add('show');
+    });
+    
+    // 点击外部关闭
+    setTimeout(() => {
+      document.addEventListener('click', hideLanguageSelector, { once: true });
+    }, 100);
+  }
+};
+
+window.selectLanguage = function(langCode) {
+  if (window.setLanguage) {
+    window.setLanguage(langCode);
+    hideLanguageSelector();
+  } else {
+    console.warn('Language functions not available yet');
+  }
+};
+
+window.hideLanguageSelector = function(event) {
+  const selector = document.getElementById('language-selector');
+  const toggle = document.getElementById('language-toggle');
+  
+  if (event && (selector.contains(event.target) || toggle.contains(event.target))) {
+    return;
+  }
+  
+  if (selector && selector.classList.contains('show')) {
+    selector.classList.remove('show');
+    setTimeout(() => {
+      selector.style.display = 'none';
+    }, 300);
+  }
+};
+
+function updateLanguageSelection() {
+  if (window.getCurrentLanguage) {
+    const currentLang = window.getCurrentLanguage();
+    const options = document.querySelectorAll('.language-option');
+    options.forEach(option => {
+      if (option.dataset.lang === currentLang) {
+        option.classList.add('active');
+      } else {
+        option.classList.remove('active');
+      }
+    });
+  }
+}
+
+// 加载 i18n 模块
+const i18nScript = document.createElement('script');
+i18nScript.src = 'utils/i18n.js';
+document.head.appendChild(i18nScript);
 
 // 加载用户背景设置
 async function loadUserBackgroundSetting() {
@@ -254,8 +696,25 @@ async function loadUserBackgroundSetting() {
   }
 }
 
-// 在DOM加载完成后初始化背景
-document.addEventListener('DOMContentLoaded', () => {
+// 在DOM加载完成后初始化背景和国际化
+document.addEventListener('DOMContentLoaded', async () => {
+  // 初始化配置管理器
+  await configManager.init();
+  
+  // 等待i18n脚本加载完成
+  await new Promise((resolve) => {
+    if (window.initI18n) {
+      resolve();
+    } else {
+      i18nScript.onload = resolve;
+    }
+  });
+  
+  // 初始化国际化
+  if (window.initI18n) {
+    await window.initI18n();
+  }
+  
   // 延迟一点加载背景，确保页面元素已准备好
   setTimeout(loadUserBackgroundSetting, 100);
 });

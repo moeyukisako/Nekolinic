@@ -5,6 +5,11 @@ import store from './utils/store.js';
 import { showLoading, showNotification, showModalNotification } from './utils/ui.js';
 import configManager from './utils/configManager.js';
 
+// 导入动画工具
+import('./utils/moduleAnimations.js').catch((err) => {
+    console.error('❌ 加载动画工具失败:', err);
+});
+
 // 稍后导入模块
 // import renderDashboard from './modules/dashboard.js';
 // import renderPatientModule from './modules/patientManager.js';
@@ -217,6 +222,8 @@ async function switchModule(moduleName, payload = {}) {
   // 显示加载状态
   mainContent.innerHTML = '<div class="loading-module"><div class="spinner"></div><p>加载中...</p></div>';
   
+
+  
   // 更新当前模块状态
   store.set('currentModule', moduleName);
   
@@ -253,11 +260,32 @@ async function switchModule(moduleName, payload = {}) {
         eventBus.emit('module:unloaded', { name: moduleName });
       };
       
+      // 应用模块动画效果
+      if (window.moduleAnimations) {
+        // 延迟应用动画，确保DOM已渲染
+        setTimeout(() => {
+          window.moduleAnimations.applyModuleAnimations(mainContent, {
+            animationType: 'fadeInUp',
+            delay: 100
+          });
+        }, 50);
+      }
+      
       // 触发模块加载完成事件
       eventBus.emit('module:loaded', { name: moduleName });
     } else {
       // 没有对应渲染函数时显示提示
       mainContent.innerHTML = `<div class="module-placeholder"><h2>此模块正在开发中</h2></div>`;
+      
+      // 为开发中的模块也应用动画效果
+      if (window.moduleAnimations) {
+        setTimeout(() => {
+          window.moduleAnimations.applyModuleAnimations(mainContent, {
+            animationType: 'fadeInUp',
+            delay: 100
+          });
+        }, 50);
+      }
     }
   } catch (error) {
     console.error(`加载模块 "${moduleName}" 失败:`, error);

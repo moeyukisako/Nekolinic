@@ -498,6 +498,51 @@
             font-style: italic;
             padding-left: 0.5rem;
         }
+        
+        /* 版权信息栏样式 */
+        .copyright-bar {
+            position: relative;
+            text-align: center;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 20px 16px;
+            background: transparent;
+            border: none;
+            z-index: 15; /* 在背景之上但在背景遮罩下方 */
+            /* 禁止选中和复制 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            pointer-events: none;
+            white-space: nowrap;
+            margin-top: auto;
+        }
+        
+        /* 深色主题下的版权信息 */
+        .theme-dark .copyright-bar {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* 移动端版权信息响应式调整 */
+        @media (max-width: 768px) {
+            .copyright-bar {
+                font-size: 0.7rem;
+                padding: 15px 12px;
+                max-width: calc(100% - 40px);
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .copyright-bar {
+                font-size: 0.65rem;
+                padding: 12px 10px;
+            }
+        }
     </style>
 </head>
 <body class="dashboard">

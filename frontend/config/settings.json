@@ -1,6 +1,6 @@
 {
-  "theme": "light",
-  "language": "zh-CN",
+  "theme": "dark",
+  "language": "en-US",
   "background": {
     "type": "default",
     "url": "",

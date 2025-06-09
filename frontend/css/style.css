@@ -981,17 +981,19 @@ body .sidebar:hover + .content {
     background-color: #ddd;
 }
 
-/* 版权信息栏样式 */
-.copyright-bar {
-    position: relative;
-    margin-top: 30px;
-    left: 0;
-    right: 0;
+/* 版权信息样式 */
+.copyright-info {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     text-align: center;
-    font-size: 0.8rem;
-    color: rgba(0, 0, 0, 0.5);
-    padding: 10px 5px;
-    z-index: 90;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    z-index: 10;
     /* 禁止选中和复制 */
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -1000,10 +1002,32 @@ body .sidebar:hover + .content {
     -webkit-touch-callout: none;
     -webkit-tap-highlight-color: transparent;
     pointer-events: none;
+    white-space: nowrap;
 }
 
-[data-theme="dark"] .copyright-bar {
-    color: rgba(255, 255, 255, 0.5);
+[data-theme="dark"] .copyright-info {
+    color: rgba(255, 255, 255, 0.6);
+    background: transparent;
+}
+
+/* 移动端版权信息响应式调整 */
+@media (max-width: 768px) {
+    .copyright-info {
+        font-size: 0.7rem;
+        padding: 6px 12px;
+        bottom: 15px;
+        max-width: calc(100% - 40px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+@media (max-width: 480px) {
+    .copyright-info {
+        font-size: 0.65rem;
+        padding: 5px 10px;
+        bottom: 10px;
+    }
 }
 
 .version-code {
@@ -1814,6 +1838,92 @@ legend {
     border-radius: var(--border-radius);
     padding: calc(var(--spacing-unit) * 2);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 报表历史表格样式 */
+.reports-history-table {
+    margin-top: 15px;
+}
+
+.reports-history-table th {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    border-bottom: 2px solid var(--color-border);
+}
+
+.reports-history-table td {
+    vertical-align: middle;
+}
+
+/* 报表类型徽章 */
+.report-type-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    background-color: #e0f2fe;
+    color: #0277bd;
+    border: 1px solid #b3e5fc;
+}
+
+/* 状态徽章 */
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    min-width: 60px;
+}
+
+.status-badge.status-completed {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-badge.status-generating {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+    animation: pulse 1.5s ease-in-out infinite alternate;
+}
+
+.status-badge.status-failed {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* 脉冲动画 */
+@keyframes pulse {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0.6;
+    }
+}
+
+/* 按钮组样式 */
+.reports-history-table .btn {
+    margin-right: 5px;
+}
+
+.reports-history-table .btn:last-child {
+    margin-right: 0;
+}
+
+.reports-history-table .btn-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.reports-history-table .btn-danger:hover {
+    background-color: #dc3545;
+    color: white;
 }
 
 .section-header {
@@ -3060,6 +3170,53 @@ legend {
     background: rgba(45, 47, 47, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: #e2e8f0;
+}
+
+/* 深色主题下的报表历史表格样式 */
+.theme-dark .reports-history-table th {
+    color: #f7fafc;
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-dark .reports-history-table td {
+    color: #e2e8f0;
+}
+
+/* 深色主题下的报表类型徽章 */
+.theme-dark .report-type-badge {
+    background-color: rgba(14, 165, 233, 0.2);
+    color: #7dd3fc;
+    border-color: rgba(14, 165, 233, 0.3);
+}
+
+/* 深色主题下的状态徽章 */
+.theme-dark .status-badge.status-completed {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.theme-dark .status-badge.status-generating {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.theme-dark .status-badge.status-failed {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* 深色主题下的按钮样式 */
+.theme-dark .reports-history-table .btn-danger {
+    color: #fca5a5;
+    border-color: #ef4444;
+}
+
+.theme-dark .reports-history-table .btn-danger:hover {
+    background-color: #ef4444;
+    color: white;
 }
 
 .theme-dark .section-header h3 {

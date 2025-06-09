@@ -279,11 +279,28 @@ const translations = {
     generate_report: '生成报表',
     report_history: '报表历史',
     clear_history: '清理历史',
+    refresh_history: '刷新历史',
     report_name: '报表名称',
+    report_type: '报表类型',
     generation_time: '生成时间',
     file_size: '文件大小',
     status: '状态',
+    actions: '操作',
+    download: '下载',
     no_report_history: '暂无报表历史',
+    
+    // 报表类型
+    patient_report: '患者统计',
+    medical_record_report: '病历统计',
+    medicine_report: '药品统计',
+    finance_report: '财务统计',
+    appointment_report: '预约统计',
+    workload_report: '工作量统计',
+    
+    // 报表状态
+    report_status_completed: '已完成',
+    report_status_generating: '生成中',
+    report_status_failed: '失败',
     
     // 通知消息
     success: '成功',
@@ -365,7 +382,39 @@ const translations = {
     'settings_saved_auto': '设置已自动保存',
     'language_changed_success': '语言切换成功',
     'language_change_failed': '语言切换失败',
-    'theme_saved': '主题设置已保存'
+    'theme_saved': '主题设置已保存',
+
+    // Index Page
+    'index_welcome_title': '欢迎使用 Nekolinic 诊所管理系统',
+    'index_loading': '加载中...',
+    'index_copyright': 'Nekolinic Version <span class="version-code">&lt;versioncode&gt;</span>, Copyright moeyukisako 2025.',
+    
+    // 登录相关翻译
+    'login_username': '用户名',
+    'login_password': '密码',
+    'login_button': '登录',
+    'login_username_placeholder': '请输入用户名 (测试账号: admin)',
+    'login_password_placeholder': '请输入密码 (测试密码: password)',
+    'login_welcome_back': '欢迎回来',
+         'login_logout': '退出登录',
+         'login_error_invalid': '用户名或密码错误',
+         'account_password_error': '账户不存在或密码错误',
+         'login_failed': '登录失败',
+         'username_error': '用户名错误',
+         'password_error': '密码错误',
+         'username_not_exist': '用户名不存在，请检查输入',
+         'password_incorrect': '密码不正确，请重新输入',
+         'username_required': '请输入用户名',
+         'password_required': '请输入密码',
+         'input_error': '输入错误',
+         'input_incomplete': '输入不完整',
+         'username_password_required': '请输入用户名和密码',
+         'field_required': '字段必填',
+         'session_expired': '登录会话已过期',
+         'please_login_again': '请重新登录',
+         'enter_system': '进入系统',
+         'language_changed_success': '语言切换成功，正在刷新...',
+         'language_change_failed': '语言切换失败'
   },
   
   'en-US': {
@@ -659,11 +708,28 @@ const translations = {
     generate_report: 'Generate Report',
     report_history: 'Report History',
     clear_history: 'Clear History',
+    refresh_history: 'Refresh History',
     report_name: 'Report Name',
+    report_type: 'Report Type',
     generation_time: 'Generation Time',
     file_size: 'File Size',
     status: 'Status',
+    actions: 'Actions',
+    download: 'Download',
     no_report_history: 'No report history',
+    
+    // Report Types
+    patient_report: 'Patient Statistics',
+    medical_record_report: 'Medical Record Statistics',
+    medicine_report: 'Medicine Statistics',
+    finance_report: 'Finance Statistics',
+    appointment_report: 'Appointment Statistics',
+    workload_report: 'Workload Statistics',
+    
+    // Report Status
+    report_status_completed: 'Completed',
+    report_status_generating: 'Generating',
+    report_status_failed: 'Failed',
     
     // 通知消息
     success: 'Success',
@@ -745,7 +811,39 @@ const translations = {
     'settings_saved_auto': 'Settings saved automatically',
     'language_changed_success': 'Language changed successfully',
     'language_change_failed': 'Language change failed',
-    'theme_saved': 'Theme settings saved'
+    'theme_saved': 'Theme settings saved',
+
+    // Index Page
+    'index_welcome_title': 'Welcome to Nekolinic Clinic Management System',
+    'index_loading': 'Loading...',
+    'index_copyright': 'Nekolinic Version <span class="version-code">&lt;versioncode&gt;</span>, Copyright moeyukisako 2025.',
+    
+    // Login related translations
+    'login_username': 'Username',
+    'login_password': 'Password',
+    'login_button': 'Login',
+    'login_username_placeholder': 'Please enter username (Test account: admin)',
+    'login_password_placeholder': 'Please enter password (Test password: password)',
+    'login_welcome_back': 'Welcome back',
+         'login_logout': 'Logout',
+         'login_error_invalid': 'Invalid username or password',
+         'account_password_error': 'Account does not exist or password is incorrect',
+         'login_failed': 'Login Failed',
+         'username_error': 'Username Error',
+         'password_error': 'Password Error',
+         'username_not_exist': 'Username does not exist, please check your input',
+         'password_incorrect': 'Password is incorrect, please try again',
+         'username_required': 'Please enter username',
+         'password_required': 'Please enter password',
+         'input_error': 'Input Error',
+         'input_incomplete': 'Input Incomplete',
+         'username_password_required': 'Please enter username and password',
+         'field_required': 'Field Required',
+         'session_expired': 'Session Expired',
+         'please_login_again': 'Please Login Again',
+         'enter_system': 'Enter System',
+         'language_changed_success': 'Language changed successfully, refreshing...',
+         'language_change_failed': 'Failed to change language'
   }
 };
 
@@ -825,7 +923,12 @@ function translatePage() {
     const key = element.getAttribute('data-i18n');
     const translation = getTranslation(key);
     if (translation !== key) {
-      element.textContent = translation;
+      // 检查翻译内容是否包含HTML标签
+      if (translation.includes('<') && translation.includes('>')) {
+        element.innerHTML = translation;
+      } else {
+        element.textContent = translation;
+      }
     }
   });
   
@@ -864,6 +967,9 @@ async function initI18n() {
   
   // 使用 'true' 来跳过保存，因为这只是初始化
   await setLanguage(language, true);
+  
+  // 立即翻译页面
+  translatePage();
 }
 
 // 将函数暴露到全局作用域

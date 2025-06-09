@@ -59,7 +59,15 @@ async function apiRequest(endpoint, options = {}) {
             
             // 只在非index页面显示提示和重定向
             if (!isIndexPage) {
-                alert('登录会话已过期，请重新登录。');
+                if (window.showNotification) {
+                    window.showNotification(
+                        window.getTranslation ? window.getTranslation('session_expired', '登录会话已过期') : '登录会话已过期',
+                        window.getTranslation ? window.getTranslation('please_login_again', '请重新登录') : '请重新登录',
+                        'warning'
+                    );
+                } else {
+                    alert('登录会话已过期，请重新登录。');
+                }
                 setTimeout(() => {
                     window.location.href = '/index.html';
                 }, 300); // 增加延迟时间

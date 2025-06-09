@@ -1,9 +1,13 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Numeric, Text
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Numeric, Enum
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from app.core.auditing import Auditable, register_audit_model
 import enum
 from datetime import datetime
+
+# Import related models for relationships
+from app.patient.models import MedicalRecord
+from app.clinic.models import Doctor
 
 # --- History Models (for auditable tables) ---
 

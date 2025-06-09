@@ -1,6 +1,7 @@
 import apiClient from '../apiClient.js';
 import Pagination from '../components/pagination.js';
 import SearchBar from '../components/searchBar.js';
+import { confirmModal } from '../utils/ui.js';
 
 /**
  * 处方管理模块
@@ -71,7 +72,7 @@ function bindEvents(signal) {
                 await showPrescriptionModal();
             } catch (error) {
                 console.error('显示处方模态框失败:', error);
-                window.showNotification('打开处方表单失败: ' + error.message, 'error');
+                window.showNotification((window.getTranslation ? window.getTranslation('open_prescription_form_failed') : '打开处方表单失败') + ': ' + error.message, 'error');
             }
         }, { signal });
     }
@@ -98,7 +99,7 @@ async function loadPrescriptions(page = 1, search = '') {
         if (!tableBody) return;
         
         // 显示加载状态
-        tableBody.innerHTML = '<tr><td colspan="6" class="loading-cell">正在加载处方数据...</td></tr>';
+        tableBody.innerHTML = `<tr><td colspan="6" class="loading-cell">${window.getTranslation ? window.getTranslation('loading_prescription_data') : '正在加载处方数据...'}</td></tr>`;
         
         // 获取处方数据
         const prescriptions = await apiClient.prescriptions.getAll();
@@ -119,9 +120,9 @@ async function loadPrescriptions(page = 1, search = '') {
         console.error('加载处方列表失败:', error);
         const tableBody = document.getElementById('prescription-table-body');
         if (tableBody) {
-            tableBody.innerHTML = '<tr><td colspan="6" class="error-cell">加载处方数据失败</td></tr>';
+            tableBody.innerHTML = `<tr><td colspan="6" class="error-cell">${window.getTranslation ? window.getTranslation('load_prescription_data_failed') : '加载处方数据失败'}</td></tr>`;
         }
-        window.showNotification('加载处方数据失败: ' + error.message, 'error');
+        window.showNotification((window.getTranslation ? window.getTranslation('load_prescription_data_failed') : '加载处方数据失败') + ': ' + error.message, 'error');
     }
 }
 
@@ -133,7 +134,7 @@ function renderPrescriptionTable(prescriptions) {
     if (!tableBody) return;
     
     if (prescriptions.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="empty-state">暂无处方记录</td></tr>';
+        tableBody.innerHTML = `<tr><td colspan="6" class="empty-state">${window.getTranslation ? window.getTranslation('no_prescription_records') : '暂无处方记录'}</td></tr>`;
         return;
     }
     
@@ -144,8 +145,8 @@ function renderPrescriptionTable(prescriptions) {
         return `
             <tr>
                 <td>#${prescription.id}</td>
-                <td>${prescription.patient?.name || '未知患者'}</td>
-                <td>${prescription.doctor?.name || '未知医生'}</td>
+                <td>${prescription.patient?.name || (window.getTranslation ? window.getTranslation('unknown_patient') : '未知患者')}</td>
+                <td>${prescription.doctor?.name || (window.getTranslation ? window.getTranslation('unknown_doctor') : '未知医生')}</td>
                 <td>${formatDate(prescription.prescription_date)}</td>
                 <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                 <td class="actions-cell">
@@ -166,9 +167,9 @@ function renderPrescriptionTable(prescriptions) {
  */
 function getDispensingStatusText(status) {
     const statusMap = {
-        'PENDING': '待发药',
-        'DISPENSED': '已发药',
-        'CANCELLED': '已取消'
+        'PENDING': window.getTranslation ? window.getTranslation('pending_dispensing') : '待发药',
+        'DISPENSED': window.getTranslation ? window.getTranslation('dispensed') : '已发药',
+        'CANCELLED': window.getTranslation ? window.getTranslation('cancelled') : '已取消'
     };
     return statusMap[status] || status;
 }
@@ -203,7 +204,7 @@ window.viewPrescriptionDetails = async function(prescriptionId) {
         showPrescriptionDetailsModal(prescription);
     } catch (error) {
         console.error('获取处方详情失败:', error);
-        window.showNotification('获取处方详情失败: ' + error.message, 'error');
+        window.showNotification((window.getTranslation ? window.getTranslation('get_prescription_details_failed') : '获取处方详情失败') + ': ' + error.message, 'error');
     }
 };
 
@@ -211,17 +212,17 @@ window.viewPrescriptionDetails = async function(prescriptionId) {
  * 发药操作
  */
 window.dispensePrescription = async function(prescriptionId) {
-    if (!confirm('确认要为此处方发药吗？')) {
+    if (!confirm(window.getTranslation ? window.getTranslation('confirm_dispense_prescription') : '确认要为此处方发药吗？')) {
         return;
     }
     
     try {
         await apiClient.prescriptions.dispense(prescriptionId);
-        window.showNotification('发药成功', 'success');
+        window.showNotification(window.getTranslation ? window.getTranslation('dispense_success') : '发药成功', 'success');
         await loadPrescriptions();
     } catch (error) {
         console.error('发药失败:', error);
-        window.showNotification('发药失败: ' + error.message, 'error');
+        window.showNotification((window.getTranslation ? window.getTranslation('dispense_failed') : '发药失败') + ': ' + error.message, 'error');
     }
 };
 
@@ -229,17 +230,25 @@ window.dispensePrescription = async function(prescriptionId) {
  * 删除处方
  */
 window.deletePrescription = async function(prescriptionId) {
-    if (!confirm('确认要删除此处方吗？此操作不可撤销。')) {
-        return;
-    }
+    const confirmed = await confirmModal(
+        window.getTranslation ? window.getTranslation('confirm_delete') : '确认删除',
+        window.getTranslation ? window.getTranslation('confirm_delete_prescription') : '确认要删除此处方吗？此操作不可撤销，请谨慎操作。',
+        {
+            confirmText: window.getTranslation ? window.getTranslation('confirm_delete') : '确认删除',
+            cancelText: window.getTranslation ? window.getTranslation('cancel') : '取消',
+            confirmClass: 'btn-danger'
+        }
+    );
     
-    try {
-        await apiClient.prescriptions.delete(prescriptionId);
-        window.showNotification('处方删除成功', 'success');
-        await loadPrescriptions();
-    } catch (error) {
-        console.error('删除处方失败:', error);
-        window.showNotification('删除处方失败: ' + error.message, 'error');
+    if (confirmed) {
+        try {
+            await apiClient.prescriptions.delete(prescriptionId);
+            window.showNotification(window.getTranslation ? window.getTranslation('prescription_deleted') : '处方删除成功', 'success');
+            await loadPrescriptions();
+        } catch (error) {
+            console.error('删除处方失败:', error);
+            window.showNotification((window.getTranslation ? window.getTranslation('delete_prescription_failed') : '删除处方失败') + ': ' + error.message, 'error');
+        }
     }
 };
 
@@ -311,12 +320,21 @@ async function showPrescriptionModal(prescription = null) {
     
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     
-    // 初始化模态框数据
-    await initPrescriptionModal(prescription);
-    
     // 显示模态框
-    const modal = new bootstrap.Modal(document.getElementById('prescription-modal'));
-    modal.show();
+    const modal = document.getElementById('prescription-modal');
+    if (modal) {
+        // 使用Bootstrap模态框
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+        
+        // 翻译新添加的内容
+        if (window.translatePage) {
+            window.translatePage();
+        }
+        
+        // 初始化模态框内容
+        await initPrescriptionModal(prescription);
+    }
 }
 
 /**
@@ -336,7 +354,7 @@ async function initPrescriptionModal(prescription) {
         
         // 清空现有选项
         const patientSelect = document.getElementById('patient-select');
-        patientSelect.innerHTML = '<option value="">请选择患者</option>';
+        patientSelect.innerHTML = `<option value="">${window.getTranslation ? window.getTranslation('select_patient') : '请选择患者'}</option>`;
         
         // 填充患者选择框
         patients.forEach(patient => {
@@ -349,7 +367,7 @@ async function initPrescriptionModal(prescription) {
         // 获取当前用户作为医生
         const currentUser = await apiClient.auth.getCurrentUser();
         const doctorSelect = document.getElementById('doctor-select');
-        doctorSelect.innerHTML = '<option value="">请选择医生</option>';
+        doctorSelect.innerHTML = `<option value="">${window.getTranslation ? window.getTranslation('select_doctor') : '请选择医生'}</option>`;
         if (currentUser) {
             const option = document.createElement('option');
             option.value = currentUser.id;
@@ -378,40 +396,138 @@ async function initPrescriptionModal(prescription) {
         
     } catch (error) {
         console.error('初始化处方模态框失败:', error);
-        window.showNotification('初始化处方表单失败: ' + error.message, 'error');
+        window.showNotification((window.getTranslation ? window.getTranslation('init_prescription_form_failed') : '初始化处方表单失败') + ': ' + error.message, 'error');
     }
 }
 
 /**
  * 添加处方明细项
  */
+// 辅助函数：创建带有自定义按钮的数字输入框
+function createSpinnerInput(className, initialValue, placeholder) {
+    const wrapper = document.createElement('div');
+    wrapper.className = `spinner-input-wrapper ${className}-wrapper`;
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.className = className;
+    input.value = initialValue;
+    input.min = '1';
+    input.placeholder = placeholder;
+    input.required = true;
+
+    const btnUp = document.createElement('button');
+    btnUp.type = 'button';
+    btnUp.className = 'spinner-btn spinner-up';
+    btnUp.textContent = '▲';
+    btnUp.tabIndex = -1; // 防止被 Tab 键聚焦
+
+    const btnDown = document.createElement('button');
+    btnDown.type = 'button';
+    btnDown.className = 'spinner-btn spinner-down';
+    btnDown.textContent = '▼';
+    btnDown.tabIndex = -1;
+
+    // 增加按钮的点击事件
+    btnUp.addEventListener('click', () => {
+        input.stepUp();
+    });
+
+    // 减少按钮的点击事件
+    btnDown.addEventListener('click', () => {
+        input.stepDown();
+    });
+
+    wrapper.appendChild(input);
+    wrapper.appendChild(btnUp);
+    wrapper.appendChild(btnDown);
+
+    return wrapper; // 返回整个包装好的组件
+}
+
 async function addPrescriptionDetail() {
     const container = document.getElementById('prescription-details-container');
-    const detailHtml = `
-        <div class="prescription-detail-item">
-            <div class="form-row">
-                <div class="form-group">
-                    <select class="drug-select" required>
-                        <option value="">请选择药品</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <input type="number" class="dosage-input" placeholder="剂量" min="0.1" step="0.1" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" class="frequency-input" placeholder="用法用量" required>
-                </div>
-                <div class="form-group">
-                    <input type="number" class="duration-input" placeholder="天数" min="1" required>
-                </div>
-                <div class="form-group">
-                    <button type="button" class="btn btn-sm btn-danger remove-detail-btn">删除</button>
-                </div>
-            </div>
-        </div>
-    `;
     
-    container.insertAdjacentHTML('beforeend', detailHtml);
+    // 创建处方明细项容器
+    const detailItem = document.createElement('div');
+    detailItem.className = 'prescription-detail-item';
+    
+    // 第一行：药品选择、数量、删除按钮
+    const firstRow = document.createElement('div');
+    firstRow.className = 'form-row';
+    
+    // 药品选择组
+    const drugGroup = document.createElement('div');
+    drugGroup.className = 'form-group drug-group';
+    const drugLabel = document.createElement('label');
+    drugLabel.textContent = window.getTranslation ? window.getTranslation('medicine') : '药品';
+    const drugSelect = document.createElement('select');
+    drugSelect.className = 'drug-select';
+    drugSelect.required = true;
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = window.getTranslation ? window.getTranslation('select_medicine') : '请选择药品';
+    drugSelect.appendChild(defaultOption);
+    drugGroup.appendChild(drugLabel);
+    drugGroup.appendChild(drugSelect);
+    
+    // 数量组（使用自定义spinner）
+    const quantityGroup = document.createElement('div');
+    quantityGroup.className = 'form-group quantity-group';
+    const quantityLabel = document.createElement('label');
+    quantityLabel.textContent = window.getTranslation ? window.getTranslation('quantity') : '数量';
+    const quantityWrapper = createSpinnerInput('quantity-input', 1, window.getTranslation ? window.getTranslation('quantity') : '数量');
+    quantityGroup.appendChild(quantityLabel);
+    quantityGroup.appendChild(quantityWrapper);
+    
+    // 删除按钮组
+    const deleteGroup = document.createElement('div');
+    deleteGroup.className = 'form-group';
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'btn btn-sm btn-danger remove-detail-btn';
+    deleteBtn.textContent = window.getTranslation ? window.getTranslation('delete') : '删除';
+    deleteGroup.appendChild(deleteBtn);
+    
+    firstRow.appendChild(drugGroup);
+    firstRow.appendChild(quantityGroup);
+    firstRow.appendChild(deleteGroup);
+    
+    // 第二行：用法用量、天数
+    const secondRow = document.createElement('div');
+    secondRow.className = 'form-row';
+    
+    // 用法用量组
+    const frequencyGroup = document.createElement('div');
+    frequencyGroup.className = 'form-group';
+    const frequencyLabel = document.createElement('label');
+    frequencyLabel.textContent = window.getTranslation ? window.getTranslation('frequency') : '用法用量';
+    const frequencyInput = document.createElement('input');
+    frequencyInput.type = 'text';
+    frequencyInput.className = 'frequency-input';
+    frequencyInput.placeholder = window.getTranslation ? window.getTranslation('frequency_placeholder') : '如：每日3次，每次1片';
+    frequencyInput.required = true;
+    frequencyGroup.appendChild(frequencyLabel);
+    frequencyGroup.appendChild(frequencyInput);
+    
+    // 天数组（使用自定义spinner）
+    const durationGroup = document.createElement('div');
+    durationGroup.className = 'form-group';
+    const durationLabel = document.createElement('label');
+    durationLabel.textContent = window.getTranslation ? window.getTranslation('days') : '天数';
+    const durationWrapper = createSpinnerInput('duration-input', '', window.getTranslation ? window.getTranslation('days') : '天数');
+    durationGroup.appendChild(durationLabel);
+    durationGroup.appendChild(durationWrapper);
+    
+    secondRow.appendChild(frequencyGroup);
+    secondRow.appendChild(durationGroup);
+    
+    // 组装完整的明细项
+    detailItem.appendChild(firstRow);
+    detailItem.appendChild(secondRow);
+    
+    // 添加到容器
+    container.appendChild(detailItem);
     
     // 为新添加的药品选择框填充选项
     try {
@@ -443,10 +559,212 @@ function bindRemoveDetailButtons() {
             if (container.children.length > 1) {
                 this.closest('.prescription-detail-item').remove();
             } else {
-                window.showNotification('至少需要保留一个药品明细', 'warning');
+                if (window.showModalNotification) {
+                    window.showModalNotification(window.getTranslation ? window.getTranslation('keep_at_least_one_medication') : '至少需要保留一个药品明细', 'warning');
+                } else {
+                    window.showNotification(window.getTranslation ? window.getTranslation('keep_at_least_one_medication') : '至少需要保留一个药品明细', 'warning');
+                }
             }
         };
     });
+}
+
+/**
+ * 验证处方表单
+ * @param {object} prescriptionData 处方数据
+ * @param {array} details 处方明细
+ * @returns {array} 验证错误数组
+ */
+function validatePrescriptionForm(prescriptionData, details) {
+    const errors = [];
+    
+    // 清除之前的错误样式
+    clearFormErrors();
+    
+    // 验证患者选择
+    if (!prescriptionData.patient_id || isNaN(prescriptionData.patient_id)) {
+        showFieldError('patient-select', '请选择患者');
+        errors.push('patient_id');
+    }
+    
+    // 验证医生选择
+    if (!prescriptionData.doctor_id || isNaN(prescriptionData.doctor_id)) {
+        showFieldError('doctor-select', window.getTranslation ? window.getTranslation('select_doctor') : '请选择医生');
+        errors.push('doctor_id');
+    }
+    
+    // 验证处方日期
+    if (!prescriptionData.prescription_date) {
+        showFieldError('prescription-date', window.getTranslation ? window.getTranslation('select_prescription_date') : '请选择处方日期');
+        errors.push('prescription_date');
+    }
+    
+    // 验证处方明细
+    if (details.length === 0) {
+        if (window.showModalNotification) {
+            window.showModalNotification(window.getTranslation ? window.getTranslation('add_at_least_one_medication') : '请至少添加一个药品明细', 'error');
+        } else {
+            window.showNotification(window.getTranslation ? window.getTranslation('add_at_least_one_medication') : '请至少添加一个药品明细', 'error');
+        }
+        errors.push('details');
+    } else {
+        // 验证每个明细项
+        const detailItems = document.querySelectorAll('.prescription-detail-item');
+        detailItems.forEach((item, index) => {
+            const drugSelect = item.querySelector('.drug-select');
+            const frequencyInput = item.querySelector('.frequency-input');
+            const durationInput = item.querySelector('.duration-input');
+            const quantityInput = item.querySelector('.quantity-input');
+            
+            if (!drugSelect.value) {
+                showFieldError(drugSelect.id || `drug-select-${index}`, window.getTranslation ? window.getTranslation('select_medicine') : '请选择药品');
+                errors.push(`detail_${index}_drug`);
+            }
+            
+            if (!frequencyInput.value) {
+                showFieldError(frequencyInput.id || `frequency-input-${index}`, window.getTranslation ? window.getTranslation('enter_medication_frequency') : '请输入用药频次');
+                errors.push(`detail_${index}_frequency`);
+            }
+            
+            if (!durationInput.value || parseInt(durationInput.value) <= 0) {
+                showFieldError(durationInput.id || `duration-input-${index}`, window.getTranslation ? window.getTranslation('enter_valid_medication_days') : '请输入有效的用药天数');
+                errors.push(`detail_${index}_duration`);
+            }
+            
+            if (!quantityInput.value || parseInt(quantityInput.value) <= 0) {
+                showFieldError(quantityInput.id || `quantity-input-${index}`, window.getTranslation ? window.getTranslation('enter_valid_quantity') : '请输入有效的数量');
+                errors.push(`detail_${index}_quantity`);
+            }
+        });
+    }
+    
+    return errors;
+}
+
+/**
+ * 显示字段错误
+ * @param {string} fieldId 字段ID
+ * @param {string} message 错误消息
+ */
+function showFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+    
+    // 添加错误样式
+    field.classList.add('is-invalid');
+    field.style.borderColor = '#dc3545';
+    
+    // 创建或更新错误消息
+    let errorDiv = field.parentNode.querySelector('.invalid-feedback');
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.className = 'invalid-feedback';
+        errorDiv.style.display = 'block';
+        errorDiv.style.color = '#dc3545';
+        errorDiv.style.fontSize = '0.875em';
+        errorDiv.style.marginTop = '0.25rem';
+        field.parentNode.appendChild(errorDiv);
+    }
+    errorDiv.textContent = message;
+}
+
+/**
+ * 清除表单错误样式
+ */
+function clearFormErrors() {
+    // 清除所有错误样式
+    const invalidFields = document.querySelectorAll('.is-invalid');
+    invalidFields.forEach(field => {
+        field.classList.remove('is-invalid');
+        field.style.borderColor = '';
+    });
+    
+    // 移除所有错误消息
+    const errorMessages = document.querySelectorAll('.invalid-feedback');
+    errorMessages.forEach(msg => msg.remove());
+}
+
+/**
+ * 处理服务器返回的验证错误
+ * @param {string} errorMessage 错误消息
+ */
+function handleServerValidationErrors(errorMessage) {
+    // 清除之前的错误
+    clearFormErrors();
+    
+    // 解析错误消息中的字段信息
+    const fieldMappings = {
+        'patient_id': 'patient-select',
+        'doctor_id': 'doctor-select', 
+        'prescription_date': 'prescription-date',
+        'medical_record_id': 'medical-record-select',
+        'details': 'details',
+        'medicine_id': 'drug-select',
+        'drug_id': 'drug-select',
+        'frequency': 'frequency-input',
+        'duration_days': 'duration-input',
+        'days': 'duration-input',
+        'quantity': 'quantity-input'
+    };
+    
+    // 尝试从错误消息中提取字段信息
+    for (const [serverField, elementId] of Object.entries(fieldMappings)) {
+        if (errorMessage.includes(serverField)) {
+            let message = '此字段有误';
+            
+            // 提取具体错误信息
+            if (errorMessage.includes('required')) {
+                message = window.getTranslation ? window.getTranslation('field_required') : '此字段为必填项';
+            } else if (errorMessage.includes('invalid')) {
+                message = window.getTranslation ? window.getTranslation('invalid_format') : '此字段格式不正确';
+            } else if (errorMessage.includes('not found')) {
+                message = window.getTranslation ? window.getTranslation('item_not_found') : '选择的项目不存在';
+            }
+            
+            showFieldError(elementId, message);
+        }
+    }
+    
+    // 如果没有找到具体字段，显示通用错误
+    if (!document.querySelector('.is-invalid')) {
+        if (window.showModalNotification) {
+            window.showModalNotification(window.getTranslation ? window.getTranslation('data_validation_failed') : '数据验证失败，请检查表单内容', 'error');
+        } else {
+            window.showNotification(window.getTranslation ? window.getTranslation('data_validation_failed') : '数据验证失败，请检查表单内容', 'error');
+        }
+    }
+}
+
+/**
+ * 创建临时病历记录
+ */
+async function createTemporaryMedicalRecord() {
+    try {
+        const patientId = document.getElementById('patient-select').value;
+        if (!patientId) {
+            throw new Error(window.getTranslation ? window.getTranslation('select_patient_first') : '请先选择患者');
+        }
+        
+        const doctorId = document.getElementById('doctor-select').value;
+        if (!doctorId) {
+            throw new Error(window.getTranslation ? window.getTranslation('select_doctor_first') : '请先选择医生');
+        }
+        
+        const medicalRecordData = {
+            patient_id: parseInt(patientId),
+            doctor_id: parseInt(doctorId),
+            record_date: new Date().toISOString().split('T')[0],
+            chief_complaint: '处方开具',
+            diagnosis: '待诊断',
+            treatment_plan: '药物治疗'
+        };
+        
+        const response = await apiClient.medicalRecords.create(medicalRecordData);
+        return response.id;
+    } catch (error) {
+        console.error('创建临时病历失败:', error);
+        throw error;
+    }
 }
 
 /**
@@ -463,44 +781,67 @@ window.savePrescription = async function() {
         
         for (const item of detailItems) {
             const drugId = item.querySelector('.drug-select').value;
-            const dosage = item.querySelector('.dosage-input').value;
             const frequency = item.querySelector('.frequency-input').value;
             const duration = item.querySelector('.duration-input').value;
+            const quantity = item.querySelector('.quantity-input')?.value || '1'; // 默认数量为1
             
-            if (!drugId || !dosage || !frequency || !duration) {
-                window.showNotification('请填写完整的药品明细信息', 'error');
+            if (!drugId || !frequency || !duration) {
+                if (window.showModalNotification) {
+                    window.showModalNotification(window.getTranslation ? window.getTranslation('fill_complete_medication_info') : '请填写完整的药品明细信息', 'error');
+                } else {
+                    window.showNotification(window.getTranslation ? window.getTranslation('fill_complete_medication_info') : '请填写完整的药品明细信息', 'error');
+                }
                 return;
             }
             
             details.push({
-                medicine_id: parseInt(drugId),
-                dosage: parseFloat(dosage),
+                drug_id: parseInt(drugId),
+                dosage: '', // 剂量信息已包含在药品规格中，设为空字符串
                 frequency: frequency,
-                duration_days: parseInt(duration)
+                days: parseInt(duration),
+                quantity: parseInt(quantity)
             });
         }
+        
+        // 获取medical_record_id - 如果没有则创建一个临时的
+        const medicalRecordId = document.getElementById('medical-record-select')?.value || 
+                               await createTemporaryMedicalRecord();
         
         const prescriptionData = {
             patient_id: parseInt(document.getElementById('patient-select').value),
             doctor_id: parseInt(document.getElementById('doctor-select').value),
             prescription_date: document.getElementById('prescription-date').value,
-            notes: document.getElementById('notes').value,
+            medical_record_id: parseInt(medicalRecordId),
             details: details
         };
         
-        if (!prescriptionData.patient_id || !prescriptionData.doctor_id) {
-            window.showNotification('请选择患者和医生', 'error');
+        // 验证必填字段
+        const validationErrors = validatePrescriptionForm(prescriptionData, details);
+        if (validationErrors.length > 0) {
             return;
         }
         
         await apiClient.prescriptions.create(prescriptionData);
-        window.showNotification('处方保存成功', 'success');
+        window.showNotification(window.getTranslation ? window.getTranslation('prescription_saved_successfully') : '处方保存成功', 'success');
         closePrescriptionModal();
         await loadPrescriptions();
         
     } catch (error) {
         console.error('保存处方失败:', error);
-        window.showNotification('保存处方失败: ' + error.message, 'error');
+        
+        // 处理服务器返回的验证错误
+        if (error.message && error.message.includes('validation error')) {
+            // 尝试解析验证错误并显示在表单上
+            try {
+                handleServerValidationErrors(error.message);
+            } catch (e) {
+                // 如果解析失败，回退到通知
+                window.showNotification((window.getTranslation ? window.getTranslation('save_prescription_failed') : '保存处方失败') + ': ' + error.message, 'error');
+            }
+        } else {
+            // 其他错误显示为通知
+            window.showNotification((window.getTranslation ? window.getTranslation('save_prescription_failed') : '保存处方失败') + ': ' + error.message, 'error');
+        }
     }
 };
 
@@ -543,11 +884,11 @@ function showPrescriptionDetailsModal(prescription) {
                         <div class="info-row">
                             <div class="info-item">
                                 <label data-i18n="patient_name">患者姓名:</label>
-                                <span>${prescription.patient?.name || '未知患者'}</span>
+                                <span>${prescription.patient?.name || (window.getTranslation ? window.getTranslation('unknown_patient') : '未知患者')}</span>
                             </div>
                             <div class="info-item">
                                 <label data-i18n="doctor_name">医生姓名:</label>
-                                <span>${prescription.doctor?.name || '未知医生'}</span>
+                                <span>${prescription.doctor?.name || (window.getTranslation ? window.getTranslation('unknown_doctor') : '未知医生')}</span>
                             </div>
                         </div>
                         <div class="info-row">
@@ -565,7 +906,7 @@ function showPrescriptionDetailsModal(prescription) {
                         ${prescription.notes ? `
                             <div class="info-row">
                                 <div class="info-item full-width">
-                                    <label>备注:</label>
+                                    <label data-i18n="notes">备注:</label>
                                     <span>${prescription.notes}</span>
                                 </div>
                             </div>
@@ -577,31 +918,31 @@ function showPrescriptionDetailsModal(prescription) {
                         <table class="details-table">
                             <thead>
                                 <tr>
-                                    <th>药品名称</th>
-                                    <th>规格</th>
-                                    <th>剂量</th>
-                                    <th>用法用量</th>
-                                    <th>天数</th>
+                                    <th data-i18n="medicine_name">药品名称</th>
+                                    <th data-i18n="quantity">数量</th>
+                                    <th data-i18n="specification">规格</th>
+                                    <th data-i18n="frequency">用法用量</th>
+                                    <th data-i18n="days">天数</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${prescription.details?.map(detail => `
                                     <tr>
-                                        <td>${detail.medicine?.name || '未知药品'}</td>
-                                        <td>${detail.medicine?.specification || '-'}</td>
-                                        <td>${detail.dosage}</td>
+                                        <td>${detail.drug?.name || (window.getTranslation ? window.getTranslation('unknown_medicine') : '未知药品')}</td>
+                                        <td>${detail.quantity}</td>
+                                        <td>${detail.drug?.specification || '-'}</td>
                                         <td>${detail.frequency}</td>
-                                        <td>${detail.duration_days}天</td>
+                                        <td>${detail.days}${window.getTranslation ? window.getTranslation('days_unit') : '天'}</td>
                                     </tr>
-                                `).join('') || '<tr><td colspan="5">暂无药品明细</td></tr>'}
+                                `).join('') || `<tr><td colspan="5">${window.getTranslation ? window.getTranslation('no_medicine_details') : '暂无药品明细'}</td></tr>`}
                             </tbody>
                         </table>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closePrescriptionDetailsModal()">关闭</button>
+                    <button type="button" class="btn btn-secondary" onclick="closePrescriptionDetailsModal()" data-i18n="close">关闭</button>
                     ${prescription.dispensing_status === 'PENDING' ? 
-                        `<button type="button" class="btn btn-success" onclick="dispensePrescription(${prescription.id}); closePrescriptionDetailsModal();">发药</button>` : 
+                        `<button type="button" class="btn btn-success" onclick="dispensePrescription(${prescription.id}); closePrescriptionDetailsModal();" data-i18n="dispense">发药</button>` : 
                         ''
                     }
                 </div>
@@ -610,6 +951,29 @@ function showPrescriptionDetailsModal(prescription) {
     `;
     
     document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // 应用翻译到新插入的模态框
+    if (window.translatePage) {
+        window.translatePage();
+    }
+    
+    // 显示模态框
+    const modal = document.getElementById('prescription-details-modal');
+    if (modal) {
+        // 先显示模态框
+        modal.style.display = 'flex';
+        // 添加active类触发动画
+        setTimeout(() => {
+            modal.classList.add('active');
+        }, 10);
+        
+        // 添加点击背景关闭功能
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closePrescriptionDetailsModal();
+            }
+        });
+    }
 }
 
 /**
@@ -618,6 +982,13 @@ function showPrescriptionDetailsModal(prescription) {
 window.closePrescriptionDetailsModal = function() {
     const modal = document.getElementById('prescription-details-modal');
     if (modal) {
-        modal.remove();
+        // 移除active类触发关闭动画
+        modal.classList.remove('active');
+        // 等待动画完成后移除DOM元素
+        setTimeout(() => {
+            if (modal.parentNode) {
+                modal.remove();
+            }
+        }, 300);
     }
 };

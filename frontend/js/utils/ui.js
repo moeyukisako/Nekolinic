@@ -146,6 +146,89 @@ function createTemporaryNotification(message, type) {
 }
 
 /**
+ * 在模态框内显示通知消息
+ * @param {string} message - 要显示的消息
+ * @param {string} type - 通知类型 ('success', 'error', 'info', 'warning')
+ * @param {string} modalId - 模态框的ID，如果不提供则尝试查找当前打开的模态框
+ */
+export function showModalNotification(message, type = 'info', modalId = null) {
+    let modal;
+    
+    if (modalId) {
+        modal = document.getElementById(modalId);
+    } else {
+        // 查找当前显示的模态框
+        modal = document.querySelector('.modal.show') || document.querySelector('.modal[style*="display: block"]');
+    }
+    
+    if (!modal) {
+        console.warn('No modal found, falling back to global notification');
+        showNotification(message, type);
+        return;
+    }
+    
+    // 查找或创建模态框内的通知容器
+    let notificationContainer = modal.querySelector('.modal-notification');
+    if (!notificationContainer) {
+        // 在模态框header后面创建通知容器
+        const modalHeader = modal.querySelector('.modal-header');
+        if (modalHeader) {
+            notificationContainer = document.createElement('div');
+            notificationContainer.className = 'modal-notification';
+            notificationContainer.style.cssText = `
+                padding: 0.75rem 1.5rem;
+                margin: 0;
+                border-bottom: 1px solid var(--color-border, #ddd);
+                background-color: var(--color-bg-card, #fff);
+                display: none;
+                opacity: 0;
+                transition: all 0.3s ease;
+            `;
+            modalHeader.insertAdjacentElement('afterend', notificationContainer);
+        } else {
+            console.warn('Modal header not found, falling back to global notification');
+            showNotification(message, type);
+            return;
+        }
+    }
+    
+    // 设置通知样式和内容
+    const colors = {
+        success: { bg: '#d4edda', text: '#155724', border: '#c3e6cb' },
+        error: { bg: '#f8d7da', text: '#721c24', border: '#f5c6cb' },
+        warning: { bg: '#fff3cd', text: '#856404', border: '#ffeaa7' },
+        info: { bg: '#d1ecf1', text: '#0c5460', border: '#bee5eb' }
+    };
+    
+    const color = colors[type] || colors.info;
+    
+    notificationContainer.style.backgroundColor = color.bg;
+    notificationContainer.style.color = color.text;
+    notificationContainer.style.borderColor = color.border;
+    notificationContainer.textContent = message;
+    notificationContainer.style.display = 'block';
+    
+    // 显示动画
+    setTimeout(() => {
+        notificationContainer.style.opacity = '1';
+    }, 10);
+    
+    // 清除之前的定时器
+    if (notificationContainer.hideTimer) {
+        clearTimeout(notificationContainer.hideTimer);
+    }
+    
+    // 3秒后自动隐藏
+    notificationContainer.hideTimer = setTimeout(() => {
+        notificationContainer.style.opacity = '0';
+        setTimeout(() => {
+            notificationContainer.style.display = 'none';
+            notificationContainer.textContent = '';
+        }, 300);
+    }, 3000);
+}
+
+/**
  * 内部通知显示函数
  * @param {HTMLElement} statusElement - 状态消息元素
  * @param {string} message - 要显示的消息

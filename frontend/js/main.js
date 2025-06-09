@@ -2,7 +2,7 @@
 
 import eventBus from './utils/eventBus.js';
 import store from './utils/store.js';
-import { showLoading, showNotification } from './utils/ui.js';
+import { showLoading, showNotification, showModalNotification } from './utils/ui.js';
 import configManager from './utils/configManager.js';
 
 // 稍后导入模块
@@ -33,19 +33,10 @@ function initApp() {
   }
   
   // 先初始化配置管理器
-  initConfigManager().then(() => {
+  initConfigManager().then(async () => {
     // 配置管理器初始化完成后，重新初始化国际化系统以应用正确的语言设置
     if (window.initI18n) {
-      window.initI18n();
-    }
-    
-    // 强制应用配置中的语言设置
-    if (window.configManager && window.setLanguage) {
-      const configLanguage = window.configManager.get('language');
-      if (configLanguage) {
-        console.log('从配置管理器强制应用语言:', configLanguage);
-        window.setLanguage(configLanguage, true); // 跳过保存到配置管理器，避免循环调用
-      }
+      await window.initI18n();
     }
   });
   
@@ -706,6 +697,6 @@ document.addEventListener('DOMContentLoaded', initApp);
 // 将 switchModule 和 showNotification 暴露到全局，以便其他模块可以调用
 window.switchModule = switchModule;
 window.showNotification = showNotification;
+window.showModalNotification = showModalNotification;
 
-// 导出主要函数以便测试
-export { initApp, switchModule, showNotification };
+export { initApp, switchModule, showNotification, showModalNotification };

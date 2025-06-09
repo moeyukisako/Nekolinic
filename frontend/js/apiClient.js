@@ -85,9 +85,27 @@ async function apiRequest(endpoint, options = {}) {
 
 
         if (!response.ok) {
-
-            throw new Error(responseData.detail || `请求失败 (${response.status})`);
-
+            let errorMessage = `请求失败 (${response.status})`;
+            
+            if (responseData.detail) {
+                if (Array.isArray(responseData.detail)) {
+                    // 处理验证错误数组
+                    errorMessage = responseData.detail.map(err => {
+                        if (typeof err === 'object' && err.msg) {
+                            return `${err.loc ? err.loc.join('.') + ': ' : ''}${err.msg}`;
+                        }
+                        return String(err);
+                    }).join('; ');
+                } else if (typeof responseData.detail === 'object') {
+                    // 处理对象类型的错误
+                    errorMessage = JSON.stringify(responseData.detail);
+                } else {
+                    // 处理字符串类型的错误
+                    errorMessage = responseData.detail;
+                }
+            }
+            
+            throw new Error(errorMessage);
         }
 
         
@@ -339,7 +357,55 @@ const apiClient = {
          * @param {number} id - 药品ID
          * @returns {Promise<object>} 成功删除的响应
          */
-        delete: (id) => apiRequest(`/api/v1/pharmacy/medicines/${id}`, { method: 'DELETE' })
+        delete: (id) => apiRequest(`/api/v1/pharmacy/medicines/${id}`, { method: 'DELETE' }),
+
+        /**
+         * 获取药品当前库存
+         * @param {number} id - 药品ID
+         * @returns {Promise<object>} 库存信息
+         */
+        getStock: (id) => apiRequest(`/api/v1/pharmacy/inventory/drugs/${id}/stock`),
+
+        /**
+         * 获取药品库存变动历史
+         * @param {number} id - 药品ID
+         * @param {object} options - { page, limit }
+         * @returns {Promise<object>} 库存变动历史
+         */
+        getStockHistory: (id, options = {}) => {
+            const { page = 1, limit = 10 } = options;
+            const skip = (page - 1) * limit;
+            const params = new URLSearchParams({ skip, limit });
+            return apiRequest(`/api/v1/pharmacy/inventory/drugs/${id}/history?${params.toString()}`);
+        },
+
+        /**
+         * 药品入库
+         * @param {object} stockData - { drug_id, quantity, notes }
+         * @returns {Promise<object>} 入库结果
+         */
+        addStock: (stockData) => apiRequest('/api/v1/pharmacy/inventory/stock-in', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(stockData)
+        }),
+
+        /**
+         * 批量药品入库
+         * @param {object} bulkStockData - { items: [{ drug_id, quantity, cost_price, notes }], notes }
+         * @returns {Promise<Array>} 批量入库结果
+         */
+        bulkAddStock: (bulkStockData) => apiRequest('/api/v1/pharmacy/inventory/bulk-stock-in', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(bulkStockData)
+        }),
+
+        /**
+         * 获取库存低于阈值的药品
+         * @returns {Promise<Array>} 低库存药品列表
+         */
+        getLowStock: () => apiRequest('/api/v1/pharmacy/inventory/low-stock')
     },
 
     /**

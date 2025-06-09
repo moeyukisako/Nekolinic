@@ -3,6 +3,10 @@ from datetime import datetime
 from typing import Optional, List
 from decimal import Decimal
 
+# Import related schemas for nested data
+from app.patient.schemas import Patient
+from app.clinic.schemas import Doctor as DoctorSchema
+
 # --- Drug Schemas ---
 class DrugBase(BaseModel):
     name: str
@@ -69,6 +73,9 @@ class Prescription(PrescriptionBase):
     id: int
     dispensing_status: str
     details: List[PrescriptionDetail] = []
+    # 嵌套的患者和医生信息
+    patient: Optional[Patient] = None
+    doctor: Optional[DoctorSchema] = None
     model_config = ConfigDict(from_attributes=True)
 
 # --- Inventory Schemas ---
@@ -94,6 +101,16 @@ class StockInRequest(BaseModel):
     quantity: int = Field(gt=0)
     notes: Optional[str] = None
 
+class BulkStockInItem(BaseModel):
+    drug_id: int
+    quantity: int = Field(gt=0)
+    cost_price: Optional[Decimal] = None
+    notes: Optional[str] = None
+
+class BulkStockInRequest(BaseModel):
+    items: List[BulkStockInItem]
+    notes: Optional[str] = None
+
 class DispenseRequest(BaseModel):
     prescription_id: int
     notes: Optional[str] = None
@@ -102,4 +119,10 @@ class StockResponse(BaseModel):
     drug_id: int
     drug_name: str
     current_stock: int
+    model_config = ConfigDict(from_attributes=True)
+
+class DrugWithStock(DrugBase):
+    """药品信息包含库存数据"""
+    id: int
+    stock: int  # 当前库存
     model_config = ConfigDict(from_attributes=True)

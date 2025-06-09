@@ -99,8 +99,8 @@ def read_prescriptions(
     db: Session = Depends(get_db),
     current_user: user_models.User = Depends(security.get_current_active_user)
 ):
-    """获取所有处方 (需要认证)"""
-    return service.prescription_service.get_multi(db, skip=skip, limit=limit)
+    """获取所有处方（含患者和医生信息） (需要认证)"""
+    return service.prescription_service.get_multi_with_details(db, skip=skip, limit=limit)
 
 @router.get("/prescriptions/{prescription_id}", response_model=schemas.Prescription)
 def read_prescription(
@@ -133,6 +133,22 @@ def update_prescription(
         )
     return service.prescription_service.update(db=db, db_obj=prescription, obj_in=prescription_in)
 
+@router.delete("/prescriptions/{prescription_id}")
+def delete_prescription(
+    prescription_id: int,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """删除处方 (需要认证)"""
+    prescription = service.prescription_service.get(db, id=prescription_id)
+    if not prescription:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"处方 ID {prescription_id} 不存在"
+        )
+    service.prescription_service.remove(db=db, id=prescription_id)
+    return {"message": f"处方 ID {prescription_id} 已成功删除"}
+
 # --- 库存API ---
 @router.post("/inventory/stock-in", response_model=schemas.InventoryTransaction)
 def add_stock(
@@ -146,6 +162,19 @@ def add_stock(
         drug_id=stock_in.drug_id,
         quantity=stock_in.quantity,
         notes=stock_in.notes
+    )
+
+@router.post("/inventory/bulk-stock-in", response_model=List[schemas.InventoryTransaction])
+def bulk_add_stock(
+    bulk_stock_in: schemas.BulkStockInRequest,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """批量药品入库 (需要认证)"""
+    return service.inventory_service.bulk_add_stock(
+        db=db,
+        stock_items=bulk_stock_in.items,
+        notes=bulk_stock_in.notes
     )
 
 @router.post("/inventory/dispense", response_model=List[schemas.InventoryTransaction])
@@ -251,7 +280,7 @@ def create_medicine(
         )
     return service.drug_service.create(db=db, obj_in=drug_in)
 
-@router.get("/medicines/", response_model=PaginatedResponse[schemas.Drug])
+@router.get("/medicines/", response_model=PaginatedResponse[schemas.DrugWithStock])
 def read_medicines(
     skip: int = 0,
     limit: int = 100,
@@ -259,20 +288,20 @@ def read_medicines(
     db: Session = Depends(get_db),
     current_user: user_models.User = Depends(security.get_current_active_user)
 ):
-    """获取所有药品 (medicines别名路由)"""
+    """获取所有药品 (medicines别名路由，包含库存信息)"""
     if search:
         # 如果有搜索参数，使用搜索功能
-        return service.drug_service.search_by_name_paginated(db, name=search, skip=skip, limit=limit)
-    return service.drug_service.get_paginated(db, skip=skip, limit=limit)
+        return service.drug_service.search_by_name_paginated_with_stock(db, name=search, skip=skip, limit=limit)
+    return service.drug_service.get_paginated_with_stock(db, skip=skip, limit=limit)
 
-@router.get("/medicines/{medicine_id}", response_model=schemas.Drug)
+@router.get("/medicines/{medicine_id}", response_model=schemas.DrugWithStock)
 def read_medicine(
     medicine_id: int,
     db: Session = Depends(get_db),
     current_user: user_models.User = Depends(security.get_current_active_user)
 ):
     """根据ID获取药品 (medicines别名路由)"""
-    drug = service.drug_service.get(db, id=medicine_id)
+    drug = service.drug_service.get_with_stock(db, id=medicine_id)
     if not drug:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

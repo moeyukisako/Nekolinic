@@ -6,7 +6,7 @@
     margin-left: 35px;
     margin-right: 35px;
     margin-bottom: 50px; /* 距离浏览器窗口下边缘50px */
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(107, 107, 107, 0.3);
     border-radius: var(--border-radius);
     padding: 35px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
@@ -29,6 +29,162 @@
 }
 
 /* 处方详情模态框样式 */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+/* 删除确认模态框样式 */
+#deleteConfirmModal .modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+    max-width: 400px;
+    width: 90%;
+    margin: 20px;
+}
+
+#deleteConfirmModal.active .modal-content {
+    transform: scale(1);
+}
+
+#deleteConfirmModal .modal-header {
+    padding: 20px 20px 10px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+#deleteConfirmModal .modal-header h3 {
+    color: #dc3545;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+}
+
+#deleteConfirmModal .modal-body {
+    padding: 20px;
+    text-align: center;
+}
+
+#deleteConfirmModal .modal-body p {
+    margin: 15px 0;
+    line-height: 1.5;
+}
+
+#deleteConfirmModal .modal-body p:first-child {
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+}
+
+#deleteConfirmModal .modal-body p:last-child {
+    font-size: 14px;
+    color: #666;
+}
+
+#deleteConfirmModal .modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding: 15px 20px 20px 20px;
+    border-top: 1px solid #eee;
+}
+
+#deleteConfirmModal .btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+#deleteConfirmModal .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+#deleteConfirmModal .btn-secondary:hover {
+    background-color: #5a6268;
+    transform: translateY(-1px);
+}
+
+#deleteConfirmModal .btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+#deleteConfirmModal .btn-danger:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+}
+
+/* 删除确认模态框深色主题适配 */
+[data-theme="dark"] #deleteConfirmModal .modal-content {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] #deleteConfirmModal .modal-header {
+    border-bottom: 1px solid var(--color-border);
+}
+
+[data-theme="dark"] #deleteConfirmModal .modal-header h3 {
+    color: #ff6b6b;
+}
+
+[data-theme="dark"] #deleteConfirmModal .modal-body p:first-child {
+    color: var(--color-text-primary);
+}
+
+[data-theme="dark"] #deleteConfirmModal .modal-body p:last-child {
+    color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] #deleteConfirmModal .modal-footer {
+    border-top: 1px solid var(--color-border);
+}
+
+[data-theme="dark"] #deleteConfirmModal .btn-secondary {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+}
+
+[data-theme="dark"] #deleteConfirmModal .btn-secondary:hover {
+    background-color: var(--color-bg-hover);
+    border-color: var(--color-border-hover);
+}
+
+[data-theme="dark"] #deleteConfirmModal .btn-danger {
+    background-color: #dc2626;
+    color: white;
+}
+
+[data-theme="dark"] #deleteConfirmModal .btn-danger:hover {
+    background-color: #b91c1c;
+}
+
 .prescription-info {
     margin-bottom: 20px;
     padding: 15px;
@@ -116,17 +272,23 @@
 
 /* 处方明细编辑表单样式 */
 .prescription-detail-item {
-    margin-bottom: 15px;
-    padding: 15px;
+    margin-bottom: 20px;
+    padding: 20px;
     background-color: var(--color-bg-card);
     border-radius: var(--border-radius);
     border: 1px solid var(--color-border);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .prescription-detail-item .form-row {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     align-items: end;
+    margin-bottom: 15px;
+}
+
+.prescription-detail-item .form-row:last-child {
+    margin-bottom: 0;
 }
 
 .prescription-detail-item .form-group {
@@ -134,30 +296,120 @@
     margin-bottom: 0;
 }
 
+.prescription-detail-item .form-group.drug-group {
+    flex: 2;
+}
+
+.prescription-detail-item .form-group.quantity-group {
+    flex: 0 0 100px;
+}
+
 .prescription-detail-item .form-group:last-child {
     flex: 0 0 auto;
 }
 
-.drug-select,
-.dosage-input,
-.frequency-input,
-.duration-input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    background-color: var(--color-bg-card);
+.prescription-detail-item label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
     color: var(--color-text-primary);
     font-size: 0.9em;
 }
 
+.drug-select,
+.frequency-input,
+.duration-input,
+.quantity-input {
+    position: relative; /* 新增：为spinner按钮提供定位参考坐标系 */
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    background-color: var(--color-bg-card);
+    color: var(--color-text-primary);
+    font-size: 0.95em;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
 .drug-select:focus,
-.dosage-input:focus,
 .frequency-input:focus,
-.duration-input:focus {
+.duration-input:focus,
+.quantity-input:focus {
     outline: none;
     border-color: var(--color-bar-primary);
     box-shadow: 0 0 0 2px rgba(57, 197, 187, 0.1);
+}
+
+.drug-select {
+    min-width: 200px;
+}
+
+.frequency-input {
+    min-width: 150px;
+}
+
+.duration-input,
+.quantity-input {
+    min-width: 80px;
+}
+
+/* --- CSS 最终修正方案 --- */
+
+/* 1. 隐藏所有输入框的原生 Spinner */
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button,
+.duration-input::-webkit-outer-spin-button,
+.duration-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.quantity-input,
+.duration-input {
+    -moz-appearance: textfield; /* 针对 Firefox */
+    padding-right: 20px; /* 为自定义按钮留出空间 */
+}
+
+/* 2. 自定义 Spinner 组件的包装容器 */
+.spinner-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* 3. 自定义按钮的通用样式 */
+.spinner-btn {
+    position: absolute;
+    right: 1px; /* 微调按钮位置 */
+    width: 20px;
+    height: 50%;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    color: #B30074; /* 设置箭头颜色为品牌色 */
+    font-size: 8px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+    z-index: 2;
+}
+
+.spinner-btn:hover {
+    background-color: var(--color-bg-hover);
+    color: #B30074; /* 悬停时保持品牌色 */
+}
+
+/* 4. 分别定位上下按钮 */
+.spinner-up {
+    top: 1px;
+    border-top-right-radius: var(--border-radius);
+}
+
+.spinner-down {
+    bottom: 1px;
+    border-bottom-right-radius: var(--border-radius);
 }
 
 /* 状态徽章样式 */
@@ -314,13 +566,33 @@
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+    .prescription-detail-item {
+        padding: 15px;
+    }
+    
     .prescription-detail-item .form-row {
         flex-direction: column;
         gap: 10px;
+        margin-bottom: 10px;
     }
     
     .prescription-detail-item .form-group {
         flex: none;
+    }
+    
+    .prescription-detail-item .form-group.drug-group {
+         flex: none;
+     }
+     
+     .prescription-detail-item .form-group.quantity-group {
+         flex: none;
+     }
+    
+    .drug-select,
+    .frequency-input,
+    .duration-input,
+    .quantity-input {
+        min-width: auto;
     }
     
     .info-row {

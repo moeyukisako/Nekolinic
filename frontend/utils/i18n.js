@@ -18,6 +18,7 @@ const translations = {
     // 通用
     loading: '正在加载...',
     save: '保存',
+    save_medical_record: '保存病历',
     cancel: '取消',
     close: '关闭',
     confirm: '确认',
@@ -62,6 +63,7 @@ const translations = {
     age_suffix: '岁',
     
     // 操作
+    view: '查看',
     action_view: '查看',
     action_edit: '编辑',
     action_delete: '删除',
@@ -95,6 +97,16 @@ const translations = {
     notes: '备注',
     notes_placeholder: '其他备注信息...',
     
+    // 错误和状态消息
+    loading_medical_record_failed: '加载病历编辑器失败',
+    loading_medical_record_error: '加载病历失败',
+    medical_record_updated: '病历已更新',
+    medical_record_created: '病历已创建',
+    save_medical_record_failed: '保存病历失败',
+    save_failed: '保存失败',
+    error: '错误',
+    please_fill_required_fields: '请填写就诊日期和诊断',
+    
     // 设置
     settings_general: '常规设置',
     settings_appearance: '外观设置',
@@ -124,6 +136,8 @@ const translations = {
     medicine_name: '药品名称',
     medicine_code: '药品代码',
     specification: '规格',
+    frequency: '用法用量',
+    days: '天数',
     manufacturer: '生产厂家',
     current_stock: '当前库存',
     unit: '单位',
@@ -142,11 +156,13 @@ const translations = {
     prescription_date: '开具日期',
     dispensing_status: '发药状态',
     add_new_prescription: '开具新处方',
+    new_prescription: '开具新处方',
     search_prescription_placeholder: '按患者姓名、医生姓名搜索...',
     prescription_details: '处方明细',
     dispense: '发药',
     patient: '患者',
     doctor: '医生',
+    doctor_name: '医生姓名',
     no_medicine_found: '未找到相关药品信息',
     medicine_name_required: '药品名称不能为空',
     valid_unit_price_required: '请输入有效的单价',
@@ -154,15 +170,85 @@ const translations = {
     medicine_added: '药品已添加',
     operation_failed: '操作失败',
     get_medicine_failed: '获取药品信息失败',
-    select_patient: '请选择患者',
+    stock_history: '库存历史',
+    add_stock: '药品入库',
+    confirm_stock_in: '确认入库',
+    get_medicine_failed: '获取药品信息失败',
+    stock_in_failed: '入库失败',
+    get_stock_history_failed: '获取库存历史失败',
+    init_bulk_stock_failed: '初始化批量入库表单失败',
+    keep_at_least_one_item: '至少需要保留一个入库明细项',
+    select_medicine: '请选择药品',
+    valid_quantity_required: '请输入有效的数量',
+    add_at_least_one_item: '请至少添加一个入库明细',
+    bulk_stock_success: '批量入库成功',
+    total_items: '共入库',
+    medicines: '种药品',
+    bulk_stock_failed: '批量入库失败',
+    no_low_stock_medicines: '当前没有低库存药品',
+    get_low_stock_failed: '获取低库存药品失败',
+    quantity: '数量',
+    cost_price_optional: '进价（可选）',
+    medicine_stock_notes_optional: '该药品入库备注（可选）',
+    confirm_delete: '确认删除',
+    confirm_delete_medicine: '确定要删除这个药品吗？此操作不可恢复。',
+    medicine_deleted: '药品已删除',
+    delete_failed: '删除失败',
+    stock_in: '入库',
+    stock_out: '出库',
+    adjustment: '调整',
+    transaction_type: '操作类型',
+    operation_time: '操作时间',
+    quantity_change: '数量变化',
+    frequency_placeholder: '如：每日3次，每次1片',
+    not_available: 'N/A',
+    unknown_doctor: '未知医生',
+     unknown_patient: '未知患者',
+     unknown_medicine: '未知药品',
+     get_prescription_details_failed: '获取处方详情失败',
+     confirm_delete_prescription: '确认要删除此处方吗？此操作不可撤销，请谨慎操作。',
+     prescription_deleted: '处方删除成功',
+     delete_prescription_failed: '删除处方失败',
+     notes: '备注',
+     days_unit: '天',
+     no_medicine_details: '暂无药品明细',
+     close: '关闭',
+     pending_dispensing: '待发药',
+     dispensed: '已发药',
+     cancelled: '已取消',
+     confirm_dispense_prescription: '确认要为此处方发药吗？',
+     dispense_success: '发药成功',
+     dispense_failed: '发药失败',
+     select_patient: '请选择患者',
     select_doctor: '请选择医生',
+    no_prescription_records: '暂无处方记录',
+    loading_prescription_data: '正在加载处方数据...',
+    load_prescription_data_failed: '加载处方数据失败',
+    open_prescription_form_failed: '打开处方表单失败',
+    keep_at_least_one_medication: '至少需要保留一个药品明细',
+    add_at_least_one_medication: '请至少添加一个药品明细',
+    fill_complete_medication_info: '请填写完整的药品明细信息',
+    prescription_saved_successfully: '处方保存成功',
+    save_prescription_failed: '保存处方失败',
+    data_validation_failed: '数据验证失败，请检查表单内容',
+    select_patient_first: '请先选择患者',
+    select_doctor_first: '请先选择医生',
+    init_prescription_form_failed: '初始化处方表单失败',
+    select_prescription_date: '请选择处方日期',
+    enter_medication_frequency: '请输入用药频次',
+    enter_valid_medication_days: '请输入有效的用药天数',
+    enter_valid_quantity: '请输入有效的数量',
+    field_required: '此字段为必填项',
+    invalid_format: '输入格式不正确',
+    item_not_found: '选择的项目不存在',
+    medicine: '药品',
     add_medication: '添加药品',
     prescription_notes_placeholder: '处方备注信息...',
     modal_title: '标题',
     close: '关闭',
     cancel: '取消',
     confirm: '确认',
-    medication_details: '药品明细'
+    medication_details: '药品明细',
     
     // 财务管理
     today_income: '今日收入',
@@ -300,8 +386,38 @@ const translations = {
     // 通用
     loading: 'Loading...',
     save: 'Save',
+    save_medical_record: 'Save Medical Record',
     cancel: 'Cancel',
     close: 'Close',
+      pending_dispensing: 'Pending Dispensing',
+      dispensed: 'Dispensed',
+      cancelled: 'Cancelled',
+      confirm_dispense_prescription: 'Are you sure you want to dispense this prescription?',
+      dispense_success: 'Dispensed successfully',
+      dispense_failed: 'Dispensing failed',
+      select_patient: 'Please select a patient',
+    select_doctor: 'Please select a doctor',
+    no_prescription_records: 'No prescription records',
+    loading_prescription_data: 'Loading prescription data...',
+    load_prescription_data_failed: 'Failed to load prescription data',
+    open_prescription_form_failed: 'Failed to open prescription form',
+    keep_at_least_one_medication: 'At least one medication detail must be kept',
+    add_at_least_one_medication: 'Please add at least one medication detail',
+    fill_complete_medication_info: 'Please fill in complete medication information',
+    prescription_saved_successfully: 'Prescription saved successfully',
+    save_prescription_failed: 'Failed to save prescription',
+    data_validation_failed: 'Data validation failed, please check form content',
+    select_patient_first: 'Please select a patient first',
+    select_doctor_first: 'Please select a doctor first',
+    init_prescription_form_failed: 'Failed to initialize prescription form',
+    select_prescription_date: 'Please select prescription date',
+    enter_medication_frequency: 'Please enter medication frequency',
+    enter_valid_medication_days: 'Please enter valid medication days',
+    enter_valid_quantity: 'Please enter valid quantity',
+    field_required: 'This field is required',
+    invalid_format: 'Invalid format',
+    item_not_found: 'Selected item not found',
+    medicine: 'Medicine',
     confirm: 'Confirm',
     delete: 'Delete',
     edit: 'Edit',
@@ -344,6 +460,7 @@ const translations = {
     age_suffix: ' years old',
     
     // 操作
+    view: 'View',
     action_view: 'View',
     action_edit: 'Edit',
     action_delete: 'Delete',
@@ -377,6 +494,16 @@ const translations = {
     notes: 'Notes',
     notes_placeholder: 'Other notes...',
     
+    // 错误和状态消息
+    loading_medical_record_failed: 'Failed to load medical record editor',
+    loading_medical_record_error: 'Failed to load medical record',
+    medical_record_updated: 'Medical record updated',
+    medical_record_created: 'Medical record created',
+    save_medical_record_failed: 'Failed to save medical record',
+    save_failed: 'Save failed',
+    error: 'Error',
+    please_fill_required_fields: 'Please fill in visit date and diagnosis',
+    
     // 设置
     settings_general: 'General Settings',
     settings_appearance: 'Appearance Settings',
@@ -406,6 +533,8 @@ const translations = {
     medicine_name: 'Medicine Name',
     medicine_code: 'Medicine Code',
     specification: 'Specification',
+    frequency: 'Frequency',
+    days: 'Days',
     manufacturer: 'Manufacturer',
     current_stock: 'Current Stock',
     unit: 'Unit',
@@ -424,11 +553,13 @@ const translations = {
     prescription_date: 'Prescription Date',
     dispensing_status: 'Dispensing Status',
     add_new_prescription: 'Create New Prescription',
+    new_prescription: 'Create New Prescription',
     search_prescription_placeholder: 'Search by patient name, doctor name...',
     prescription_details: 'Prescription Details',
     dispense: 'Dispense',
     patient: 'Patient',
     doctor: 'Doctor',
+    doctor_name: 'Doctor Name',
     no_medicine_found: 'No medicine information found',
     medicine_name_required: 'Medicine name is required',
     valid_unit_price_required: 'Please enter a valid unit price',
@@ -436,15 +567,68 @@ const translations = {
     medicine_added: 'Medicine added',
     operation_failed: 'Operation failed',
     get_medicine_failed: 'Failed to get medicine information',
+    stock_history: 'Stock History',
+    add_stock: 'Add Stock',
+    confirm_stock_in: 'Confirm Stock In',
+    get_medicine_failed: 'Failed to get medicine information',
+    stock_in_failed: 'Stock in failed',
+    get_stock_history_failed: 'Failed to get stock history',
+    init_bulk_stock_failed: 'Failed to initialize bulk stock form',
+    keep_at_least_one_item: 'At least one stock item must be kept',
+    select_medicine: 'Please select a medicine',
+    valid_quantity_required: 'Please enter a valid quantity',
+    add_at_least_one_item: 'Please add at least one stock item',
+    bulk_stock_success: 'Bulk stock in successful',
+    total_items: 'Total items',
+    medicines: 'medicines',
+    bulk_stock_failed: 'Bulk stock in failed',
+    no_low_stock_medicines: 'No low stock medicines currently',
+    get_low_stock_failed: 'Failed to get low stock medicines',
+    quantity: 'Quantity',
+    cost_price_optional: 'Cost Price (Optional)',
+    medicine_stock_notes_optional: 'Medicine stock notes (optional)',
+    confirm_delete: 'Confirm Delete',
+    confirm_delete_medicine: 'Are you sure you want to delete this medicine? This action cannot be undone.',
+    medicine_deleted: 'Medicine deleted',
+    delete_failed: 'Delete failed',
+    stock_in: 'Stock In',
+    stock_out: 'Stock Out',
+    adjustment: 'Adjustment',
+    transaction_type: 'Transaction Type',
+    operation_time: 'Operation Time',
+    quantity_change: 'Quantity Change',
+    frequency_placeholder: 'e.g.: 3 times daily, 1 tablet each time',
+    not_available: 'N/A',
+    unknown_doctor: 'Unknown Doctor',
+     unknown_patient: 'Unknown Patient',
+     unknown_medicine: 'Unknown Medicine',
+     get_prescription_details_failed: 'Failed to get prescription details',
+     confirm_delete_prescription: 'Are you sure you want to delete this prescription? This action cannot be undone, please proceed with caution.',
+     prescription_deleted: 'Prescription deleted successfully',
+     delete_prescription_failed: 'Failed to delete prescription',
+     notes: 'Notes',
+     days_unit: ' days',
+     no_medicine_details: 'No medicine details',
+     close: 'Close',
+      bulk_stock: 'Bulk Stock In',
+    low_stock: 'Low Stock Alert',
+    add_quantity: 'Add Quantity',
+    stock_notes_placeholder: 'Stock in reason, supplier information...',
+    valid_quantity_required: 'Please enter a valid quantity',
+     stock_added: 'Stock added successfully',
+     no_stock_history: 'No stock movement records',
+    stock_details: 'Stock Details',
+    bulk_stock_notes_placeholder: 'Bulk stock in notes...',
+    low_stock_alert: 'Low Stock Alert',
     select_patient: 'Please select a patient',
     select_doctor: 'Please select a doctor',
     add_medication: 'Add Medication',
     prescription_notes_placeholder: 'Prescription notes...',
     modal_title: 'Title',
     close: 'Close',
-    cancel: 'Cancel',
+     cancel: 'Cancel',
     confirm: 'Confirm',
-    medication_details: 'Medication Details'
+    medication_details: 'Medication Details',
     
     // 财务管理
     today_income: 'Today\'s Income',
@@ -580,35 +764,48 @@ function getTranslation(key, fallback = key) {
 }
 
 /**
- * 设置当前语言
+ * 设置当前语言。现在它只负责更新UI和调用configManager保存。
  * @param {string} language - 语言代码
- * @param {boolean} skipConfigSave - 是否跳过保存到配置管理器（避免循环调用）
+ * @param {boolean} skipSave - 是否跳过保存（用于初始化）
  */
-function setLanguage(language, skipConfigSave = false) {
+async function setLanguage(language, skipSave = false) {
   if (translations[language]) {
     currentLanguage = language;
-    localStorage.setItem('language', language);
-    
-    // 保存到配置管理器（除非明确跳过）
-    if (!skipConfigSave && window.configManager) {
-      window.configManager.set('language', language);
-    }
-    
-    // 立即翻译页面
-    translatePage();
-    
-    // 更新HTML lang属性
     document.documentElement.lang = language;
+    translatePage(); // 翻译当前页面
     
-    // 触发语言切换事件
-    window.dispatchEvent(new CustomEvent('languageChanged', {
-      detail: { language: language }
-    }));
-    
-    return true;
-   }
-   return false;
- }
+    // 触发一个全局事件，通知其他模块语言已更改
+    window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language } }));
+
+    if (!skipSave && window.configManager) {
+      try {
+        // 调用 configManager 保存。它现在会处理服务器和 localStorage 的同步。
+        await window.configManager.set('language', language);
+        
+        const message = getTranslation('language_changed_success', '语言切换成功, 正在刷新...');
+        if (window.showNotification) {
+          window.showNotification(message, 'success');
+        }
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 800);
+
+      } catch (error) {
+        console.error('Failed to save language setting:', error);
+        const errorMessage = getTranslation('language_change_failed', '语言切换失败');
+        if (window.showNotification) {
+          window.showNotification(`${errorMessage}: ${error.message}`, 'error');
+        }
+      }
+    }
+  } else {
+    console.warn(`Language '${language}' not found. Falling back to default.`);
+    if (currentLanguage !== 'en-US') { // 避免无限循环
+      await setLanguage('en-US', skipSave);
+    }
+  }
+}
 
  /**
   * 获取当前语言
@@ -654,26 +851,19 @@ function translatePage() {
 }
 
 /**
- * 初始化国际化系统
+ * 初始化国际化模块，完全依赖 configManager 获取语言
  */
-function initI18n() {
-  // 优先从配置管理器获取语言设置
-  let savedLanguage = null;
-  if (window.configManager && window.configManager.initialized) {
-    savedLanguage = window.configManager.get('language');
+async function initI18n() {
+  // 直接从 configManager 获取语言，它是唯一的来源
+  let language = window.configManager.get('language');
+
+  // 如果 configManager 中没有，则尝试使用浏览器语言作为备用
+  if (!language) {
+    language = (navigator.language || navigator.userLanguage).startsWith('zh') ? 'zh-CN' : 'en-US';
   }
   
-  // 如果配置管理器未初始化或没有语言设置，从本地存储获取
-  if (!savedLanguage) {
-    savedLanguage = localStorage.getItem('language');
-  }
-  
-  if (savedLanguage && translations[savedLanguage]) {
-    currentLanguage = savedLanguage;
-  }
-  
-  // 翻译页面
-  translatePage();
+  // 使用 'true' 来跳过保存，因为这只是初始化
+  await setLanguage(language, true);
 }
 
 // 将函数暴露到全局作用域

@@ -53,11 +53,28 @@ body.dashboard {
     --color-bar-secondary: #cccccc;
     --color-text-primary: #cccccc;
     --color-text-on-bar: #ffffff;
-    --color-accent-danger: #f96d80;
+    --color-accent-danger: #b83b51;
     --color-border: #3e3e42;
     
     /* 深色主题的背景遮罩 */
     --bg-overlay: rgba(30, 30, 30, 0.7);
+}
+
+/* 深色主题下的操作链接样式 */
+.theme-dark .action-link.stock {
+    color: #40d865; /* 深色主题下的绿色 */
+}
+
+.theme-dark .action-link.history {
+    color: #adb5bd; /* 深色主题下的灰色 */
+}
+
+.theme-dark .action-link.edit {
+    color: #6c9bd1; /* 深色主题下的蓝色 */
+}
+
+.theme-dark .action-link.view {
+    color: #4dd0e1; /* 深色主题下的青色 */
 }
 
 /* 兼容旧的data-theme属性 */
@@ -73,6 +90,23 @@ body.dashboard {
     
     /* 深色主题的背景遮罩 */
     --bg-overlay: rgba(30, 30, 30, 0.7);
+}
+
+/* 兼容旧的data-theme属性下的操作链接样式 */
+[data-theme="dark"] .action-link.stock {
+    color: #40d865;
+}
+
+[data-theme="dark"] .action-link.history {
+    color: #adb5bd;
+}
+
+[data-theme="dark"] .action-link.edit {
+    color: #6c9bd1;
+}
+
+[data-theme="dark"] .action-link.view {
+    color: #4dd0e1;
 }
 
 /* 自定义背景容器 */
@@ -572,6 +606,14 @@ body .sidebar:hover + .content {
     color: #4a69bd;
 }
 
+.action-link.stock {
+    color: #28a745; /* 绿色 - 入库操作 */
+}
+
+.action-link.history {
+    color: #6c757d; /* 灰色 - 历史查看 */
+}
+
 .action-link.delete {
     color: #8b0000; /* 暗红色 */
 }
@@ -671,6 +713,7 @@ body .sidebar:hover + .content {
     flex: 1;
     min-height: 300px; /* 最小高度确保即使内容不足也有足够空间 */
     margin-bottom: 40px; /* 距离模块下边缘40px */
+    background-color: var(--color-bg-card);
 }
 
 /* 背景设置样式增强 */
@@ -1044,6 +1087,45 @@ body .sidebar:hover + .content {
     transition: all 0.2s ease;
 }
 
+.header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.header-actions .btn {
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.header-actions .btn-primary {
+    background-color: var(--color-bar-primary);
+    color: var(--color-text-on-bar);
+}
+
+.header-actions .btn-primary:hover {
+    background-color: #32b1a7;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(57, 197, 187, 0.3);
+}
+
+.header-actions .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.header-actions .btn-secondary:hover {
+    background-color: #5a6268;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+}
+
 .search-input-group:hover {
     border-color: #6c8db5;
     box-shadow: 0 0 0 2px rgba(108, 141, 181, 0.1);
@@ -1206,7 +1288,7 @@ body .sidebar:hover + .content {
 /* ============================================= */
 
 #finance-module-content {
-    background-color: rgba(255, 255, 255, 0.3); /* 30%透明度 */
+    background-color: var(--color-bg-card);
     border-radius: var(--border-radius);
     padding: 20px;
     min-height: calc(100vh - 70px - 40px - 50px - 70px - 40px);
@@ -1219,7 +1301,7 @@ body .sidebar:hover + .content {
 /* ============================================= */
 
 #reports-module-content {
-    background-color: rgba(255, 255, 255, 0.3); /* 30%透明度 */
+    background-color: var(--color-bg-card);
     border-radius: var(--border-radius);
     padding: 20px;
     min-height: calc(100vh - 70px - 40px - 50px - 70px - 40px);
@@ -1232,7 +1314,7 @@ body .sidebar:hover + .content {
 /* ============================================= */
 
 #settings-module-content {
-    background-color: rgba(255, 255, 255, 0.3); /* 30%透明度 */
+    background-color: var(--color-bg-card);
     border-radius: var(--border-radius);
     padding: 35px; /* 增加内边距以适配sidebar的绝对定位 */
     min-height: calc(100vh - 70px - 40px - 50px - 70px - 40px);
@@ -1246,7 +1328,7 @@ body .sidebar:hover + .content {
 /* ============================================= */
 
 #dashboard-module-content {
-    background-color: rgba(255, 255, 255, 0.3); /* 30%透明度 */
+    background-color: var(--color-bg-card);
     border-radius: var(--border-radius);
     padding: 20px;
     min-height: calc(100vh - 70px - 40px - 50px - 70px - 40px);
@@ -1752,7 +1834,7 @@ legend {
     margin-left: 35px;
     margin-right: 35px;
     margin-bottom: 50px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(248, 250, 252, 0.3) 100%);
+    background-color: rgba(107, 107, 107, 0.3);
     border-radius: 20px;
     padding: 35px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.04);
@@ -2131,12 +2213,12 @@ legend {
 
 /* 暗色主题下的现代化样式 */
 .theme-dark .settings-module-wrapper {
-    background: #6b6b6b;
+    background-color: rgba(107, 107, 107, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .theme-dark .settings-sidebar {
-    background: linear-gradient(180deg, #6B6B6B 0%, #322f31 100%);
+    background-color: rgba(107, 107, 107, 0.3);
 }
 
 .theme-dark .settings-group {
@@ -2215,63 +2297,63 @@ legend {
 }
 
 .theme-dark .patient-module-wrapper {
-    background: linear-gradient(180deg, #6B6B6B 0%, #322f31 100%);
+    background-color: rgba(107, 107, 107, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .theme-dark .medicine-module-wrapper {
-    background: linear-gradient(180deg, #6B6B6B 0%, #322f31 100%);
+    background-color: rgba(107, 107, 107, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .theme-dark .medical-records-module-wrapper {
-    background: linear-gradient(180deg, #6B6B6B 0%, #322f31 100%);
+    background-color: rgba(107, 107, 107, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .theme-dark .finance-module-wrapper {
-    background: linear-gradient(180deg, #6B6B6B 0%, #322f31 100%);
+    background-color: rgba(107, 107, 107, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .theme-dark .reports-module-wrapper {
-    background: linear-gradient(180deg, #6B6B6B 0%, #322f31 100%);
+    background-color: rgba(107, 107, 107, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* 兼容性：保留旧的data-theme属性 */
 [data-theme="dark"] .settings-module-wrapper {
-    background: #6b6b6b;
+    background-color: rgba(107, 107, 107, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 [data-theme="dark"] .patient-module-wrapper {
-    background: #6b6b6b;
+    background-color: rgba(107, 107, 107, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 [data-theme="dark"] .medicine-module-wrapper {
-    background: #6b6b6b;
+    background-color: rgba(107, 107, 107, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 [data-theme="dark"] .medical-records-module-wrapper {
-    background: #6b6b6b;
+    background-color: rgba(107, 107, 107, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 [data-theme="dark"] .finance-module-wrapper {
-    background: #6b6b6b;
+    background-color: rgba(107, 107, 107, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 [data-theme="dark"] .reports-module-wrapper {
-    background: #6b6b6b;
+    background-color: rgba(107, 107, 107, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 [data-theme="dark"] .settings-sidebar {
-    background: linear-gradient(180deg, #6B6B6B 0%, #322f31 100%);
+    background-color: rgba(107, 107, 107, 0.3);
 }
 
 [data-theme="dark"] .settings-group {
@@ -2551,6 +2633,26 @@ legend {
     color: var(--color-text-on-bar);
 }
 
+.theme-dark .header-actions .btn-primary {
+    background-color: var(--color-bar-primary);
+    color: var(--color-text-on-bar);
+}
+
+.theme-dark .header-actions .btn-primary:hover {
+    background-color: #a0006b;
+    box-shadow: 0 2px 8px rgba(179, 0, 116, 0.3);
+}
+
+.theme-dark .header-actions .btn-secondary {
+    background-color: #495057;
+    color: var(--color-text-primary);
+}
+
+.theme-dark .header-actions .btn-secondary:hover {
+    background-color: #3d4449;
+    box-shadow: 0 2px 8px rgba(73, 80, 87, 0.3);
+}
+
 .theme-dark .pagination-btn {
     background-color: var(--color-bg-card);
     color: var(--color-text-primary);
@@ -2636,6 +2738,26 @@ legend {
 [data-theme="dark"] .search-addon-btn {
     background-color: var(--color-bar-primary);
     color: var(--color-text-on-bar);
+}
+
+[data-theme="dark"] .header-actions .btn-primary {
+    background-color: var(--color-bar-primary);
+    color: var(--color-text-on-bar);
+}
+
+[data-theme="dark"] .header-actions .btn-primary:hover {
+    background-color: #a0006b;
+    box-shadow: 0 2px 8px rgba(179, 0, 116, 0.3);
+}
+
+[data-theme="dark"] .header-actions .btn-secondary {
+    background-color: #495057;
+    color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .header-actions .btn-secondary:hover {
+    background-color: #3d4449;
+    box-shadow: 0 2px 8px rgba(73, 80, 87, 0.3);
 }
 
 [data-theme="dark"] .pagination-btn {
@@ -3025,6 +3147,400 @@ legend {
     background-color: rgba(179, 0, 116, 0.1);
     border-color: #b30074;
     color: #ffffff;
+}
+
+/* ============================================= */
+/* 库存管理样式 (Inventory Management Styles)   */
+/* ============================================= */
+
+/* 库存历史表格样式 */
+.stock-history-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.stock-history-header h6 {
+    margin-bottom: 10px;
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+.stock-history-header p {
+    margin: 0;
+    color: var(--color-text-primary);
+}
+
+.stock-history-table {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.stock-history-table .table {
+    margin-bottom: 0;
+}
+
+.stock-history-table .table th {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    border-bottom: 2px solid var(--color-border);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.stock-history-table .table td {
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+/* 入库表单样式 */
+#add-stock-form .form-group {
+    margin-bottom: 20px;
+}
+
+#add-stock-form .form-control-plaintext {
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 8px 12px;
+    color: var(--color-text-primary);
+    font-weight: 500;
+}
+
+#add-stock-form .form-control {
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 10px 12px;
+    background-color: var(--color-bg-card);
+    color: var(--color-text-primary);
+    transition: border-color 0.2s ease;
+}
+
+#add-stock-form .form-control:focus {
+    border-color: var(--color-bar-primary);
+    box-shadow: 0 0 0 2px rgba(57, 197, 187, 0.1);
+    outline: none;
+}
+
+/* 深色主题下的库存管理样式 */
+.theme-dark .stock-history-table .table th {
+    background-color: var(--color-bg-card);
+}
+
+.theme-dark #add-stock-form .form-control:focus {
+    border-color: var(--color-bar-primary);
+    box-shadow: 0 0 0 2px rgba(179, 0, 116, 0.1);
+}
+
+/* 兼容旧的data-theme属性 */
+[data-theme="dark"] .stock-history-table .table th {
+    background-color: var(--color-bg-card);
+}
+
+[data-theme="dark"] #add-stock-form .form-control:focus {
+    border-color: var(--color-bar-primary);
+    box-shadow: 0 0 0 2px rgba(179, 0, 116, 0.1);
+}
+
+/* 库存状态徽章样式 */
+.badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+.badge.bg-info {
+    background-color: #17a2b8 !important;
+}
+
+/* 深色主题下的徽章样式 */
+.theme-dark .badge.bg-success,
+[data-theme="dark"] .badge.bg-success {
+    background-color: #40d865 !important;
+}
+
+.theme-dark .badge.bg-warning,
+[data-theme="dark"] .badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.theme-dark .badge.bg-info,
+[data-theme="dark"] .badge.bg-info {
+    background-color: #4dd0e1 !important;
+}
+
+/* ============================================= */
+/* 批量入库模态框样式 (Bulk Stock Modal)        */
+/* ============================================= */
+
+/* 批量入库模态框 */
+.bulk-stock-modal .modal-dialog {
+    max-width: 900px;
+}
+
+.bulk-stock-modal .modal-header {
+    background: linear-gradient(135deg, var(--color-bar-primary), #2c9aa0);
+    color: var(--color-text-on-bar);
+    border-bottom: none;
+}
+
+.bulk-stock-modal .modal-title {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.bulk-stock-modal .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+/* 入库明细容器 */
+.stock-items-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    background-color: var(--color-bg-card);
+    margin-bottom: 1rem;
+}
+
+/* 入库明细项 */
+.stock-item {
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: var(--color-bg-card);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease;
+}
+
+.stock-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.stock-item:last-child {
+    margin-bottom: 0;
+}
+
+/* 表单行布局 */
+.stock-item .form-row {
+    display: flex;
+    gap: 1rem;
+    align-items: end;
+    margin-bottom: 0.75rem;
+}
+
+.stock-item .form-row:last-child {
+    margin-bottom: 0;
+}
+
+/* 表单组样式 */
+.stock-item .form-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.stock-item .form-group label {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+}
+
+/* 药品选择组 */
+.stock-item .drug-group {
+    flex: 2;
+    min-width: 200px;
+}
+
+/* 数量组 */
+.stock-item .quantity-group {
+    flex: 1;
+    min-width: 100px;
+}
+
+/* 进价组 */
+.stock-item .cost-price-group {
+    flex: 1;
+    min-width: 120px;
+}
+
+/* 备注组 */
+.stock-item .notes-group {
+    flex: 1;
+}
+
+/* 表单控件样式 */
+.stock-item .form-control {
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background-color: var(--color-bg-card);
+    color: var(--color-text-primary);
+}
+
+.stock-item .form-control:focus {
+    outline: none;
+    border-color: var(--color-bar-primary);
+    box-shadow: 0 0 0 2px rgba(57, 197, 187, 0.2);
+}
+
+/* 删除按钮样式 */
+.remove-stock-item-btn {
+    background-color: var(--color-accent-danger);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    height: fit-content;
+}
+
+.remove-stock-item-btn:hover {
+    background-color: #a02d42;
+}
+
+/* 添加药品按钮 */
+.add-stock-item-btn {
+    background: linear-gradient(135deg, var(--color-bar-primary), #2c9aa0);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+.add-stock-item-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(57, 197, 187, 0.3);
+}
+
+/* 批量备注输入框 */
+.bulk-notes-group {
+    margin-bottom: 1.5rem;
+}
+
+.bulk-notes-group label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-primary);
+    display: block;
+}
+
+.bulk-notes-group textarea {
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background-color: var(--color-bg-card);
+    color: var(--color-text-primary);
+    resize: vertical;
+    min-height: 80px;
+    width: 100%;
+}
+
+.bulk-notes-group textarea:focus {
+    outline: none;
+    border-color: var(--color-bar-primary);
+    box-shadow: 0 0 0 2px rgba(57, 197, 187, 0.2);
+}
+
+/* 模态框底部按钮 */
+.bulk-stock-modal .modal-footer {
+    border-top: 1px solid var(--color-border);
+    padding: 1rem 1.5rem;
+    background-color: var(--color-bg-primary);
+}
+
+.bulk-stock-modal .modal-footer .btn {
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    border-radius: var(--border-radius);
+    transition: all 0.2s ease;
+}
+
+.bulk-stock-modal .modal-footer .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.bulk-stock-modal .modal-footer .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+.bulk-stock-modal .modal-footer .btn-primary {
+    background: linear-gradient(135deg, var(--color-bar-primary), #2c9aa0);
+    border: none;
+    color: white;
+}
+
+.bulk-stock-modal .modal-footer .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(57, 197, 187, 0.3);
+}
+
+/* 深色主题适配 */
+.theme-dark .stock-items-container,
+.theme-dark .stock-item {
+    background-color: var(--color-bg-card);
+    border-color: var(--color-border);
+}
+
+.theme-dark .stock-item .form-control {
+    background-color: var(--color-bg-card);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+}
+
+.theme-dark .bulk-notes-group textarea {
+    background-color: var(--color-bg-card);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .bulk-stock-modal .modal-dialog {
+        max-width: 95%;
+        margin: 1rem auto;
+    }
+    
+    .stock-item .form-row {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .stock-item .form-group {
+        width: 100%;
+    }
+    
+    .stock-items-container {
+        max-height: 300px;
+    }
 }
 
 /* ... existing code ... */

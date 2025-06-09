@@ -10,6 +10,7 @@ const translations = {
     nav_appointments: '预约',
     nav_medical_records: '病历',
     nav_pharmacy: '药品',
+    nav_prescriptions: '处方',
     nav_finance: '财务',
     nav_reports: '报表',
     nav_settings: '设置',
@@ -18,12 +19,14 @@ const translations = {
     loading: '正在加载...',
     save: '保存',
     cancel: '取消',
+    close: '关闭',
     confirm: '确认',
     delete: '删除',
     edit: '编辑',
     add: '添加',
     search: '搜索',
     actions: '操作',
+    created_time: '创建时间',
     
     // 仪表盘
     dashboard: '仪表板',
@@ -39,9 +42,11 @@ const translations = {
     patient_gender: '性别',
     patient_birth_date: '出生日期',
     patient_phone: '电话',
+    patient_contact: '联系电话',
     patient_address: '住址',
     add_new_patient: '添加新患者',
     edit_patient_info: '编辑患者信息',
+    patient_details: '患者详情',
     search_patients_placeholder: '按姓名搜索患者...',
     no_patients_found: '未找到患者记录',
     loading_failed: '加载失败',
@@ -131,6 +136,17 @@ const translations = {
     unit_bag: '袋',
     auto_generate_placeholder: '留空自动生成',
     search_medicine_placeholder: '按药品名称、厂家搜索...',
+    
+    // 处方管理
+    prescription_id: '处方编号',
+    prescription_date: '开具日期',
+    dispensing_status: '发药状态',
+    add_new_prescription: '开具新处方',
+    search_prescription_placeholder: '按患者姓名、医生姓名搜索...',
+    prescription_details: '处方明细',
+    dispense: '发药',
+    patient: '患者',
+    doctor: '医生',
     no_medicine_found: '未找到相关药品信息',
     medicine_name_required: '药品名称不能为空',
     valid_unit_price_required: '请输入有效的单价',
@@ -138,6 +154,15 @@ const translations = {
     medicine_added: '药品已添加',
     operation_failed: '操作失败',
     get_medicine_failed: '获取药品信息失败',
+    select_patient: '请选择患者',
+    select_doctor: '请选择医生',
+    add_medication: '添加药品',
+    prescription_notes_placeholder: '处方备注信息...',
+    modal_title: '标题',
+    close: '关闭',
+    cancel: '取消',
+    confirm: '确认',
+    medication_details: '药品明细'
     
     // 财务管理
     today_income: '今日收入',
@@ -267,6 +292,7 @@ const translations = {
     nav_appointments: 'Appointments',
     nav_medical_records: 'Medical Records',
     nav_pharmacy: 'Pharmacy',
+    nav_prescriptions: 'Prescriptions',
     nav_finance: 'Finance',
     nav_reports: 'Reports',
     nav_settings: 'Settings',
@@ -275,12 +301,14 @@ const translations = {
     loading: 'Loading...',
     save: 'Save',
     cancel: 'Cancel',
+    close: 'Close',
     confirm: 'Confirm',
     delete: 'Delete',
     edit: 'Edit',
     add: 'Add',
     search: 'Search',
     actions: 'Actions',
+    created_time: 'Created Time',
     
     // 仪表盘
     dashboard: 'Dashboard',
@@ -296,9 +324,11 @@ const translations = {
     patient_gender: 'Gender',
     patient_birth_date: 'Birth Date',
     patient_phone: 'Phone',
+    patient_contact: 'Contact Phone',
     patient_address: 'Address',
     add_new_patient: 'Add New Patient',
     edit_patient_info: 'Edit Patient Information',
+    patient_details: 'Patient Details',
     search_patients_placeholder: 'Search patients by name...',
     no_patients_found: 'No patient records found',
     loading_failed: 'Loading failed',
@@ -388,6 +418,17 @@ const translations = {
     unit_bag: 'Bag',
     auto_generate_placeholder: 'Leave blank to auto-generate',
     search_medicine_placeholder: 'Search by medicine name, manufacturer...',
+    
+    // 处方管理
+    prescription_id: 'Prescription ID',
+    prescription_date: 'Prescription Date',
+    dispensing_status: 'Dispensing Status',
+    add_new_prescription: 'Create New Prescription',
+    search_prescription_placeholder: 'Search by patient name, doctor name...',
+    prescription_details: 'Prescription Details',
+    dispense: 'Dispense',
+    patient: 'Patient',
+    doctor: 'Doctor',
     no_medicine_found: 'No medicine information found',
     medicine_name_required: 'Medicine name is required',
     valid_unit_price_required: 'Please enter a valid unit price',
@@ -395,6 +436,15 @@ const translations = {
     medicine_added: 'Medicine added',
     operation_failed: 'Operation failed',
     get_medicine_failed: 'Failed to get medicine information',
+    select_patient: 'Please select a patient',
+    select_doctor: 'Please select a doctor',
+    add_medication: 'Add Medication',
+    prescription_notes_placeholder: 'Prescription notes...',
+    modal_title: 'Title',
+    close: 'Close',
+    cancel: 'Cancel',
+    confirm: 'Confirm',
+    medication_details: 'Medication Details'
     
     // 财务管理
     today_income: 'Today\'s Income',
@@ -532,17 +582,28 @@ function getTranslation(key, fallback = key) {
 /**
  * 设置当前语言
  * @param {string} language - 语言代码
+ * @param {boolean} skipConfigSave - 是否跳过保存到配置管理器（避免循环调用）
  */
-function setLanguage(language) {
+function setLanguage(language, skipConfigSave = false) {
   if (translations[language]) {
     currentLanguage = language;
     localStorage.setItem('language', language);
+    
+    // 保存到配置管理器（除非明确跳过）
+    if (!skipConfigSave && window.configManager) {
+      window.configManager.set('language', language);
+    }
     
     // 立即翻译页面
     translatePage();
     
     // 更新HTML lang属性
     document.documentElement.lang = language;
+    
+    // 触发语言切换事件
+    window.dispatchEvent(new CustomEvent('languageChanged', {
+      detail: { language: language }
+    }));
     
     return true;
    }
@@ -596,8 +657,17 @@ function translatePage() {
  * 初始化国际化系统
  */
 function initI18n() {
-  // 从本地存储获取语言设置
-  const savedLanguage = localStorage.getItem('language');
+  // 优先从配置管理器获取语言设置
+  let savedLanguage = null;
+  if (window.configManager && window.configManager.initialized) {
+    savedLanguage = window.configManager.get('language');
+  }
+  
+  // 如果配置管理器未初始化或没有语言设置，从本地存储获取
+  if (!savedLanguage) {
+    savedLanguage = localStorage.getItem('language');
+  }
+  
   if (savedLanguage && translations[savedLanguage]) {
     currentLanguage = savedLanguage;
   }

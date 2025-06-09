@@ -194,6 +194,11 @@ async function loadAndDisplayPatients(page = 1, query = '') {
     // 渲染分页组件
     renderPagination(query);
     
+    // 翻译新添加的元素
+    if (window.translatePage) {
+      window.translatePage();
+    }
+
   } catch (error) {
     console.error('加载患者数据失败', error);
     tableBody.innerHTML = `<tr><td colspan="6" class="text-center">${window.getTranslation ? window.getTranslation('loading_failed') : '加载失败'}: ${error.message}</td></tr>`;
@@ -252,27 +257,27 @@ async function editPatient(id) {
     const content = `
       <form id="edit-patient-form">
         <div class="mb-3">
-          <label for="edit-patient-name" class="form-label">姓名 *</label>
+          <label for="edit-patient-name" class="form-label" data-i18n="patient_name">姓名 *</label>
           <input type="text" class="form-control" id="edit-patient-name" value="${patient.name || ''}" required>
         </div>
         <div class="mb-3">
-          <label for="edit-patient-gender" class="form-label">性别 *</label>
+          <label for="edit-patient-gender" class="form-label" data-i18n="patient_gender">性别 *</label>
           <select class="form-select" id="edit-patient-gender" required>
-            <option value="male" ${patient.gender === 'male' ? 'selected' : ''}>男</option>
-            <option value="female" ${patient.gender === 'female' ? 'selected' : ''}>女</option>
-            <option value="other" ${patient.gender === 'other' ? 'selected' : ''}>其他</option>
+            <option value="male" ${patient.gender === 'male' ? 'selected' : ''} data-i18n="gender_male">男</option>
+            <option value="female" ${patient.gender === 'female' ? 'selected' : ''} data-i18n="gender_female">女</option>
+            <option value="other" ${patient.gender === 'other' ? 'selected' : ''} data-i18n="gender_other">其他</option>
           </select>
         </div>
         <div class="mb-3">
-          <label for="edit-patient-birth-date" class="form-label">出生日期</label>
+          <label for="edit-patient-birth-date" class="form-label" data-i18n="patient_birth_date">出生日期</label>
           <input type="date" class="form-control" id="edit-patient-birth-date" value="${patient.birth_date || ''}">
         </div>
         <div class="mb-3">
-          <label for="edit-patient-contact" class="form-label">联系电话</label>
+          <label for="edit-patient-contact" class="form-label" data-i18n="patient_contact">联系电话</label>
           <input type="tel" class="form-control" id="edit-patient-contact" value="${patient.contact_number || ''}">
         </div>
         <div class="mb-3">
-          <label for="edit-patient-address" class="form-label">住址</label>
+          <label for="edit-patient-address" class="form-label" data-i18n="patient_address">住址</label>
           <textarea class="form-control" id="edit-patient-address" rows="3">${patient.address || ''}</textarea>
         </div>
       </form>
@@ -280,9 +285,10 @@ async function editPatient(id) {
 
     const modalInstance = createModal(`编辑患者 - ${patient.name}`, content, {
       size: 'lg',
+      titleI18n: 'edit_patient_info',
       footerButtons: [
-        { text: '取消', class: 'btn-secondary', action: 'cancel' },
-        { text: '保存', class: 'btn-primary', action: 'save' }
+        { text: '取消', class: 'btn-secondary', action: 'cancel', 'data-i18n': 'cancel' },
+        { text: '保存', class: 'btn-primary', action: 'save', 'data-i18n': 'save' }
       ],
       onButtonClick: async (action, modal) => {
         if (action === 'save') {
@@ -315,6 +321,11 @@ async function editPatient(id) {
     });
     
     modalInstance.show();
+    
+    // 翻译模态框内容
+    if (window.translatePage) {
+      window.translatePage();
+    }
     
   } catch (error) {
     showNotification(`获取患者信息失败: ${error.message}`, 'error');
@@ -401,30 +412,30 @@ async function viewPatient(id) {
     const patient = await apiClient.patients.getById(id);
     
     const content = `
-      <table class="table table-bordered">
+      <table class="patient-detail-table">
         <tbody>
           <tr>
-            <th style="width: 30%;">姓名</th>
+            <th style="width: 30%;" data-i18n="patient_name">姓名</th>
             <td>${patient.name || '-'}</td>
           </tr>
           <tr>
-            <th>性别</th>
-            <td>${patient.gender === 'male' ? '男' : patient.gender === 'female' ? '女' : '其他'}</td>
+            <th data-i18n="patient_gender">性别</th>
+            <td>${patient.gender === 'male' ? '<span data-i18n="gender_male">男</span>' : patient.gender === 'female' ? '<span data-i18n="gender_female">女</span>' : '<span data-i18n="gender_other">其他</span>'}</td>
           </tr>
           <tr>
-            <th>出生日期</th>
+            <th data-i18n="patient_birth_date">出生日期</th>
             <td>${patient.birth_date ? formatDate(patient.birth_date) : '-'}</td>
           </tr>
           <tr>
-            <th>联系电话</th>
+            <th data-i18n="patient_contact">联系电话</th>
             <td>${patient.contact_number || '-'}</td>
           </tr>
           <tr>
-            <th>住址</th>
+            <th data-i18n="patient_address">住址</th>
             <td>${patient.address || '-'}</td>
           </tr>
           <tr>
-            <th>创建时间</th>
+            <th data-i18n="created_time">创建时间</th>
             <td>${patient.created_at ? formatDateTime(patient.created_at) : '-'}</td>
           </tr>
         </tbody>
@@ -433,12 +444,18 @@ async function viewPatient(id) {
 
     const modalInstance = createModal(`患者详情 - ${patient.name}`, content, {
       size: 'lg',
+      titleI18n: 'patient_details',
       footerButtons: [
-        { text: '关闭', class: 'btn-secondary', action: 'close' }
+        { text: '关闭', class: 'btn-secondary', action: 'close', 'data-i18n': 'close' }
       ]
     });
     
     modalInstance.show();
+    
+    // 翻译模态框内容
+    if (window.translatePage) {
+      window.translatePage();
+    }
     
   } catch (error) {
     showNotification(`获取患者信息失败: ${error.message}`, 'error');

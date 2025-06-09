@@ -539,6 +539,15 @@
   text-align: center;
 }
 
+/* 深色主题适配 */
+.theme-dark .empty-state {
+  color: #a0aec0;
+}
+
+[data-theme="dark"] .empty-state {
+  color: #a0aec0;
+}
+
 .no-match-text {
   color: #d1d5db;
   font-size: 12px;

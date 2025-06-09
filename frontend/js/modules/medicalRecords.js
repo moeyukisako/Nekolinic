@@ -253,23 +253,23 @@ async function renderMedicalRecordEditor(patientId, signal) {
           <div class="form-row">
             <div class="form-group">
               <label for="visit-date" data-i18n="visit_date">就诊日期</label>
-              <input type="date" id="visit-date" value="${formatDate(latestRecord?.record_date || new Date())}" required>
+              <input type="date" id="visit-date" value="${formatDate(latestRecord?.record_date || new Date())}" data-i18n-title="visit_date" required>
             </div>
           </div>
 
           <div class="form-group">
             <label for="chief-complaint" data-i18n="chief_complaint">主诉</label>
-            <textarea id="chief-complaint" rows="2" data-i18n-placeholder="chief_complaint_placeholder" placeholder="请描述患者的主要症状...">${latestRecord?.chief_complaint || ''}</textarea>
+            <textarea id="chief-complaint" rows="2" data-i18n-placeholder="chief_complaint_placeholder" data-i18n-title="chief_complaint" placeholder="请描述患者的主要症状...">${latestRecord?.chief_complaint || ''}</textarea>
           </div>
           
           <div class="form-group">
             <label for="present-illness" data-i18n="present_illness">现病史</label>
-            <textarea id="present-illness" rows="3" data-i18n-placeholder="present_illness_placeholder" placeholder="请描述现病史...">${latestRecord?.present_illness || ''}</textarea>
+            <textarea id="present-illness" rows="3" data-i18n-placeholder="present_illness_placeholder" data-i18n-title="present_illness" placeholder="请描述现病史...">${latestRecord?.present_illness || ''}</textarea>
           </div>
           
           <div class="form-group">
             <label for="past-history" data-i18n="past_history">既往史</label>
-            <textarea id="past-history" rows="2" data-i18n-placeholder="past_history_placeholder" placeholder="请描述既往病史...">${latestRecord?.past_history || ''}</textarea>
+            <textarea id="past-history" rows="2" data-i18n-placeholder="past_history_placeholder" data-i18n-title="past_history" placeholder="请描述既往病史...">${latestRecord?.past_history || ''}</textarea>
           </div>
           
           <fieldset>
@@ -277,46 +277,46 @@ async function renderMedicalRecordEditor(patientId, signal) {
             <div class="form-row">
               <div class="form-group">
                 <label for="temperature" data-i18n="temperature">体温(°C)</label>
-                <input type="number" id="temperature" step="0.1" data-i18n-placeholder="temperature_placeholder" placeholder="36.5" value="${latestRecord?.temperature || ''}">
+                <input type="number" id="temperature" step="0.1" data-i18n-placeholder="temperature_placeholder" data-i18n-title="temperature" placeholder="36.5" value="${latestRecord?.temperature || ''}">
               </div>
               <div class="form-group">
                 <label for="pulse" data-i18n="pulse">脉搏(次/分)</label>
-                <input type="number" id="pulse" data-i18n-placeholder="pulse_placeholder" placeholder="80" value="${latestRecord?.pulse || ''}">
+                <input type="number" id="pulse" data-i18n-placeholder="pulse_placeholder" data-i18n-title="pulse" placeholder="80" value="${latestRecord?.pulse || ''}">
               </div>
               <div class="form-group">
                 <label for="respiratory-rate" data-i18n="respiratory_rate">呼吸(次/分)</label>
-                <input type="number" id="respiratory-rate" data-i18n-placeholder="respiratory_rate_placeholder" placeholder="20" value="${latestRecord?.respiratory_rate || ''}">
+                <input type="number" id="respiratory-rate" data-i18n-placeholder="respiratory_rate_placeholder" data-i18n-title="respiratory_rate" placeholder="20" value="${latestRecord?.respiratory_rate || ''}">
               </div>
               <div class="form-group">
                 <label for="blood-pressure" data-i18n="blood_pressure">血压(mmHg)</label>
-                <input type="text" id="blood-pressure" data-i18n-placeholder="blood_pressure_placeholder" placeholder="120/80" value="${latestRecord?.blood_pressure || ''}">
+                <input type="text" id="blood-pressure" data-i18n-placeholder="blood_pressure_placeholder" data-i18n-title="blood_pressure" placeholder="120/80" value="${latestRecord?.blood_pressure || ''}">
               </div>
             </div>
           </fieldset>
           
           <div class="form-group">
             <label for="physical-examination" data-i18n="physical_examination">体格检查</label>
-            <textarea id="physical-examination" rows="3" data-i18n-placeholder="physical_examination_placeholder" placeholder="请描述体格检查结果...">${latestRecord?.physical_examination || ''}</textarea>
+            <textarea id="physical-examination" rows="3" data-i18n-placeholder="physical_examination_placeholder" data-i18n-title="physical_examination" placeholder="请描述体格检查结果...">${latestRecord?.physical_examination || ''}</textarea>
           </div>
           
           <div class="form-group">
             <label for="diagnosis" data-i18n="diagnosis">诊断</label>
-            <textarea id="diagnosis" rows="2" data-i18n-placeholder="diagnosis_placeholder" placeholder="请输入诊断结果..." required>${latestRecord?.diagnosis || ''}</textarea>
+            <textarea id="diagnosis" rows="2" data-i18n-placeholder="diagnosis_placeholder" data-i18n-title="diagnosis" placeholder="请输入诊断结果..." required>${latestRecord?.diagnosis || ''}</textarea>
           </div>
           
           <div class="form-group">
             <label for="treatment-plan" data-i18n="treatment_plan">治疗方案</label>
-            <textarea id="treatment-plan" rows="3" data-i18n-placeholder="treatment_plan_placeholder" placeholder="请描述治疗方案...">${latestRecord?.treatment_plan || ''}</textarea>
+            <textarea id="treatment-plan" rows="3" data-i18n-placeholder="treatment_plan_placeholder" data-i18n-title="treatment_plan" placeholder="请描述治疗方案...">${latestRecord?.treatment_plan || ''}</textarea>
           </div>
 
           <div class="form-group">
             <label for="prescription" data-i18n="prescription">处方</label>
-            <textarea id="prescription" rows="3" data-i18n-placeholder="prescription_placeholder" placeholder="请输入处方信息...">${latestRecord?.prescription || ''}</textarea>
+            <textarea id="prescription" rows="3" data-i18n-placeholder="prescription_placeholder" data-i18n-title="prescription" placeholder="请输入处方信息...">${latestRecord?.prescription || ''}</textarea>
           </div>
           
           <div class="form-group">
             <label for="notes" data-i18n="notes">备注</label>
-            <textarea id="notes" rows="2" data-i18n-placeholder="notes_placeholder" placeholder="其他备注信息...">${latestRecord?.notes || ''}</textarea>
+            <textarea id="notes" rows="2" data-i18n-placeholder="notes_placeholder" data-i18n-title="notes" placeholder="其他备注信息...">${latestRecord?.notes || ''}</textarea>
           </div>
           
           <div class="form-actions">

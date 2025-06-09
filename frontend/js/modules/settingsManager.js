@@ -299,13 +299,17 @@ function initializeSettings(container, signal) {
     languageSelect.addEventListener('change', async (e) => {
       const selectedLanguage = e.target.value;
       try {
-        await window.setLanguage(selectedLanguage);
+        if (window.setLanguage) {
+          window.setLanguage(selectedLanguage);
+        }
         
         // 立即设置语言选择器的值
         languageSelect.value = selectedLanguage;
         
         // 立即翻译页面
-        window.translatePage();
+        if (window.translatePage) {
+          window.translatePage();
+        }
         
         // 强制重新翻译设置容器内的所有元素
         setTimeout(() => {
@@ -327,12 +331,12 @@ function initializeSettings(container, signal) {
           window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: selectedLanguage } }));
           
           // 在语言切换完成后显示成功消息
-          const message = window.getTranslation('language_changed_success', '语言切换成功');
-          window.showNotification(message, 'success');
+        const message = window.getTranslation ? window.getTranslation('language_changed_success', '语言切换成功') : '语言切换成功';
+        window.showNotification(message, 'success');
         }, 100);
       } catch (error) {
         console.error('Language change failed:', error);
-        const errorMessage = window.getTranslation('language_change_failed', '语言切换失败');
+        const errorMessage = window.getTranslation ? window.getTranslation('language_change_failed', '语言切换失败') : '语言切换失败';
         window.showNotification(errorMessage, 'error');
       }
     });
@@ -354,7 +358,7 @@ function initializeSettings(container, signal) {
           })
         });
         
-        const message = window.getTranslation('theme_saved', '主题设置已保存');
+        const message = window.getTranslation ? window.getTranslation('theme_saved', '主题设置已保存') : '主题设置已保存';
         window.showNotification(message, 'success');
       } catch (error) {
         console.error('保存主题设置失败:', error);
@@ -474,7 +478,7 @@ async function handlePasswordChange(container) {
   }
   
   try {
-    const response = await apiClient.request('/api/user/password', {
+    const response = await apiClient.request('/api/v1/users/password', {
       method: 'PUT',
       body: JSON.stringify({
         current_password: currentPassword,
@@ -482,15 +486,12 @@ async function handlePasswordChange(container) {
       })
     });
     
-    if (response.success) {
-      showNotification('密码修改成功', 'success');
-      // 清空密码字段
-      container.querySelector('#current-password').value = '';
-      container.querySelector('#new-password').value = '';
-      container.querySelector('#confirm-password').value = '';
-    } else {
-      window.showNotification(response.message || '密码修改失败', 'error');
-    }
+    // 如果请求成功（没有抛出异常），则认为密码修改成功
+    showNotification('密码修改成功', 'success');
+    // 清空密码字段
+    container.querySelector('#current-password').value = '';
+    container.querySelector('#new-password').value = '';
+    container.querySelector('#confirm-password').value = '';
   } catch (error) {
     console.error('密码修改错误:', error);
     window.showNotification('密码修改失败，请稍后重试', 'error');
@@ -1122,13 +1123,13 @@ async function saveIndividualSetting(input) {
       const serverKey = fieldMapping[settingKey] || settingKey;
       serverSettings[serverKey] = settingValue;
       
-      await apiClient.request('/api/v1/users/settings', {
+      const response = await apiClient.request('/api/v1/users/settings', {
         method: 'PUT',
         body: JSON.stringify(serverSettings)
       });
       
-      if (window.showNotification) {
-        const message = window.getTranslation('settings_saved_auto', '设置已自动保存');
+      if (response && window.showNotification) {
+        const message = window.getTranslation ? window.getTranslation('settings_saved_auto', '设置已自动保存') : '设置已自动保存';
         window.showNotification(message, 'success');
       }
     }
@@ -1136,7 +1137,9 @@ async function saveIndividualSetting(input) {
     console.log(`设置已保存: ${settingKey} = ${settingValue}`);
   } catch (error) {
     console.error('保存设置失败:', error);
-    if (window.showNotification) {
+    // 只有在确实是服务器错误时才显示错误通知
+    // 网络错误或认证错误不显示设置保存失败的通知
+    if (window.showNotification && !error.message.includes('401') && !error.message.includes('网络')) {
       window.showNotification('保存设置失败', 'error');
     }
   }

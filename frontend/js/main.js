@@ -32,6 +32,28 @@ function initApp() {
     return;
   }
   
+  // 先初始化配置管理器
+  initConfigManager().then(() => {
+    // 配置管理器初始化完成后，重新初始化国际化系统以应用正确的语言设置
+    if (window.initI18n) {
+      window.initI18n();
+    }
+    
+    // 强制应用配置中的语言设置
+    if (window.configManager && window.setLanguage) {
+      const configLanguage = window.configManager.get('language');
+      if (configLanguage) {
+        console.log('从配置管理器强制应用语言:', configLanguage);
+        window.setLanguage(configLanguage, true); // 跳过保存到配置管理器，避免循环调用
+      }
+    }
+  });
+  
+  // 初始化国际化系统（使用默认设置）
+  if (window.initI18n) {
+    window.initI18n();
+  }
+  
   // 加载用户信息
   loadCurrentUser();
   
@@ -51,14 +73,18 @@ function initApp() {
     document.querySelector(`.sidebar-item[data-module="${defaultModuleName}"]`)?.classList.add('active');
   });
   
-  // 绑定用户菜单
-  bindUserMenu();
-  
-  // 初始化配置管理器
-  initConfigManager();
-  
   // 初始化模态框
   initModalSystem();
+  
+  // 监听语言切换事件，更新导航栏标题
+  window.addEventListener('languageChanged', function() {
+    // 获取当前活跃的模块
+    const activeModule = document.querySelector('.sidebar-item.active');
+    if (activeModule) {
+      const moduleName = activeModule.getAttribute('data-module');
+      updateNavbarTitle(moduleName);
+    }
+  });
 }
 
 /**
@@ -69,8 +95,6 @@ async function loadCurrentUser() {
     const user = await apiClient.auth.getCurrentUser();
     store.set('currentUser', user);
     window.currentUser = user; // 缓存用户信息
-    updateUserMenuDisplay(user);
-    
     // 使用已获取的用户信息加载背景设置，避免重复API调用
     loadUserBackgroundSetting(user);
   } catch (error) {
@@ -82,46 +106,9 @@ async function loadCurrentUser() {
   }
 }
 
-/**
- * 更新用户菜单显示
- */
-function updateUserMenuDisplay(user) {
-  const userName = user.full_name || user.username || 'User';
-  const nameInitial = userName.charAt(0).toUpperCase();
-  
-  document.getElementById('user-name').textContent = userName;
-  document.getElementById('dropdown-user-name').textContent = userName;
-  document.getElementById('dropdown-user-role').textContent = user.role === 'admin' ? '系统管理员' : '普通用户';
-  document.getElementById('user-avatar').textContent = nameInitial;
-}
 
-/**
- * 绑定用户菜单事件
- */
-function bindUserMenu() {
-  const userMenuTrigger = document.querySelector('.user-menu-trigger');
-  const userMenuDropdown = document.querySelector('.user-menu-dropdown');
-  
-  if (userMenuTrigger && userMenuDropdown) {
-    userMenuTrigger.addEventListener('click', () => {
-      userMenuDropdown.classList.toggle('active');
-    });
-    
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.user-menu') && userMenuDropdown.classList.contains('active')) {
-        userMenuDropdown.classList.remove('active');
-      }
-    });
-    
-    // 退出登录按钮
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', () => {
-        apiClient.auth.logout();
-      });
-    }
-  }
-}
+
+
 
 /**
  * 绑定侧边栏导航事件
@@ -162,6 +149,7 @@ async function loadModuleRenderers() {
     patientModule,
     medicalRecordsModule,
     medicineModule,
+    prescriptionModule,
     financeModule,
     reportsModule,
     settingsModule
@@ -181,6 +169,10 @@ async function loadModuleRenderers() {
     import('./modules/medicineManager.js').catch((err) => { 
       console.error('Failed to load medicineManager module:', err); 
       return { default: fallbackRenderer('药品管理') }; 
+    }),
+    import('./modules/prescriptionManager.js').catch((err) => { 
+      console.error('Failed to load prescriptionManager module:', err); 
+      return { default: fallbackRenderer('处方管理') }; 
     }),
     import('./modules/financeManager.js').catch((err) => { 
       console.error('Failed to load financeManager module:', err); 
@@ -202,6 +194,7 @@ async function loadModuleRenderers() {
     '患者': patientModule.default,
     '病历': medicalRecordsModule.default,
     '药品': medicineModule.default,
+    '处方': prescriptionModule.default,
     '财务': financeModule.default,
     '报表': reportsModule.default,
     '设置': settingsModule.default
@@ -295,20 +288,33 @@ function updateNavbarTitle(moduleName) {
   const navbarTitle = document.getElementById('navbar-title');
   if (!navbarTitle) return;
   
-  // 模块名称映射
-  const moduleNameMap = {
-    '状态': '',
-    '患者': ' 患者',
-    '预约': ' 预约', 
-    '病历': ' 病历',
-    '药品': ' 药品',
-    '财务': ' 财务',
-    '报表': ' 报表',
-    '设置': ' 设置'
+  // 模块名称到i18n键的映射
+  const moduleI18nMap = {
+    '状态': 'nav_dashboard',
+    '患者': 'nav_patients',
+    '预约': 'nav_appointments', 
+    '病历': 'nav_medical_records',
+    '药品': 'nav_pharmacy',
+    '处方': 'nav_prescriptions',
+    '财务': 'nav_finance',
+    '报表': 'nav_reports',
+    '设置': 'nav_settings'
   };
   
-  // 获取对应的显示名称，如果是状态模块则不添加后缀
-  const displaySuffix = moduleNameMap[moduleName] || '';
+  // 获取翻译后的模块名称
+  const i18nKey = moduleI18nMap[moduleName];
+  let displaySuffix = '';
+  
+  if (i18nKey && window.getTranslation) {
+    const translatedName = window.getTranslation(i18nKey, moduleName);
+    // 如果不是状态模块，添加前缀空格和模块名
+    if (moduleName !== '状态') {
+      displaySuffix = ' ' + translatedName;
+    }
+  } else if (moduleName !== '状态') {
+    // 后备方案：如果没有翻译函数，使用原始名称
+    displaySuffix = ' ' + moduleName;
+  }
   
   // 保留status-message元素，只更新文本部分
   const statusMessage = navbarTitle.querySelector('#status-message');

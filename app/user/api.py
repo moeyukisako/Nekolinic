@@ -37,6 +37,11 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
+# 密码修改请求模型
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
+
 @router.post("/login", response_model=schemas.Token)
 async def json_login(
     login_data: LoginRequest,
@@ -87,6 +92,24 @@ async def read_users_me(current_user = Depends(get_current_active_user)):
     获取当前登录用户信息
     """
     return current_user
+
+@router.put("/password", response_model=schemas.User)
+async def change_password(
+    *,
+    db: Session = Depends(get_db),
+    password_data: PasswordChangeRequest,
+    current_user = Depends(get_current_active_user)
+):
+    """
+    修改当前用户密码
+    """
+    user = service.user_service.change_password(
+        db=db,
+        user=current_user,
+        current_password=password_data.current_password,
+        new_password=password_data.new_password
+    )
+    return user
 
 @router.put("/me/preferences", response_model=schemas.User)
 def update_current_user_preferences(

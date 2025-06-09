@@ -61,6 +61,23 @@ class UserService(BaseService[models.User, schemas.UserCreate, schemas.UserUpdat
         # 调用基类的update方法来更新用户对象
         return super().update(db, db_obj=user, obj_in=update_data)
     
+    def change_password(
+        self, db: Session, *, user: models.User, current_password: str, new_password: str
+    ) -> models.User:
+        """
+        修改用户密码
+        """
+        # 验证当前密码
+        if not self.verify_password(current_password, user.hashed_password):
+            raise AuthenticationException(message="Current password is incorrect")
+        
+        # 更新密码
+        user.hashed_password = self.get_password_hash(new_password)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
+    
     def get_with_doctor(self, db: Session, *, user_id: int) -> Optional[models.User]:
         """
         根据用户ID获取用户，并预先加载其关联的医生信息。
@@ -73,4 +90,4 @@ class UserService(BaseService[models.User, schemas.UserCreate, schemas.UserUpdat
         )
 
 # 创建 service 实例供 api 层使用
-user_service = UserService(models.User) 
+user_service = UserService(models.User)

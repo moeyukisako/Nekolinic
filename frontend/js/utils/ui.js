@@ -248,7 +248,7 @@ export function createModal(title, content, options = {}) {
     <div class="modal-dialog ${options.size ? 'modal-' + options.size : ''}">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="${modalId}-label">${title}</h5>
+          <h5 class="modal-title" id="${modalId}-label" ${options.titleI18n ? `data-i18n="${options.titleI18n}"` : ''}>${title}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -257,7 +257,7 @@ export function createModal(title, content, options = {}) {
         ${showFooter ? `
           <div class="modal-footer">
             ${footerButtons.map(btn => 
-              `<button type="button" class="btn ${btn.class}" data-action="${btn.action}">${btn.text}</button>`
+              `<button type="button" class="btn ${btn.class}" data-action="${btn.action}" ${btn['data-i18n'] ? `data-i18n="${btn['data-i18n']}"` : ''}>${btn.text}</button>`
             ).join('')}
           </div>
         ` : ''}
@@ -282,7 +282,7 @@ export function createModal(title, content, options = {}) {
       if (action && options.onButtonClick) {
         options.onButtonClick(action, modal);
       }
-      if (action === 'close') {
+      if (action === 'close' || action === 'cancel') {
         const bsModal = bootstrap.Modal.getInstance(modal);
         if (bsModal) bsModal.hide();
       }

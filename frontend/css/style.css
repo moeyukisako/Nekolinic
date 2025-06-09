@@ -323,7 +323,7 @@ h1, h2, h3 {
     background-color: var(--color-bg-card);
     margin: 10% auto;
     padding: calc(var(--spacing-unit) * 4);
-    border-radius: var(--border-radius);
+    border-radius: 0;
     max-width: 500px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     border: none;
@@ -679,8 +679,9 @@ body .sidebar:hover + .content {
     flex-wrap: wrap;
     gap: 10px;
     margin-top: 5px;
-    max-height: 200px;
-    overflow-y: auto;
+    /* 移除固定高度限制，允许内容自然扩展 */
+    /* max-height: 200px; */
+    /* overflow-y: auto; */
 }
 
 .bg-thumbnail {
@@ -768,6 +769,8 @@ body .sidebar:hover + .content {
 
 .color-input {
     flex: 1;
+    min-width: 120px;
+    width: 120px;
     padding: 16px 20px;
     border: 2px solid rgba(0, 0, 0, 0.08);
     border-radius: 12px;
@@ -1423,7 +1426,7 @@ legend {
     background-color: var(--color-bg-card);
     margin: auto;
     padding: 0;
-    border-radius: var(--border-radius);
+    border-radius: 0;
     width: 90%;
     max-width: 500px;
     max-height: 90vh;
@@ -1442,6 +1445,7 @@ legend {
     align-items: center;
     background-color: #39c5bb;
     color: white;
+    border-radius: 0;
 }
 
 .modal-title {

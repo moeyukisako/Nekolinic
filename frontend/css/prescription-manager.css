@@ -1,0 +1,368 @@
+/* 处方管理模块样式 */
+
+/* 处方管理区域包装样式 */
+.prescription-module-wrapper {
+    margin-top: 40px;
+    margin-left: 35px;
+    margin-right: 35px;
+    margin-bottom: 50px; /* 距离浏览器窗口下边缘50px */
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: var(--border-radius);
+    padding: 35px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    min-height: calc(100vh - 70px - 40px - 50px);
+}
+
+#prescription-module-content {
+    background-color: var(--color-bg-card);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    min-height: calc(100vh - 70px - 40px - 50px - 70px - 40px);
+    display: flex;
+    flex-direction: column;
+}
+
+#prescription-module-content .data-table-container {
+    flex: 1;
+    min-height: 300px;
+    margin-bottom: 40px;
+}
+
+/* 处方详情模态框样式 */
+.prescription-info {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--color-bg-card);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--color-border);
+}
+
+.info-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+.info-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.info-item.full-width {
+    flex: 100%;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-size: 0.9em;
+    opacity: 0.7;
+}
+
+.info-item span {
+    color: var(--color-text-primary);
+    font-size: 1em;
+}
+
+/* 处方明细表格样式 */
+.prescription-details {
+    margin-top: 20px;
+}
+
+.prescription-details h4 {
+    margin-bottom: 15px;
+    color: var(--text-primary);
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background-color: var(--color-bg-card);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+
+.details-table th,
+.details-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.details-table th {
+    background-color: rgba(57, 197, 187, 0.1);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-size: 0.9em;
+}
+
+.details-table td {
+    color: var(--color-text-primary);
+}
+
+.details-table tr:last-child td {
+    border-bottom: none;
+}
+
+.details-table tr:hover {
+    background-color: rgba(57, 197, 187, 0.05);
+}
+
+/* 处方明细编辑表单样式 */
+.prescription-detail-item {
+    margin-bottom: 15px;
+    padding: 15px;
+    background-color: var(--color-bg-card);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--color-border);
+}
+
+.prescription-detail-item .form-row {
+    display: flex;
+    gap: 10px;
+    align-items: end;
+}
+
+.prescription-detail-item .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.prescription-detail-item .form-group:last-child {
+    flex: 0 0 auto;
+}
+
+.drug-select,
+.dosage-input,
+.frequency-input,
+.duration-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    background-color: var(--color-bg-card);
+    color: var(--color-text-primary);
+    font-size: 0.9em;
+}
+
+.drug-select:focus,
+.dosage-input:focus,
+.frequency-input:focus,
+.duration-input:focus {
+    outline: none;
+    border-color: var(--color-bar-primary);
+    box-shadow: 0 0 0 2px rgba(57, 197, 187, 0.1);
+}
+
+/* 状态徽章样式 */
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+    text-align: center;
+    min-width: 60px;
+}
+
+.status-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.status-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* 深色主题适配 */
+.theme-dark .status-warning,
+[data-theme="dark"] .status-warning {
+    background-color: #664d03;
+    color: #fff3cd;
+    border-color: #997404;
+}
+
+.theme-dark .status-success,
+[data-theme="dark"] .status-success {
+    background-color: #0f5132;
+    color: #d4edda;
+    border-color: #146c43;
+}
+
+.theme-dark .status-danger,
+[data-theme="dark"] .status-danger {
+    background-color: #58151c;
+    color: #f8d7da;
+    border-color: #842029;
+}
+
+/* 大型模态框样式 */
+.large-modal {
+    max-width: 800px;
+    width: 90vw;
+}
+
+.large-modal .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* 修复处方模态框header宽度问题 */
+#prescription-modal .modal-content {
+    overflow: hidden;
+    border-radius: 0;
+}
+
+#prescription-modal .modal-header {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: calc(var(--spacing-unit) * 2);
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #39c5bb;
+    color: white;
+    flex-shrink: 0;
+}
+
+/* 深色主题下的处方模态框header样式 */
+[data-theme="dark"] #prescription-modal .modal-header {
+    background-color: #b30074;
+    border-bottom: 1px solid #3e3e42;
+}
+
+#prescription-modal .modal-body {
+    width: 100%;
+    box-sizing: border-box;
+    padding: calc(var(--spacing-unit) * 2);
+    overflow-y: auto;
+    max-height: calc(70vh - 120px); /* 减去header和footer的高度 */
+}
+
+/* 处方模态框滚动条样式 - 浅色主题 */
+#prescription-modal .modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+#prescription-modal .modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#prescription-modal .modal-body::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+#prescription-modal .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* 处方模态框滚动条样式 - 深色主题 */
+[data-theme="dark"] #prescription-modal .modal-body::-webkit-scrollbar-track {
+    background: #2d2d30;
+}
+
+[data-theme="dark"] #prescription-modal .modal-body::-webkit-scrollbar-thumb {
+    background: #555555;
+}
+
+[data-theme="dark"] #prescription-modal .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #777777;
+}
+
+#prescription-modal .modal-footer {
+    width: 100%;
+    box-sizing: border-box;
+    padding: calc(var(--spacing-unit) * 2);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: calc(var(--spacing-unit) * 1.5);
+    flex-shrink: 0;
+}
+
+/* 确保模态框对话框正确处理滚动条 */
+#prescription-modal .modal-dialog {
+    margin: 1.75rem auto;
+    max-width: 1140px;
+    width: calc(100% - 3.5rem);
+}
+
+#prescription-modal .modal-dialog.modal-xl {
+    max-width: 1140px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .prescription-detail-item .form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .prescription-detail-item .form-group {
+        flex: none;
+    }
+    
+    .info-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .large-modal {
+        width: 95vw;
+        margin: 10px;
+    }
+    
+    .details-table {
+        font-size: 0.8em;
+    }
+    
+    .details-table th,
+    .details-table td {
+        padding: 8px;
+    }
+}
+
+/* 加载和错误状态样式 */
+.loading-cell,
+.error-cell {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--color-text-primary);
+    opacity: 0.6;
+    font-style: italic;
+}
+
+.error-cell {
+    color: var(--color-accent-danger);
+    opacity: 1;
+}
+
+/* 空状态样式 */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--color-text-primary);
+    opacity: 0.6;
+    font-style: italic;
+}

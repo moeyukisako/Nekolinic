@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/medical-records.css">
+    <link rel="stylesheet" href="css/prescription-manager.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* 顶部导航栏样式 */
@@ -71,91 +72,7 @@
             color: #44ccff !important;
         }
         
-        .navbar-nav {
-            position: absolute;
-            right: 1rem;
-            display: flex;
-            align-items: center;
-        }
-        
-        /* 用户菜单样式 */
-        .user-menu {
-            position: relative;
-            margin-left: 1rem;
-        }
-        
-        .user-menu-trigger {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 4px;
-        }
-        
-        .user-menu-trigger:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-        
-        .user-avatar-small {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: white;
-            color: var(--color-bar-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            margin-right: 0.5rem;
-        }
-        
-        .user-menu-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background-color: white;
-            border-radius: 4px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            min-width: 200px;
-            display: none;
-            z-index: 101;
-        }
-        
-        .user-menu-dropdown.active {
-            display: block;
-        }
-        
-        .user-menu-header {
-            padding: 1rem;
-            border-bottom: 1px solid #eee;
-            text-align: center;
-        }
-        
-        .user-menu-name {
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .user-menu-role {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .user-menu-items {
-            padding: 0.5rem 0;
-        }
-        
-        .user-menu-item {
-            padding: 0.75rem 1rem;
-            color: #333;
-            display: block;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        
-        .user-menu-item:hover {
-            background-color: #f5f5f5;
-        }
+
         
         /* 改进的侧边栏样式 */
         .sidebar {
@@ -386,7 +303,7 @@
         
         .modal-container {
             background-color: white;
-            border-radius: 8px;
+            border-radius: 0;
             width: 90%;
             max-width: 500px;
             padding: 1.5rem;
@@ -444,6 +361,11 @@
         }
         
         [data-theme="dark"] .modal-header {
+            background-color: #b30074;
+            border-bottom: 1px solid #3e3e42;
+        }
+        
+        [data-theme="dark"] #prescription-modal .modal-header {
             background-color: #b30074;
             border-bottom: 1px solid #3e3e42;
         }
@@ -586,35 +508,7 @@
     <!-- 顶部导航栏 -->
     <nav class="navbar">
         <div class="navbar-brand" id="navbar-title">Nekolinic. <span id="status-message" class="status-message"></span></div>
-        <div class="navbar-nav">
-            <div class="user-menu">
-                <div class="user-menu-trigger" id="user-menu-trigger">
-                    <div class="user-avatar-small" id="user-avatar">U</div>
-                    <span id="user-name">用户</span>
-                    <i class="fas fa-chevron-down" style="margin-left: 0.5rem; font-size: 0.8rem;"></i>
-                </div>
-                <div class="user-menu-dropdown" id="user-menu-dropdown">
-                    <div class="user-menu-header">
-                        <div class="user-menu-name" id="dropdown-user-name">用户名</div>
-                        <div class="user-menu-role" id="dropdown-user-role">角色</div>
-                    </div>
-                    <div class="user-menu-items">
-                        <a href="#" class="user-menu-item" id="edit-profile-link">
-                            <i class="fas fa-user-edit" style="margin-right: 0.5rem;"></i>
-                            编辑资料
-                        </a>
-                        <a href="#" class="user-menu-item" id="change-password-link">
-                            <i class="fas fa-key" style="margin-right: 0.5rem;"></i>
-                            修改密码
-                        </a>
-                        <a href="#" class="user-menu-item" id="logout-link">
-                            <i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"></i>
-                            退出登录
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+
     </nav>
 
     <!-- 主内容区域 -->
@@ -641,6 +535,10 @@
                 <a href="#pharmacy" class="sidebar-item" data-module="药品" id="medicine-management-link">
                     <i class="fas fa-capsules"></i>
                     <span data-i18n="nav_pharmacy">药品</span>
+                </a>
+                <a href="#prescriptions" class="sidebar-item" data-module="处方">
+                    <i class="fas fa-prescription-bottle-alt"></i>
+                    <span data-i18n="nav_prescriptions">处方</span>
                 </a>
                 <a href="#finance" class="sidebar-item" data-module="财务">
                     <i class="fas fa-coins"></i>
@@ -716,15 +614,15 @@
     <div class="modal-custom" id="notification-modal">
         <div class="modal-container">
             <div class="modal-header">
-                <h3 class="modal-title" id="modal-title">标题</h3>
-                <button class="modal-close" id="modal-close">&times;</button>
+                <h3 class="modal-title" id="modal-title" data-i18n="modal_title">标题</h3>
+                <button class="modal-close" id="modal-close" data-i18n-title="close">&times;</button>
             </div>
             <div class="modal-body" id="modal-body">
                 内容将在这里显示
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" id="modal-cancel">取消</button>
-                <button class="btn btn-primary" id="modal-confirm">确认</button>
+                <button class="btn btn-secondary" id="modal-cancel" data-i18n="cancel">取消</button>
+                <button class="btn btn-primary" id="modal-confirm" data-i18n="confirm">确认</button>
             </div>
         </div>
     </div>

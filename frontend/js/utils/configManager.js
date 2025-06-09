@@ -31,6 +31,12 @@ class ConfigManager {
       // 应用配置
       this.applyConfig();
       
+      // 强制应用语言设置
+      if (this.config.language && window.setLanguage) {
+        console.log('强制应用语言设置:', this.config.language);
+        window.setLanguage(this.config.language);
+      }
+      
     } catch (error) {
       console.error('配置管理器初始化失败:', error);
       // 使用默认配置
@@ -229,19 +235,22 @@ class ConfigManager {
     try {
       if (window.apiClient) {
         const serverConfig = this.convertClientToServerConfig(this.config);
-        await window.apiClient.request('/api/v1/users/settings', {
+        const response = await window.apiClient.request('/api/v1/users/settings', {
           method: 'PUT',
           body: JSON.stringify(serverConfig)
         });
         
-        if (window.showNotification) {
+        // 只有在成功响应时才显示成功通知
+        if (response && window.showNotification) {
           const message = window.getTranslation?.('settings_saved_auto', '设置已自动保存') || '设置已自动保存';
           window.showNotification(message, 'success');
         }
       }
     } catch (error) {
       console.error('保存到服务器失败:', error);
-      if (window.showNotification) {
+      // 只有在确实是服务器错误时才显示错误通知
+      // 网络错误或认证错误不显示设置保存失败的通知
+      if (window.showNotification && !error.message.includes('401') && !error.message.includes('网络')) {
         window.showNotification('保存设置失败', 'error');
       }
     }
@@ -258,6 +267,11 @@ class ConfigManager {
     if (this.config.background) {
       this.applyBackground(this.config.background);
     }
+    
+    // 应用语言设置
+    if (this.config.language && window.setLanguage) {
+      window.setLanguage(this.config.language, true); // 跳过保存到配置管理器，避免循环调用
+    }
   }
 
   /**
@@ -268,6 +282,8 @@ class ConfigManager {
       this.applyTheme(value);
     } else if (key.startsWith('background.')) {
       this.applyBackground(this.config.background);
+    } else if (key === 'language' && window.setLanguage) {
+      window.setLanguage(value, true); // 跳过保存到配置管理器，避免循环调用
     }
   }
 

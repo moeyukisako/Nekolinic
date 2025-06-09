@@ -354,27 +354,52 @@ const apiClient = {
          */
         create: (prescriptionData) => apiRequest('/api/v1/pharmacy/prescriptions/', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(prescriptionData)
         }),
-        
         /**
          * 根据病历ID获取其所有处方记录
          * @param {number} medicalRecordId - 病历ID
          * @returns {Promise<Array>} 该病历的处方对象数组
          */
         getByMedicalRecordId: (medicalRecordId) => apiRequest(`/api/v1/pharmacy/prescriptions/medical_record/${medicalRecordId}`),
-        
         /**
          * 获取所有处方
          * @returns {Promise<Array>} 处方对象数组
          */
         getAll: () => apiRequest('/api/v1/pharmacy/prescriptions/'),
-        
+        /**
+         * 根据ID获取单个处方详情
+         * @param {number} id - 处方ID
+         * @returns {Promise<object>} 处方对象
+         */
+        getById: (id) => apiRequest(`/api/v1/pharmacy/prescriptions/${id}`),
+        /**
+         * 更新处方
+         * @param {number} id - 处方ID
+         * @param {object} prescriptionData - 更新的处方数据
+         * @returns {Promise<object>} 更新后的处方对象
+         */
+        update: (id, prescriptionData) => apiRequest(`/api/v1/pharmacy/prescriptions/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(prescriptionData)
+        }),
+        /**
+         * 发药操作
+         * @param {number} prescriptionId - 处方ID
+         * @param {string} notes - 发药备注
+         * @returns {Promise<object>} 发药结果
+         */
+        dispense: (prescriptionId, notes = '') => apiRequest('/api/v1/pharmacy/dispense/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prescription_id: prescriptionId, notes })
+        }),
         /**
          * 删除指定处方
          * @param {number} id - 处方ID
-         * @returns {Promise<object>} 成功删除的响应
+         * @returns {Promise<void>}
          */
         delete: (id) => apiRequest(`/api/v1/pharmacy/prescriptions/${id}`, { method: 'DELETE' })
     },

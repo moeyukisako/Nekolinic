@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简化账单模态框调试</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .debug-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .debug-log {
+            background: #1a1a1a;
+            color: #00ff41;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+        
+        .bill-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050;
+        }
+        
+        .bill-modal-dialog {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .bill-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .bill-modal-body {
+            padding: 20px;
+        }
+        
+        .bill-modal-footer {
+            padding: 20px;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .bill-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .bill-items-table th,
+        .bill-items-table td {
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            text-align: left;
+        }
+        
+        .bill-items-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .bill-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .bill-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .bill-info-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .total-amount {
+            font-size: 18px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1><i class="fas fa-bug"></i> 简化账单模态框调试</h1>
+        
+        <div class="debug-log" id="debugLog">调试日志初始化完成...
+</div>
+        
+        <div class="mb-3">
+            <button class="btn btn-primary" onclick="showSimpleBillModal()">显示简化账单模态框</button>
+            <button class="btn btn-secondary" onclick="clearLog()">清空日志</button>
+            <button class="btn btn-success" onclick="testDirectDOM()">直接DOM测试</button>
+        </div>
+    </div>
+
+    <script>
+        const debugLog = document.getElementById('debugLog');
+        let currentModal = null;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            debugLog.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            debugLog.scrollTop = debugLog.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            debugLog.textContent = '日志已清空...\n';
+        }
+        
+        // 简化的账单模态框类
+        class SimpleBillModal {
+            constructor(options = {}) {
+                this.options = {
+                    patientName: options.patientName || '测试患者',
+                    patientId: options.patientId || 'TEST-001',
+                    recordId: options.recordId || 'REC-001'
+                };
+                this.modal = null;
+                this.items = [];
+            }
+            
+            createModal() {
+                log('开始创建模态框DOM结构');
+                
+                const modalHTML = `
+                    <div class="bill-modal" id="billModal">
+                        <div class="bill-modal-dialog">
+                            <div class="bill-modal-header">
+                                <h5>生成账单 - ${this.options.patientName}</h5>
+                                <button type="button" class="btn btn-secondary" onclick="closeBillModal()">×</button>
+                            </div>
+                            <div class="bill-modal-body">
+                                <div class="bill-info">
+                                    <div class="bill-info-row">
+                                        <span>患者姓名:</span>
+                                        <span>${this.options.patientName}</span>
+                                    </div>
+                                    <div class="bill-info-row">
+                                        <span>患者ID:</span>
+                                        <span>${this.options.patientId}</span>
+                                    </div>
+                                    <div class="bill-info-row">
+                                        <span>病历ID:</span>
+                                        <span>${this.options.recordId}</span>
+                                    </div>
+                                    <div class="bill-info-row">
+                                        <span>总金额:</span>
+                                        <span class="total-amount" id="totalAmount">¥0.00</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <button type="button" class="btn btn-primary" onclick="addBillItem()">添加项目</button>
+                                </div>
+                                
+                                <table class="bill-items-table">
+                                    <thead>
+                                        <tr>
+                                            <th>项目名称</th>
+                                            <th>类型</th>
+                                            <th>数量</th>
+                                            <th>单价</th>
+                                            <th>小计</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="billItemsBody">
+                                        <!-- 动态添加的项目行 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="bill-modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="closeBillModal()">取消</button>
+                                <button type="button" class="btn btn-primary" onclick="confirmBill()">生成账单</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+                this.modal = document.getElementById('billModal');
+                log('模态框DOM结构创建完成', 'success');
+                
+                // 添加默认项目
+                this.addDefaultItem();
+            }
+            
+            addDefaultItem() {
+                log('添加默认项目');
+                setTimeout(() => {
+                    this.addItem({
+                        name: '诊疗费',
+                        type: 'consultation',
+                        quantity: 1,
+                        price: 150.00
+                    });
+                }, 100);
+            }
+            
+            addItem(itemData = {}) {
+                const tbody = document.getElementById('billItemsBody');
+                if (!tbody) {
+                    log('找不到表格体元素', 'error');
+                    return;
+                }
+                
+                const itemId = 'item-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+                const item = {
+                    id: itemId,
+                    name: itemData.name || '',
+                    type: itemData.type || '',
+                    quantity: itemData.quantity || 1,
+                    price: itemData.price || 0
+                };
+                
+                const row = document.createElement('tr');
+                row.id = itemId;
+                row.innerHTML = `
+                    <td>
+                        <input type="text" class="form-control" value="${item.name}" 
+                               onchange="updateItemData('${itemId}', 'name', this.value)">
+                    </td>
+                    <td>
+                        <select class="form-control" onchange="updateItemData('${itemId}', 'type', this.value)">
+                            <option value="">选择类型</option>
+                            <option value="consultation" ${item.type === 'consultation' ? 'selected' : ''}>问诊</option>
+                            <option value="medicine" ${item.type === 'medicine' ? 'selected' : ''}>药物</option>
+                            <option value="treatment" ${item.type === 'treatment' ? 'selected' : ''}>治疗</option>
+                            <option value="examination" ${item.type === 'examination' ? 'selected' : ''}>检查</option>
+                            <option value="other" ${item.type === 'other' ? 'selected' : ''}>其他</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control" value="${item.quantity}" min="1" 
+                               onchange="updateItemData('${itemId}', 'quantity', this.value)">
+                    </td>
+                    <td>
+                        <input type="number" class="form-control" value="${item.price}" min="0" step="0.01" 
+                               onchange="updateItemData('${itemId}', 'price', this.value)">
+                    </td>
+                    <td>
+                        <span id="subtotal-${itemId}">¥${(item.quantity * item.price).toFixed(2)}</span>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger" onclick="removeItem('${itemId}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+                this.items.push(item);
+                
+                log(`项目已添加: ${item.name || '未命名'} (ID: ${itemId})`, 'success');
+                this.updateTotal();
+            }
+            
+            updateItemData(itemId, field, value) {
+                const item = this.items.find(i => i.id === itemId);
+                if (item) {
+                    item[field] = field === 'quantity' || field === 'price' ? parseFloat(value) || 0 : value;
+                    
+                    // 更新小计
+                    const subtotalElement = document.getElementById(`subtotal-${itemId}`);
+                    if (subtotalElement) {
+                        subtotalElement.textContent = `¥${(item.quantity * item.price).toFixed(2)}`;
+                    }
+                    
+                    this.updateTotal();
+                    log(`项目数据已更新: ${field} = ${value}`);
+                }
+            }
+            
+            removeItem(itemId) {
+                const row = document.getElementById(itemId);
+                if (row) {
+                    row.remove();
+                    this.items = this.items.filter(item => item.id !== itemId);
+                    this.updateTotal();
+                    log(`项目已删除: ${itemId}`, 'success');
+                }
+            }
+            
+            updateTotal() {
+                const total = this.items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+                const totalElement = document.getElementById('totalAmount');
+                if (totalElement) {
+                    totalElement.textContent = `¥${total.toFixed(2)}`;
+                }
+                log(`总金额已更新: ¥${total.toFixed(2)}`);
+            }
+            
+            show() {
+                this.createModal();
+                log('模态框已显示', 'success');
+            }
+            
+            close() {
+                if (this.modal) {
+                    this.modal.remove();
+                    this.modal = null;
+                    log('模态框已关闭', 'success');
+                }
+            }
+            
+            getBillData() {
+                return {
+                    patientId: this.options.patientId,
+                    patientName: this.options.patientName,
+                    recordId: this.options.recordId,
+                    items: this.items,
+                    totalAmount: this.items.reduce((sum, item) => sum + (item.quantity * item.price), 0),
+                    generatedAt: new Date().toISOString()
+                };
+            }
+        }
+        
+        // 全局函数
+        function showSimpleBillModal() {
+            log('开始显示简化账单模态框');
+            currentModal = new SimpleBillModal({
+                patientName: '张三',
+                patientId: 'P001',
+                recordId: 'R001'
+            });
+            currentModal.show();
+        }
+        
+        function closeBillModal() {
+            if (currentModal) {
+                currentModal.close();
+                currentModal = null;
+            }
+        }
+        
+        function addBillItem() {
+            if (currentModal) {
+                currentModal.addItem();
+            }
+        }
+        
+        function updateItemData(itemId, field, value) {
+            if (currentModal) {
+                currentModal.updateItemData(itemId, field, value);
+            }
+        }
+        
+        function removeItem(itemId) {
+            if (currentModal) {
+                currentModal.removeItem(itemId);
+            }
+        }
+        
+        function confirmBill() {
+            if (currentModal) {
+                const billData = currentModal.getBillData();
+                log('账单数据收集完成:', 'success');
+                log(JSON.stringify(billData, null, 2));
+                alert('账单生成成功！请查看调试日志。');
+                closeBillModal();
+            }
+        }
+        
+        function testDirectDOM() {
+            log('开始直接DOM测试');
+            
+            // 创建一个简单的表格测试
+            const testHTML = `
+                <div id="domTest" style="margin-top: 20px; padding: 15px; border: 2px solid #007bff; border-radius: 5px;">
+                    <h4>直接DOM测试</h4>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="padding: 10px; border: 1px solid #dee2e6;">项目名称</th>
+                                <th style="padding: 10px; border: 1px solid #dee2e6;">数量</th>
+                                <th style="padding: 10px; border: 1px solid #dee2e6;">单价</th>
+                                <th style="padding: 10px; border: 1px solid #dee2e6;">小计</th>
+                            </tr>
+                        </thead>
+                        <tbody id="testTbody">
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #dee2e6;">测试项目1</td>
+                                <td style="padding: 10px; border: 1px solid #dee2e6;">1</td>
+                                <td style="padding: 10px; border: 1px solid #dee2e6;">100.00</td>
+                                <td style="padding: 10px; border: 1px solid #dee2e6;">¥100.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button onclick="addTestRow()" style="margin-top: 10px; padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px;">添加测试行</button>
+                    <button onclick="removeTestDOM()" style="margin-top: 10px; margin-left: 10px; padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 4px;">移除测试</button>
+                </div>
+            `;
+            
+            document.querySelector('.debug-container').insertAdjacentHTML('beforeend', testHTML);
+            log('直接DOM测试区域已创建', 'success');
+        }
+        
+        function addTestRow() {
+            const tbody = document.getElementById('testTbody');
+            if (tbody) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="padding: 10px; border: 1px solid #dee2e6;">新测试项目</td>
+                    <td style="padding: 10px; border: 1px solid #dee2e6;">1</td>
+                    <td style="padding: 10px; border: 1px solid #dee2e6;">50.00</td>
+                    <td style="padding: 10px; border: 1px solid #dee2e6;">¥50.00</td>
+                `;
+                tbody.appendChild(row);
+                log('测试行已添加', 'success');
+            } else {
+                log('找不到测试表格体', 'error');
+            }
+        }
+        
+        function removeTestDOM() {
+            const testDiv = document.getElementById('domTest');
+            if (testDiv) {
+                testDiv.remove();
+                log('测试DOM已移除', 'success');
+            }
+        }
+        
+        // 页面加载完成
+        log('简化账单模态框调试页面加载完成', 'success');
+    </script>
+</body>
+</html>

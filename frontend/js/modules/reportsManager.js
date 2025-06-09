@@ -135,7 +135,7 @@ export default function renderReportsModule(container, options = {}) {
           <td><span class="report-type-badge" data-i18n="${report.type}_report">${getReportTypeText(report.type)}</span></td>
           <td>${formatDateTime(report.generationTime)}</td>
           <td>${formatFileSize(report.fileSize)}</td>
-          <td><span class="status-badge status-${report.status}" data-i18n="report_status_${report.status}">${getStatusText(report.status)}</span></td>
+          <td><span class="status-badge status-${report.status}" data-i18n="report_status_${report.status}"></span></td>
           <td>
             <button class="btn btn-sm btn-outline" onclick="downloadReport('${report.id}')" data-i18n="download">下载</button>
             <button class="btn btn-sm btn-outline btn-danger" onclick="deleteReport('${report.id}')" data-i18n="delete">删除</button>

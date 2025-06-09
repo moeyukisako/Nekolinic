@@ -7,6 +7,7 @@
     --color-bg-primary: #eeeeee;
     --color-bg-card: #ffffff;
     --color-bar-primary: #39c5bb;
+    --color-bar-primary-rgb: 57, 197, 187;
     --color-bar-secondary: #393e46;
     --color-text-primary: #222831;
     --color-text-on-bar: #ffffff;
@@ -35,6 +36,7 @@ body.dashboard {
     --color-bg-primary: #eeeeee;
     --color-bg-card: #ffffff;
     --color-bar-primary: #39c5bb;
+    --color-bar-primary-rgb: 57, 197, 187;
     --color-bar-secondary: #393e46;
     --color-text-primary: #222831;
     --color-text-on-bar: #ffffff;
@@ -50,6 +52,7 @@ body.dashboard {
     --color-bg-primary: #1e1e1e;
     --color-bg-card: #2d2d30;
     --color-bar-primary: #b30074;
+    --color-bar-primary-rgb: 179, 0, 116;
     --color-bar-secondary: #cccccc;
     --color-text-primary: #cccccc;
     --color-text-on-bar: #ffffff;
@@ -82,6 +85,7 @@ body.dashboard {
     --color-bg-primary: #1e1e1e;
     --color-bg-card: #2d2d30;
     --color-bar-primary: #b30074;
+    --color-bar-primary-rgb: 179, 0, 116;
     --color-bar-secondary: #cccccc;
     --color-text-primary: #cccccc;
     --color-text-on-bar: #ffffff;
@@ -1334,6 +1338,109 @@ body .sidebar:hover + .content {
     border: 1px solid var(--color-border);
 }
 
+.search-box {
+    position: relative;
+    flex: 1;
+    min-width: 250px;
+}
+
+.search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-secondary);
+    font-size: 14px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 15px 10px 35px;
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+    background: var(--color-bg-card);
+    color: var(--color-text-primary);
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--color-bar-primary);
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle {
+    background: var(--color-bg-card);
+    border: 2px solid var(--color-border);
+    color: var(--color-text-primary);
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s;
+}
+
+.dropdown-toggle:hover {
+    border-color: var(--color-bar-primary);
+    background: var(--color-bg-primary);
+}
+
+.dropdown-toggle::after {
+    content: '\f107';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    min-width: 120px;
+    z-index: 1000;
+    display: none;
+    margin-top: 2px;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    display: block;
+    padding: 8px 12px;
+    color: var(--color-text-primary);
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background: var(--color-bg-primary);
+    color: var(--color-bar-primary);
+}
+
 .search-group {
     display: flex;
     align-items: center;
@@ -1493,13 +1600,9 @@ body .sidebar:hover + .content {
 }
 
 .invoice-cell {
-    font-family: 'Courier New', monospace;
-    font-size: 13px;
-    color: var(--color-text-secondary);
-    background: var(--color-bg-primary);
-    padding: 4px 8px;
-    border-radius: 4px;
-    display: inline-block;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    font-size: 14px;
 }
 
 .patient-cell {
@@ -1660,6 +1763,71 @@ body .sidebar:hover + .content {
     border: 1px solid rgba(108, 117, 125, 0.3);
 }
 
+/* 新的文本状态样式 */
+.bill-status-text {
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+    text-align: center;
+}
+
+.bill-status-text.paid {
+    color: #28a745;
+}
+
+.bill-status-text.pending {
+    color: #ff8c00;
+}
+
+.bill-status-text.overdue {
+    color: #dc3545;
+}
+
+.bill-status-text.cancelled {
+    color: #6c757d;
+}
+
+/* 文本按钮样式 */
+.btn-text {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+}
+
+.btn-text:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.theme-dark .btn-text:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-text-danger {
+    color: #dc3545;
+}
+
+.btn-text-danger:hover {
+    color: #c82333;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.btn-text-success {
+    color: #28a745;
+}
+
+.btn-text-success:hover {
+    color: #218838;
+    background: rgba(40, 167, 69, 0.1);
+}
+
 /* 操作按钮样式 */
 .actions-cell {
     text-align: center;
@@ -1818,7 +1986,32 @@ body .sidebar:hover + .content {
 
 .bills-empty {
     text-align: center;
-    padding: 40px;
+    padding: 60px 40px;
+    color: var(--color-text-secondary);
+    background: linear-gradient(135deg, rgba(var(--color-bar-primary-rgb), 0.05), rgba(var(--color-bar-primary-rgb), 0.02));
+    border-radius: 16px;
+    margin: 20px;
+    border: 2px dashed var(--color-border);
+    transition: all 0.3s ease;
+}
+
+.bills-empty:hover {
+    border-color: var(--color-bar-primary);
+    background: linear-gradient(135deg, rgba(var(--color-bar-primary-rgb), 0.08), rgba(var(--color-bar-primary-rgb), 0.03));
+}
+
+.bills-empty i {
+    font-size: 48px;
+    color: var(--color-bar-primary);
+    margin-bottom: 16px;
+    opacity: 0.7;
+    display: block;
+}
+
+.bills-empty p {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
     color: var(--color-text-secondary);
 }
 
@@ -3454,15 +3647,15 @@ legend {
 .theme-dark #patient-module-content,
 .theme-dark #medicine-module-content,
 .theme-dark #medical-records-module-content {
-    background: rgba(45, 47, 47, 0.8);
+    background-color: var(--color-bg-card);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #e2e8f0;
+    color: var(--color-text-primary);
 }
 
 .theme-dark #patient-module-content:hover,
 .theme-dark #medicine-module-content:hover,
 .theme-dark #medical-records-module-content:hover {
-    background: rgba(45, 47, 47, 0.9);
+    background-color: var(--color-bg-card);
 }
 
 .theme-dark .data-table-container {
@@ -4574,8 +4767,7 @@ legend {
     }
 
     .invoice-cell {
-        font-size: 11px;
-        padding: 3px 6px;
+        font-size: 12px;
     }
 
     .amount-cell {

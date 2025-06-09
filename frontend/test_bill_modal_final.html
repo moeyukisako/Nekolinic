@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>账单模态框最终测试</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/bill-modal.css" rel="stylesheet">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .debug-panel {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+        .debug-log {
+            background: #000;
+            color: #00ff00;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>账单模态框最终测试</h1>
+        <p>这个页面用于测试修复后的账单模态框功能。</p>
+        
+        <div class="test-buttons">
+            <button class="test-button" onclick="testBillModal()">测试账单模态框</button>
+            <button class="test-button" onclick="clearDebugLog()">清空日志</button>
+        </div>
+        
+        <div class="debug-panel">
+            <h3>调试日志</h3>
+            <div id="debug-log" class="debug-log">等待测试...
+</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import Modal from './js/components/modal.js';
+        
+        // 将Modal添加到全局作用域
+        window.Modal = Modal;
+        
+        const debugLog = document.getElementById('debug-log');
+        
+        function addDebugInfo(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugLog.textContent += `[${timestamp}] ${message}\n`;
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+        
+        // 重写console方法
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            addDebugInfo('[LOG] ' + args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            addDebugInfo('[ERROR] ' + args.join(' '));
+        };
+        
+        // 清空日志函数
+        window.clearDebugLog = function() {
+            debugLog.textContent = '日志已清空\n';
+        };
+        
+        // 创建账单Modal内容
+        function createBillModalContent(patientId, patientName, recordId) {
+            const currentDate = new Date().toISOString().split('T')[0];
+            const billId = 'BILL-' + Date.now();
+            const invoiceId = 'INV-' + Date.now();
+            
+            return `
+                <div class="bill-modal-content">
+                    <div class="bill-basic-info">
+                        <h4>账单基础信息</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>账单ID</label>
+                                <div class="readonly-field">${billId}</div>
+                            </div>
+                            <div class="form-group">
+                                <label>发票ID</label>
+                                <div class="readonly-field">${invoiceId}</div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>账单生成时间</label>
+                                <div class="readonly-field">${currentDate}</div>
+                            </div>
+                            <div class="form-group">
+                                <label>患者姓名</label>
+                                <div class="readonly-field">${patientName}</div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>病历ID</label>
+                                <div class="readonly-field">${recordId || '无'}</div>
+                            </div>
+                            <div class="form-group">
+                                <label>总金额</label>
+                                <div class="readonly-field total-amount">¥0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bill-items-section">
+                        <h4>账单明细</h4>
+                        <div class="bill-items-header">
+                            <button type="button" class="btn btn-secondary add-item-btn" data-action="add-bill-item">
+                                <i class="fas fa-plus"></i> 添加收费项目
+                            </button>
+                        </div>
+                        <div class="bill-items-container">
+                            <table class="bill-items-table">
+                                <thead>
+                                    <tr>
+                                        <th>项目名称</th>
+                                        <th>项目类型</th>
+                                        <th>数量</th>
+                                        <th>单价</th>
+                                        <th>小计</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bill-items-tbody">
+                                    <!-- 动态添加的账单项目 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 添加账单项目到指定容器
+        function addBillItemToContainer(container) {
+            if (!container) {
+                console.error('Container is null or undefined');
+                return;
+            }
+            
+            console.log('Adding bill item to container:', container);
+            
+            const detailItem = document.createElement('tr');
+            detailItem.className = 'bill-detail-item';
+            
+            detailItem.innerHTML = `
+                <td>
+                    <input type="text" class="form-control item-name" placeholder="请输入项目名称" required>
+                </td>
+                <td>
+                    <select class="form-control item-type" required>
+                        <option value="">请选择类型</option>
+                        <option value="consultation">问诊</option>
+                        <option value="medicine">药物</option>
+                        <option value="treatment">治疗</option>
+                        <option value="examination">检查</option>
+                        <option value="other">其他</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" class="form-control item-quantity" min="1" value="1" data-action="calculate-subtotal" required>
+                </td>
+                <td>
+                    <input type="number" class="form-control item-price" min="0" step="0.01" placeholder="0.00" data-action="calculate-subtotal" required>
+                </td>
+                <td>
+                    <span class="item-subtotal">¥0.00</span>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" data-action="remove-bill-item">
+                        <i class="fas fa-trash"></i> 删除
+                    </button>
+                </td>
+            `;
+            
+            container.appendChild(detailItem);
+            console.log('Bill item added successfully to container');
+            
+            return detailItem;
+        }
+        
+        // 添加账单项目
+        window.addBillItem = function() {
+            console.log('addBillItem function called');
+            
+            const modal = document.querySelector('.modal.active');
+            if (!modal) {
+                console.error('No active modal found');
+                return;
+            }
+            
+            const container = modal.querySelector('#bill-items-tbody');
+            if (!container) {
+                console.error('bill-items-tbody container not found in modal');
+                return;
+            }
+            
+            return addBillItemToContainer(container);
+        };
+        
+        // 移除账单项目
+        window.removeBillItem = function(button) {
+            const row = button.closest('tr');
+            row.remove();
+            calculateTotalAmount();
+        };
+        
+        // 计算单个项目的小计
+        window.calculateItemSubtotal = function(input) {
+            console.log('calculateItemSubtotal called');
+            
+            const row = input.closest('tr');
+            const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
+            const subtotal = quantity * price;
+            
+            row.querySelector('.item-subtotal').textContent = `¥${subtotal.toFixed(2)}`;
+            calculateTotalAmount();
+        };
+        
+        // 计算总金额
+        function calculateTotalAmount() {
+            const modal = document.querySelector('.modal.active');
+            if (!modal) {
+                console.error('No active modal found for total calculation');
+                return;
+            }
+            
+            const subtotals = modal.querySelectorAll('.item-subtotal');
+            let total = 0;
+            
+            subtotals.forEach(subtotalEl => {
+                const subtotalText = subtotalEl.textContent.replace('¥', '');
+                total += parseFloat(subtotalText) || 0;
+            });
+            
+            const totalAmountEl = modal.querySelector('.total-amount');
+            if (totalAmountEl) {
+                totalAmountEl.textContent = `¥${total.toFixed(2)}`;
+                console.log('Total amount updated:', total.toFixed(2));
+            } else {
+                console.error('Total amount element not found');
+            }
+        }
+        
+        // 测试账单模态框
+        window.testBillModal = function() {
+            console.log('Starting bill modal test...');
+            
+            const modalContent = createBillModalContent(123, '测试患者', 'REC-001');
+            
+            const modal = new Modal({
+                title: '生成账单',
+                content: modalContent,
+                size: 'large',
+                showFooter: true,
+                confirmText: '生成账单',
+                cancelText: '取消',
+                onConfirm: async () => {
+                    console.log('账单确认按钮被点击');
+                    return true;
+                }
+            });
+            
+            modal.render();
+            
+            // 等待模态框完全渲染
+            setTimeout(() => {
+                const activeModal = document.querySelector('.modal.active');
+                if (activeModal) {
+                    console.log('Active modal found, setting up event listeners...');
+                    
+                    // 添加事件委托
+                    activeModal.addEventListener('click', (e) => {
+                        const action = e.target.getAttribute('data-action');
+                        if (action === 'add-bill-item') {
+                            console.log('Add bill item button clicked');
+                            addBillItem();
+                        } else if (action === 'remove-bill-item') {
+                            console.log('Remove bill item button clicked');
+                            removeBillItem(e.target);
+                        }
+                    });
+                    
+                    activeModal.addEventListener('input', (e) => {
+                        const action = e.target.getAttribute('data-action');
+                        if (action === 'calculate-subtotal') {
+                            console.log('Calculate subtotal triggered');
+                            calculateItemSubtotal(e.target);
+                        }
+                    });
+                    
+                    // 查找容器并添加默认项目
+                    const container = activeModal.querySelector('#bill-items-tbody');
+                    if (container) {
+                        console.log('Container found, adding default bill item...');
+                        
+                        const defaultItem = addBillItemToContainer(container);
+                        
+                        // 设置默认值
+                        setTimeout(() => {
+                            if (defaultItem) {
+                                defaultItem.querySelector('.item-name').value = '诊疗费';
+                                defaultItem.querySelector('.item-type').value = 'consultation';
+                                defaultItem.querySelector('.item-quantity').value = '1';
+                                defaultItem.querySelector('.item-price').value = '150.00';
+                                calculateItemSubtotal(defaultItem.querySelector('.item-price'));
+                                console.log('Default bill item configured successfully');
+                            }
+                        }, 100);
+                    } else {
+                        console.error('Container not found in active modal');
+                    }
+                } else {
+                    console.error('No active modal found after render');
+                }
+            }, 200);
+        };
+        
+        addDebugInfo('测试页面已加载完成');
+    </script>
+</body>
+</html>

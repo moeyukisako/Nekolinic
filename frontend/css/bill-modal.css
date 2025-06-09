@@ -40,24 +40,24 @@
 .bill-basic-info {
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: var(--bg-secondary);
+  background: var(--color-bg-card);
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-border);
 }
 
 .bill-basic-info h4 {
   margin: 0 0 1rem 0;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-size: 1.1rem;
   font-weight: 600;
 }
 
 .readonly-field {
   padding: 0.5rem 0.75rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  color: var(--text-secondary);
+  color: var(--color-text-primary);
   font-size: 0.9rem;
   min-height: 38px;
   display: flex;
@@ -66,7 +66,7 @@
 
 .total-amount {
   font-weight: 600;
-  color: var(--primary-color);
+  color: var(--color-bar-primary);
   font-size: 1rem;
 }
 
@@ -77,7 +77,7 @@
 
 .bill-items-section h4 {
   margin: 0 0 1rem 0;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-size: 1.1rem;
   font-weight: 600;
 }
@@ -97,10 +97,10 @@
 }
 
 .bill-items-container {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   overflow: hidden;
-  background: var(--bg-primary);
+  background: var(--color-bg-card);
 }
 
 .bill-items-table {
@@ -110,30 +110,30 @@
 }
 
 .bill-items-table thead {
-  background: var(--bg-secondary);
+  background: var(--color-bg-card);
 }
 
 .bill-items-table th,
 .bill-items-table td {
   padding: 0.75rem 0.5rem;
   text-align: left;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
 }
 
 .bill-items-table th {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-size: 0.9rem;
-  background: var(--bg-secondary);
+  background: var(--color-bg-card);
 }
 
 .bill-items-table td {
-  color: var(--text-secondary);
+  color: var(--color-text-primary);
 }
 
 .bill-items-table tbody tr:hover {
-  background: var(--bg-hover);
+  background: var(--color-bg-primary);
 }
 
 .bill-items-table tbody tr:last-child td {
@@ -144,17 +144,17 @@
 .bill-items-table .form-control {
   width: 100%;
   padding: 0.4rem 0.6rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
   font-size: 0.85rem;
   min-height: 32px;
 }
 
 .bill-items-table .form-control:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: var(--color-bar-primary);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
@@ -168,7 +168,7 @@
 
 .item-subtotal {
   font-weight: 600;
-  color: var(--primary-color);
+  color: var(--color-bar-primary);
   font-size: 0.9rem;
 }
 
@@ -186,15 +186,15 @@
 
 /* 账单明细项两行布局样式 */
 .bill-detail-item {
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .bill-item-wrapper {
   padding: 1rem;
-  background-color: var(--bg-primary);
+  background-color: var(--color-bg-card);
   border-radius: 8px;
   margin: 0.5rem 0;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-border);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -244,14 +244,14 @@
 .bill-form-group label {
   margin-bottom: 0.5rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-size: 0.9rem;
 }
 
 .subtotal-display {
   padding: 0.5rem 0.75rem;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   min-height: 38px;
   display: flex;
@@ -260,7 +260,7 @@
 
 .subtotal-display .item-subtotal {
   font-weight: 600;
-  color: var(--primary-color);
+  color: var(--color-bar-primary);
   font-size: 0.9rem;
 }
 
@@ -313,37 +313,37 @@
 
 /* 深色主题适配 */
 .theme-dark .bill-basic-info {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
+  background: var(--color-bg-card);
+  border-color: var(--color-border);
 }
 
 .theme-dark .readonly-field {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-  color: var(--text-secondary);
+  background: var(--color-bg-primary);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
 }
 
 .theme-dark .bill-items-container {
-  border-color: var(--border-color);
-  background: var(--bg-primary);
+  border-color: var(--color-border);
+  background: var(--color-bg-card);
 }
 
 .theme-dark .bill-items-table th {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
 }
 
 .theme-dark .bill-items-table tbody tr:hover {
-  background: var(--bg-hover);
+  background: var(--color-bg-primary);
 }
 
 .theme-dark .bill-items-table .form-control {
   background: var(--bg-primary);
   border-color: var(--border-color);
-  color: var(--text-primary);
+  color: var(--color-text-primary);
 }
 
 .theme-dark .bill-items-table .form-control:focus {
-  border-color: var(--primary-color);
+  border-color: var(--color-bar-primary);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }

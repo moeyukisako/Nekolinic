@@ -148,7 +148,7 @@ function renderPrescriptionTable(prescriptions) {
                 <td>${prescription.patient?.name || (window.getTranslation ? window.getTranslation('unknown_patient') : '未知患者')}</td>
                 <td>${prescription.doctor?.name || (window.getTranslation ? window.getTranslation('unknown_doctor') : '未知医生')}</td>
                 <td>${formatDate(prescription.prescription_date)}</td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td><span class="status-badge ${statusClass}" data-i18n="dispensing.status.${prescription.dispensing_status}"></span></td>
                 <td class="actions-cell">
                     <button class="btn btn-sm btn-outline" onclick="viewPrescriptionDetails(${prescription.id})" data-i18n="view">查看</button>
                     ${prescription.dispensing_status === 'PENDING' ? 
@@ -869,8 +869,7 @@ function showPrescriptionDetailsModal(prescription) {
                             </div>
                             <div class="info-item">
                                 <label data-i18n="dispensing_status">发药状态:</label>
-                                <span class="status-badge ${getDispensingStatusClass(prescription.dispensing_status)}">
-                                    ${getDispensingStatusText(prescription.dispensing_status)}
+                                <span class="status-badge ${getDispensingStatusClass(prescription.dispensing_status)}" data-i18n="dispensing.status.${prescription.dispensing_status}">
                                 </span>
                             </div>
                         </div>

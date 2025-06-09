@@ -63,29 +63,35 @@ export default function renderFinanceModule(container, options = {}) {
               <div class="billing-header">
                 <h3 data-i18n="billing_list">账单列表</h3>
                 <div class="billing-controls">
-                  <div class="search-filter-group">
-                    <div class="search-box">
-                      <i class="fas fa-search"></i>
-                      <input type="text" id="bill-search" placeholder="搜索账单号、患者..." data-i18n-placeholder="search_bills">
-                    </div>
-                    <select id="status-filter" class="filter-select">
-                      <option value="" data-i18n="all_status">全部状态</option>
-                      <option value="PENDING" data-i18n="status_pending">待支付</option>
-                      <option value="PAID" data-i18n="status_paid">已支付</option>
-                      <option value="CANCELLED" data-i18n="status_cancelled">已取消</option>
-                      <option value="REFUNDED" data-i18n="status_refunded">已退款</option>
-                    </select>
-                    <select id="date-filter" class="filter-select">
-                      <option value="" data-i18n="all_dates">全部日期</option>
-                      <option value="today" data-i18n="today">今天</option>
-                      <option value="week" data-i18n="this_week">本周</option>
-                      <option value="month" data-i18n="this_month">本月</option>
-                    </select>
+                  <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="bill-search" placeholder="搜索账单号、患者..." data-i18n-placeholder="search_bills">
                   </div>
-                  <button id="refresh-bills-btn" class="btn btn-primary">
-                    <i class="fas fa-sync-alt"></i>
-                    <span data-i18n="refresh">刷新</span>
-                  </button>
+                  <div class="filter-buttons">
+                    <div class="dropdown">
+                      <button class="btn btn-secondary dropdown-toggle" id="status-filter-btn" data-i18n="all_status">全部状态</button>
+                      <div class="dropdown-menu" id="status-filter-menu">
+                        <a class="dropdown-item" data-value="" data-i18n="all_status">全部状态</a>
+                        <a class="dropdown-item" data-value="PENDING" data-i18n="status_pending">待支付</a>
+                        <a class="dropdown-item" data-value="PAID" data-i18n="status_paid">已支付</a>
+                        <a class="dropdown-item" data-value="CANCELLED" data-i18n="status_cancelled">已取消</a>
+                        <a class="dropdown-item" data-value="REFUNDED" data-i18n="status_refunded">已退款</a>
+                      </div>
+                    </div>
+                    <div class="dropdown">
+                      <button class="btn btn-secondary dropdown-toggle" id="date-filter-btn" data-i18n="all_dates">全部日期</button>
+                      <div class="dropdown-menu" id="date-filter-menu">
+                        <a class="dropdown-item" data-value="" data-i18n="all_dates">全部日期</a>
+                        <a class="dropdown-item" data-value="today" data-i18n="today">今天</a>
+                        <a class="dropdown-item" data-value="week" data-i18n="this_week">本周</a>
+                        <a class="dropdown-item" data-value="month" data-i18n="this_month">本月</a>
+                      </div>
+                    </div>
+                    <button id="refresh-bills-btn" class="btn btn-primary">
+                      <i class="fas fa-sync-alt"></i>
+                      <span data-i18n="refresh">刷新</span>
+                    </button>
+                  </div>
                 </div>
               </div>
               
@@ -241,6 +247,11 @@ export default function renderFinanceModule(container, options = {}) {
     
     // 绑定表格行事件
     bindBillRowEvents();
+    
+    // 翻译动态生成的内容
+    if (window.translatePage) {
+      window.translatePage();
+    }
   }
 
   // 创建账单行
@@ -260,21 +271,23 @@ export default function renderFinanceModule(container, options = {}) {
         <td class="invoice-cell">${bill.invoice_number || 'N/A'}</td>
         <td class="patient-cell" data-patient-id="${bill.patient_id}">${bill.patient_name || '加载中...'}</td>
         <td class="status-cell">
-          <span class="bill-status ${statusClass}">
-            <span data-i18n="finance.status.${bill.status}">${statusText}</span>
+          <span class="bill-status-text ${statusClass}">
+            <span data-i18n="finance.status.${bill.status}"></span>
           </span>
         </td>
         <td class="date-cell">${billDate}</td>
         <td class="amount-cell">¥${parseFloat(bill.total_amount).toFixed(2)}</td>
         <td class="actions-cell">
           <div class="bill-actions">
-            <button class="btn-action btn-danger" data-action="delete" title="删除" data-i18n-title="finance.actions.delete">
-              <i class="fas fa-trash"></i>
-            </button>
+            <button class="btn-text btn-text-danger" data-action="delete" title="删除" data-i18n-title="finance.actions.delete">
+                  <i class="fas fa-trash"></i>
+                  <span data-i18n="finance.actions.delete">删除</span>
+                </button>
             ${bill.status === 'PENDING' ? `
-              <button class="btn-action btn-success" data-action="payment" title="支付" data-i18n-title="finance.actions.payment">
-                <i class="fas fa-credit-card"></i>
-              </button>
+              <button class="btn-text btn-text-success" data-action="payment" title="支付" data-i18n-title="finance.actions.payment">
+                  <i class="fas fa-credit-card"></i>
+                  <span data-i18n="finance.actions.payment">支付</span>
+                </button>
             ` : ''}
           </div>
         </td>
@@ -287,13 +300,7 @@ export default function renderFinanceModule(container, options = {}) {
               <span data-i18n="finance.loading">加载中...</span>
             </div>
             <div class="details-content" style="display: none;">
-              <div class="details-header">
-                <h4 data-i18n="finance.details.title">账单明细</h4>
-                <div class="details-summary">
-                  <span data-i18n="finance.details.recordId">病历ID:</span>
-                  <span class="record-id">${bill.medical_record_id || 'N/A'}</span>
-                </div>
-              </div>
+
               <div class="details-table-container">
                 <table class="details-table">
                   <thead>
@@ -504,7 +511,7 @@ export default function renderFinanceModule(container, options = {}) {
         if (bill.items && bill.items.length > 0) {
           const itemsHtml = bill.items.map(item => `
             <tr class="detail-item-row">
-              <td class="item-description">${item.description || '未知项目'}</td>
+              <td class="item-description">${item.item_name || '未知项目'}</td>
               <td class="item-quantity">${item.quantity || 0}</td>
               <td class="item-unit-price">¥${parseFloat(item.unit_price || 0).toFixed(2)}</td>
               <td class="item-subtotal">¥${parseFloat(item.subtotal || 0).toFixed(2)}</td>
@@ -528,6 +535,11 @@ export default function renderFinanceModule(container, options = {}) {
         // 显示内容
         if (loadingEl) loadingEl.style.display = 'none';
         if (contentEl) contentEl.style.display = 'block';
+        
+        // 翻译动态生成的内容
+        if (window.translatePage) {
+          window.translatePage();
+        }
       } else {
         throw new Error('Invalid bill data received');
       }
@@ -703,8 +715,13 @@ export default function renderFinanceModule(container, options = {}) {
   // 搜索和过滤功能
   function setupFilters() {
     const searchInput = container.querySelector('#bill-search');
-    const statusFilter = container.querySelector('#status-filter');
-    const dateFilter = container.querySelector('#date-filter');
+    const statusFilterBtn = container.querySelector('#status-filter-btn');
+    const statusFilterMenu = container.querySelector('#status-filter-menu');
+    const dateFilterBtn = container.querySelector('#date-filter-btn');
+    const dateFilterMenu = container.querySelector('#date-filter-menu');
+    
+    let currentStatusFilter = '';
+    let currentDateFilter = '';
     
     function applyFilters() {
       let filtered = [...allBills];
@@ -720,14 +737,12 @@ export default function renderFinanceModule(container, options = {}) {
       }
       
       // 状态过滤
-      const statusValue = statusFilter.value;
-      if (statusValue) {
-        filtered = filtered.filter(bill => bill.status === statusValue);
+      if (currentStatusFilter) {
+        filtered = filtered.filter(bill => bill.status === currentStatusFilter);
       }
       
       // 日期过滤
-      const dateValue = dateFilter.value;
-      if (dateValue) {
+      if (currentDateFilter) {
         const today = new Date();
         const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay());
@@ -735,7 +750,7 @@ export default function renderFinanceModule(container, options = {}) {
         
         filtered = filtered.filter(bill => {
           const billDate = new Date(bill.bill_date);
-          switch (dateValue) {
+          switch (currentDateFilter) {
             case 'today':
               return billDate >= startOfToday;
             case 'week':
@@ -752,16 +767,54 @@ export default function renderFinanceModule(container, options = {}) {
       renderBills(filteredBills);
     }
     
-    // 绑定过滤事件
+    // 绑定搜索事件
     if (searchInput) {
       searchInput.addEventListener('input', applyFilters, { signal });
     }
-    if (statusFilter) {
-      statusFilter.addEventListener('change', applyFilters, { signal });
+    
+    // 绑定状态过滤器下拉菜单事件
+    if (statusFilterBtn && statusFilterMenu) {
+      statusFilterBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        statusFilterMenu.classList.toggle('show');
+        dateFilterMenu.classList.remove('show');
+      }, { signal });
+      
+      statusFilterMenu.addEventListener('click', (e) => {
+        if (e.target.classList.contains('dropdown-item')) {
+          e.preventDefault();
+          currentStatusFilter = e.target.dataset.value;
+          statusFilterBtn.textContent = e.target.textContent;
+          statusFilterMenu.classList.remove('show');
+          applyFilters();
+        }
+      }, { signal });
     }
-    if (dateFilter) {
-      dateFilter.addEventListener('change', applyFilters, { signal });
+    
+    // 绑定日期过滤器下拉菜单事件
+    if (dateFilterBtn && dateFilterMenu) {
+      dateFilterBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dateFilterMenu.classList.toggle('show');
+        statusFilterMenu.classList.remove('show');
+      }, { signal });
+      
+      dateFilterMenu.addEventListener('click', (e) => {
+        if (e.target.classList.contains('dropdown-item')) {
+          e.preventDefault();
+          currentDateFilter = e.target.dataset.value;
+          dateFilterBtn.textContent = e.target.textContent;
+          dateFilterMenu.classList.remove('show');
+          applyFilters();
+        }
+      }, { signal });
     }
+    
+    // 点击其他地方关闭下拉菜单
+    document.addEventListener('click', () => {
+      if (statusFilterMenu) statusFilterMenu.classList.remove('show');
+      if (dateFilterMenu) dateFilterMenu.classList.remove('show');
+    }, { signal });
   }
 
   // 绑定刷新按钮事件

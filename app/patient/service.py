@@ -19,7 +19,7 @@ class PatientService(BaseService[models.Patient, schemas.PatientCreate, schemas.
         blank_record_data = schemas.MedicalRecordCreate(
             patient_id=new_patient.id,
             doctor_id=1, 
-            visit_date=datetime.now(timezone.utc).date(),
+            record_date=datetime.now(timezone.utc),
             chief_complaint="",
             present_illness="",
             past_history="",

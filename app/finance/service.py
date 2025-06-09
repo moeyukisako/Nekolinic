@@ -119,6 +119,79 @@ class PaymentService(BaseService[models.Payment, schemas.PaymentCreate, schemas.
 class BillingService:
     """账单生成服务类"""
     
+    def create_bill(self, db: Session, *, bill_data: schemas.BillCreate) -> models.Bill:
+        """直接创建账单"""
+        # 1. 检查患者是否存在
+        patient = db.query(patient_models.Patient).filter(
+            patient_models.Patient.id == bill_data.patient_id,
+            patient_models.Patient.deleted_at.is_(None)
+        ).first()
+        
+        if not patient:
+            raise ResourceNotFoundException(resource_type="Patient", resource_id=bill_data.patient_id)
+        
+        # 2. 检查病历是否存在
+        medical_record = db.query(patient_models.MedicalRecord).filter(
+            patient_models.MedicalRecord.id == bill_data.medical_record_id,
+            patient_models.MedicalRecord.deleted_at.is_(None)
+        ).first()
+        
+        if not medical_record:
+            raise ResourceNotFoundException(resource_type="MedicalRecord", resource_id=bill_data.medical_record_id)
+        
+        # 3. 检查是否已存在相同发票号的账单
+        existing_bill = db.query(models.Bill).filter(
+            models.Bill.invoice_number == bill_data.invoice_number,
+            models.Bill.deleted_at.is_(None)
+        ).first()
+        
+        if existing_bill:
+            raise ValidationException(f"发票号 {bill_data.invoice_number} 已存在")
+        
+        # 4. 创建账单
+        new_bill = models.Bill(
+            invoice_number=bill_data.invoice_number,
+            bill_date=bill_data.bill_date,
+            total_amount=bill_data.total_amount,
+            status=models.BillStatus.UNPAID,
+            patient_id=bill_data.patient_id,
+            medical_record_id=bill_data.medical_record_id
+        )
+        
+        # 获取当前用户ID
+        user_id = current_user_id.get()
+        if user_id is None:
+            raise AuthenticationException("无法获取当前用户信息，请先登录")
+        
+        # 设置审计字段
+        now = datetime.now(UTC)
+        new_bill.created_at = new_bill.updated_at = now
+        new_bill.created_by_id = new_bill.updated_by_id = user_id
+        
+        db.add(new_bill)
+        db.flush()  # 获取账单ID但不提交事务
+        
+        # 5. 创建账单明细（如果提供了）
+        if bill_data.items:
+            bill_items = []
+            for item_data in bill_data.items:
+                bill_item = models.BillItem(
+                    item_name=item_data.item_name,
+                    item_type=item_data.item_type,
+                    quantity=item_data.quantity,
+                    unit_price=item_data.unit_price,
+                    subtotal=item_data.subtotal,
+                    bill_id=new_bill.id
+                )
+                bill_items.append(bill_item)
+            
+            db.add_all(bill_items)
+        
+        db.commit()
+        db.refresh(new_bill)
+        
+        return new_bill
+    
     def generate_bill_for_record(self, db: Session, *, medical_record_id: int) -> models.Bill:
         """根据病历生成账单"""
         # 1. 使用预加载一次性获取所需数据
@@ -133,14 +206,7 @@ class BillingService:
         if not record:
             raise ResourceNotFoundException(resource_type="MedicalRecord", resource_id=medical_record_id)
         
-        # 2. 检查是否已生成过账单
-        existing_bill = db.query(models.Bill).filter(
-            models.Bill.medical_record_id == medical_record_id,
-            models.Bill.deleted_at.is_(None)
-        ).first()
-        
-        if existing_bill:
-            raise ValidationException(f"病历ID {medical_record_id} 的账单已存在")
+        # 2. 允许为同一病历生成多个账单（已移除唯一性检查）
 
         # 3. 创建账单主表
         new_bill = models.Bill(

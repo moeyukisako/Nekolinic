@@ -242,8 +242,66 @@ function renderPagination(query = '') {
  * 显示添加患者模态框
  */
 function showAddPatientModal() {
-  showNotification('请在患者管理界面直接添加新患者', 'info');
-  // 可以在这里添加直接在页面中显示表单的逻辑
+  const form = document.createElement('form');
+  form.id = 'add-patient-form';
+  form.innerHTML = `
+    <div class="mb-3">
+      <label for="add-patient-name" class="form-label" data-i18n="patient_name">姓名 *</label>
+      <input type="text" class="form-control" id="add-patient-name" required>
+    </div>
+    <div class="mb-3">
+      <label for="add-patient-gender" class="form-label" data-i18n="patient_gender">性别 *</label>
+      <select class="form-select" id="add-patient-gender" required>
+        <option value="" disabled selected data-i18n="select_gender">请选择性别</option>
+        <option value="male" data-i18n="gender_male">男</option>
+        <option value="female" data-i18n="gender_female">女</option>
+        <option value="other" data-i18n="gender_other">其他</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="add-patient-birth-date" class="form-label" data-i18n="patient_birth_date">出生日期</label>
+      <input type="date" class="form-control" id="add-patient-birth-date">
+    </div>
+    <div class="mb-3">
+      <label for="add-patient-contact" class="form-label" data-i18n="patient_contact">联系电话</label>
+      <input type="tel" class="form-control" id="add-patient-contact">
+    </div>
+    <div class="mb-3">
+      <label for="add-patient-address" class="form-label" data-i18n="patient_address">住址</label>
+      <textarea class="form-control" id="add-patient-address" rows="3"></textarea>
+    </div>
+  `;
+
+  // 创建模态框
+  const modalInstance = createModal(
+    window.getTranslation ? window.getTranslation('add_new_patient') : '添加新患者',
+    form,
+    {
+      size: 'lg',
+      footerButtons: [
+        { text: window.getTranslation ? window.getTranslation('cancel') : '取消', class: 'btn-secondary', action: 'cancel' },
+        { text: window.getTranslation ? window.getTranslation('save') : '保存', class: 'btn-primary', action: 'submit' }
+      ],
+      onButtonClick: async (action, modal) => {
+        if (action === 'submit') {
+          const success = await handleAddPatientSubmit();
+          if (success) {
+            modalInstance.hide();
+          }
+        } else if (action === 'cancel') {
+          modalInstance.hide();
+        }
+      }
+    }
+  );
+
+  // 显示模态框
+  modalInstance.show();
+
+  // 翻译模态框内容
+  if (window.translatePage) {
+    window.translatePage();
+  }
 }
 
 /**
@@ -329,6 +387,48 @@ async function editPatient(id) {
     
   } catch (error) {
     showNotification(`获取患者信息失败: ${error.message}`, 'error');
+  }
+}
+
+/**
+ * 处理添加患者表单提交
+ */
+async function handleAddPatientSubmit() {
+  const nameInput = document.getElementById('add-patient-name');
+  const genderSelect = document.getElementById('add-patient-gender');
+  const birthDateInput = document.getElementById('add-patient-birth-date');
+  const contactInput = document.getElementById('add-patient-contact');
+  const addressTextarea = document.getElementById('add-patient-address');
+  
+  if (!nameInput.value.trim()) {
+    showNotification('患者姓名不能为空', 'warning');
+    return false;
+  }
+  
+  if (!genderSelect.value) {
+    showNotification('请选择患者性别', 'warning');
+    return false;
+  }
+  
+  const patientData = {
+    name: nameInput.value.trim(),
+    gender: genderSelect.value,
+    birth_date: birthDateInput.value || null,
+    contact_number: contactInput.value.trim() || null,
+    address: addressTextarea.value.trim() || null
+  };
+  
+  try {
+    await apiClient.patients.create(patientData);
+    showNotification('新患者已添加', 'success');
+    
+    // 触发更新事件
+    window.eventBus.emit('patient:updated');
+    
+    return true;
+  } catch (error) {
+    showNotification(`添加患者失败: ${error.message}`, 'error');
+    return false;
   }
 }
 

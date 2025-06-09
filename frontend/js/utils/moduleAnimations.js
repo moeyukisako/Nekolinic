@@ -457,7 +457,7 @@ class ModuleAnimations {
         
         // 为内容区域添加动画
         if (animateContent) {
-            const sections = moduleContainer.querySelectorAll('.content-section, .settings-section, .tab-content');
+            const sections = moduleContainer.querySelectorAll('.content-section, .settings-section');
             this.animateContentSections(sections);
         }
         

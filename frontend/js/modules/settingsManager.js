@@ -1144,3 +1144,13 @@ async function saveIndividualSetting(input) {
     }
   }
 }
+
+/**
+ * 调整会话超时的spinner按钮处理函数
+ */
+window.adjustSessionTimeout = function(delta) {
+  const input = document.getElementById('session-timeout');
+  const currentValue = parseInt(input.value) || 30;
+  const newValue = Math.max(5, Math.min(480, currentValue + delta)); // 范围 5-480分钟
+  input.value = newValue;
+};

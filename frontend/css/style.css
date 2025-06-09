@@ -1320,6 +1320,966 @@ body .sidebar:hover + .content {
     flex-direction: column;
 }
 
+/* 搜索和过滤控件 */
+.billing-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: var(--color-bg-card);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    flex-wrap: wrap;
+    border: 1px solid var(--color-border);
+}
+
+.search-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 250px;
+}
+
+.search-group input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+    background: var(--color-bg-card);
+    color: var(--color-text-primary);
+}
+
+.search-group input:focus {
+    outline: none;
+    border-color: var(--color-bar-primary);
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+}
+
+.filter-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.filter-group select {
+    padding: 10px 15px;
+    border: 2px solid var(--color-border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--color-bg-card);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: var(--color-bar-primary);
+}
+
+/* 账单列表容器 */
+.billing-list-container {
+    background: var(--color-bg-card);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    flex: 1;
+}
+
+/* 账单网格布局 */
+.bills-grid {
+    display: grid;
+    gap: 20px;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 300px);
+}
+
+/* 账单表格容器 */
+.bills-table-container {
+    background: var(--color-bg-card);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 2px solid var(--color-border);
+}
+
+/* 账单表格样式 */
+.bills-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-bg-card);
+}
+
+.bills-table-header {
+    background: var(--color-bg-primary);
+    border-bottom: 2px solid var(--color-border);
+}
+
+.bills-table-header th {
+    padding: 15px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-size: 14px;
+    border-right: 1px solid var(--color-border);
+}
+
+.bills-table-header th:last-child {
+    border-right: none;
+}
+
+.expand-column {
+    width: 50px;
+    text-align: center;
+}
+
+/* 账单行样式 */
+.bill-row {
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color 0.2s ease;
+}
+
+.bill-row:hover {
+    background: var(--color-bg-primary);
+}
+
+.bill-row td {
+    padding: 12px;
+    vertical-align: middle;
+    border-right: 1px solid var(--color-border);
+}
+
+.bill-row td:last-child {
+    border-right: none;
+}
+
+/* 展开按钮样式 */
+.expand-cell {
+    text-align: center;
+    width: 50px;
+}
+
+.expand-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    color: var(--color-text-secondary);
+}
+
+.expand-btn:hover {
+    background: var(--color-bg-primary);
+    color: var(--color-bar-primary);
+}
+
+.expand-btn i {
+    font-size: 14px;
+    transition: transform 0.2s ease;
+}
+
+/* 表格单元格样式 */
+.bill-id-cell {
+    font-weight: 700;
+    color: var(--color-bar-primary);
+    font-size: 16px;
+}
+
+.invoice-cell {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    background: var(--color-bg-primary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.patient-cell {
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.date-cell {
+    color: var(--color-text-secondary);
+    font-size: 13px;
+}
+
+.amount-cell {
+    font-weight: 700;
+    color: var(--color-bar-primary);
+    font-size: 16px;
+}
+
+.bill-basic-info {
+    flex: 1;
+    margin-bottom: 20px;
+}
+
+.bill-info-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.bill-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    padding: 10px;
+    background: var(--color-bg-primary);
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+}
+
+.bill-info-item i {
+    color: var(--color-bar-primary);
+    width: 16px;
+    text-align: center;
+}
+
+.info-label {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+}
+
+.info-value {
+    font-size: 14px;
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+.bill-total .info-value {
+    color: var(--color-bar-primary);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* 右侧明细区域 */
+.bill-right-section {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-primary);
+}
+
+.bill-items-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--color-border);
+}
+
+.bill-items-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.bill-items-title i {
+    color: var(--color-bar-primary);
+}
+
+.bill-items-placeholder {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.placeholder-content {
+    text-align: center;
+    color: var(--color-text-secondary);
+}
+
+.placeholder-content i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.placeholder-content p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+/* 账单状态样式 */
+.status-cell {
+    text-align: center;
+}
+
+.bill-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    min-width: 80px;
+    text-align: center;
+}
+
+.bill-status.paid {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.bill-status.pending {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.bill-status.overdue {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.bill-status.cancelled {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+    border: 1px solid rgba(108, 117, 125, 0.3);
+}
+
+/* 操作按钮样式 */
+.actions-cell {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.bill-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 展开的明细行样式 */
+.bill-details-row {
+    display: none;
+    background: var(--color-bg-primary);
+}
+
+.bill-details-row.expanded {
+    display: table-row;
+    animation: fadeIn 0.3s ease;
+}
+
+.bill-details-cell {
+    padding: 0 !important;
+    border: none !important;
+}
+
+.bill-details-content {
+    padding: 20px;
+    border-top: 2px solid var(--color-border);
+    background: var(--color-bg-primary);
+}
+
+/* 明细表格样式 */
+.bill-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: var(--color-bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.bill-items-table th {
+    background: var(--color-bg-secondary);
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-size: 13px;
+    border-bottom: 2px solid var(--color-border);
+}
+
+.bill-items-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    font-size: 13px;
+}
+
+.bill-items-table tr:last-child td {
+    border-bottom: none;
+}
+
+.bill-items-table tr:hover {
+    background: var(--color-bg-primary);
+}
+
+/* 明细表格列样式 */
+.item-type-col {
+    width: 30%;
+    font-weight: 600;
+}
+
+.item-quantity-col {
+    width: 15%;
+    text-align: center;
+}
+
+.item-price-col {
+    width: 20%;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+}
+
+.item-subtotal-col {
+    width: 20%;
+    text-align: right;
+    font-weight: 600;
+    color: var(--color-bar-primary);
+    font-family: 'Courier New', monospace;
+}
+
+/* 明细总计样式 */
+.bill-items-total {
+    margin-top: 15px;
+    padding: 15px;
+    background: var(--color-bg-card);
+    border-radius: 8px;
+    border: 2px solid var(--color-border);
+    text-align: right;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.total-row:last-child {
+    margin-bottom: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-bar-primary);
+    border-top: 2px solid var(--color-border);
+    padding-top: 8px;
+}
+
+.total-label {
+    color: var(--color-text-secondary);
+}
+
+.total-value {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+}
+
+/* 展开按钮旋转动画 */
+.expand-btn.expanded i {
+    transform: rotate(90deg);
+}
+
+/* 淡入动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 加载状态样式 */
+.bills-loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--color-text-secondary);
+}
+
+.bills-empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--color-text-secondary);
+}
+
+.bills-error {
+    text-align: center;
+    padding: 40px;
+    color: var(--color-danger);
+    background: rgba(220, 53, 69, 0.1);
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.bill-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.bill-detail-item {
+    text-align: center;
+}
+
+.bill-detail-label {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.bill-detail-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.bill-amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-bar-primary);
+}
+
+.bill-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;
+}
+
+.btn-action {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    background: var(--color-bg-card);
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn-primary {
+    background: var(--color-bar-primary);
+    color: white;
+    border-color: var(--color-bar-primary);
+}
+
+.btn-primary:hover {
+    background: var(--color-bar-primary);
+    opacity: 0.9;
+    border-color: var(--color-bar-primary);
+}
+
+.btn-secondary {
+    background: var(--color-bg-card);
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+}
+
+.btn-secondary:hover {
+    background: var(--color-bg-primary);
+    border-color: var(--color-bar-primary);
+    color: var(--color-bar-primary);
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background: #218838;
+    border-color: #218838;
+}
+
+.btn-toggle-items {
+    font-size: 12px;
+    padding: 8px 12px;
+}
+
+.btn-toggle-items.active {
+    background: var(--color-bar-primary);
+    color: white;
+    border-color: var(--color-bar-primary);
+}
+
+.btn-toggle-items.active:hover {
+    opacity: 0.9;
+}
+
+/* 账单明细容器 */
+.bill-items-container {
+    display: none;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid var(--color-border);
+    background: var(--color-bg-primary);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+}
+
+.bill-items-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.bill-items-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.btn-close-items {
+    background: var(--color-accent-danger);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-close-items:hover {
+    background: var(--color-accent-danger-dark);
+    transform: scale(1.1);
+}
+
+/* 账单明细表格 */
+.bill-items-table {
+    background: var(--color-bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid var(--color-border);
+}
+
+.bill-items-header-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 15px;
+    padding: 15px;
+    background: var(--color-bg-primary);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    border-bottom: 2px solid var(--color-border);
+}
+
+.bill-item-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 15px;
+    padding: 15px;
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color 0.2s;
+}
+
+.bill-item-row:hover {
+    background: var(--color-bg-primary);
+}
+
+.bill-item-row:last-child {
+    border-bottom: none;
+}
+
+.item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.item-name {
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.item-type {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+}
+
+.item-quantity, .item-price, .item-subtotal {
+    text-align: center;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.item-price, .item-subtotal {
+    color: var(--color-bar-primary);
+}
+
+.bill-items-total {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+    padding: 20px;
+    background: var(--color-bg-primary);
+    border-top: 2px solid var(--color-border);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.total-label {
+    color: var(--color-text-primary);
+}
+
+.total-amount {
+    color: var(--color-bar-primary);
+}
+
+/* 账单明细显示样式 */
+.bill-details {
+    display: none;
+    flex: 1;
+    padding-top: 15px;
+}
+
+.bill-details.show {
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.3s ease;
+}
+
+.bill-items-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 200px;
+    padding-right: 8px;
+}
+
+/* 自定义滚动条 */
+.bill-items-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.bill-items-list::-webkit-scrollbar-track {
+    background: var(--color-bg-primary);
+    border-radius: 3px;
+}
+
+.bill-items-list::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+}
+
+.bill-items-list::-webkit-scrollbar-thumb:hover {
+    background: var(--color-bar-primary);
+}
+
+.bill-items-summary {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 2px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.summary-total {
+    color: var(--color-bar-primary);
+    font-size: 16px;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 加载和状态样式 */
+.loading-items, .empty-items, .error-items {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 40px;
+    color: var(--color-text-secondary);
+}
+
+.loading-items i {
+    font-size: 24px;
+    color: var(--color-bar-primary);
+    animation: spin 1s linear infinite;
+}
+
+.empty-items i {
+    font-size: 24px;
+    color: var(--color-text-secondary);
+}
+
+.error-items i {
+    font-size: 24px;
+    color: var(--color-accent-danger);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.bills-grid .loading, .bills-grid .empty, .bills-grid .error {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--color-text-secondary);
+    font-size: 16px;
+}
+
+.bills-grid .error {
+    color: var(--color-accent-danger);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .billing-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    .search-group {
+        min-width: auto;
+    }
+    
+    .filter-group {
+        justify-content: space-between;
+        gap: 10px;
+    }
+    
+    .bill-card {
+        min-height: auto;
+    }
+    
+    .bill-card-content {
+        flex-direction: column;
+        min-height: auto;
+    }
+    
+    .bill-left-section {
+        border-right: none;
+        border-bottom: 2px solid var(--color-border);
+        padding-bottom: 20px;
+    }
+    
+    .bill-right-section {
+        padding-top: 20px;
+    }
+    
+    .bill-info-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .bill-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .btn-action {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+    
+    .bill-items-header-row,
+    .bill-item-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        text-align: left;
+    }
+    
+    .item-quantity, .item-price, .item-subtotal {
+        text-align: left;
+    }
+    
+    .bill-items-list {
+        max-height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .bill-left-section,
+    .bill-right-section {
+        padding: 15px;
+    }
+    
+    .bill-id {
+        font-size: 18px;
+    }
+    
+    .bill-info-item {
+        padding: 8px;
+    }
+    
+    .info-label {
+        font-size: 11px;
+    }
+    
+    .info-value {
+        font-size: 13px;
+    }
+    
+    .btn-action {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+    
+    .item-quantity, .item-price, .item-subtotal {
+        text-align: left;
+    }
+    
+    .bill-items-total {
+        justify-content: center;
+    }
+}
+
 /* ============================================= */
 /* 报表管理模块内容样式                        */
 /* ============================================= */
@@ -1838,92 +2798,6 @@ legend {
     border-radius: var(--border-radius);
     padding: calc(var(--spacing-unit) * 2);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* 报表历史表格样式 */
-.reports-history-table {
-    margin-top: 15px;
-}
-
-.reports-history-table th {
-    font-weight: 600;
-    color: var(--color-text-primary);
-    border-bottom: 2px solid var(--color-border);
-}
-
-.reports-history-table td {
-    vertical-align: middle;
-}
-
-/* 报表类型徽章 */
-.report-type-badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-    background-color: #e0f2fe;
-    color: #0277bd;
-    border: 1px solid #b3e5fc;
-}
-
-/* 状态徽章 */
-.status-badge {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-    text-align: center;
-    min-width: 60px;
-}
-
-.status-badge.status-completed {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.status-badge.status-generating {
-    background-color: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeaa7;
-    animation: pulse 1.5s ease-in-out infinite alternate;
-}
-
-.status-badge.status-failed {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-/* 脉冲动画 */
-@keyframes pulse {
-    from {
-        opacity: 1;
-    }
-    to {
-        opacity: 0.6;
-    }
-}
-
-/* 按钮组样式 */
-.reports-history-table .btn {
-    margin-right: 5px;
-}
-
-.reports-history-table .btn:last-child {
-    margin-right: 0;
-}
-
-.reports-history-table .btn-danger {
-    color: #dc3545;
-    border-color: #dc3545;
-}
-
-.reports-history-table .btn-danger:hover {
-    background-color: #dc3545;
-    color: white;
 }
 
 .section-header {
@@ -3172,53 +4046,6 @@ legend {
     color: #e2e8f0;
 }
 
-/* 深色主题下的报表历史表格样式 */
-.theme-dark .reports-history-table th {
-    color: #f7fafc;
-    border-bottom-color: rgba(255, 255, 255, 0.2);
-}
-
-.theme-dark .reports-history-table td {
-    color: #e2e8f0;
-}
-
-/* 深色主题下的报表类型徽章 */
-.theme-dark .report-type-badge {
-    background-color: rgba(14, 165, 233, 0.2);
-    color: #7dd3fc;
-    border-color: rgba(14, 165, 233, 0.3);
-}
-
-/* 深色主题下的状态徽章 */
-.theme-dark .status-badge.status-completed {
-    background-color: rgba(34, 197, 94, 0.2);
-    color: #86efac;
-    border-color: rgba(34, 197, 94, 0.3);
-}
-
-.theme-dark .status-badge.status-generating {
-    background-color: rgba(245, 158, 11, 0.2);
-    color: #fbbf24;
-    border-color: rgba(245, 158, 11, 0.3);
-}
-
-.theme-dark .status-badge.status-failed {
-    background-color: rgba(239, 68, 68, 0.2);
-    color: #fca5a5;
-    border-color: rgba(239, 68, 68, 0.3);
-}
-
-/* 深色主题下的按钮样式 */
-.theme-dark .reports-history-table .btn-danger {
-    color: #fca5a5;
-    border-color: #ef4444;
-}
-
-.theme-dark .reports-history-table .btn-danger:hover {
-    background-color: #ef4444;
-    color: white;
-}
-
 .theme-dark .section-header h3 {
     color: #f7fafc;
 }
@@ -3697,6 +4524,104 @@ legend {
     
     .stock-items-container {
         max-height: 300px;
+    }
+}
+
+/* 财务模块表格响应式设计 */
+@media (max-width: 768px) {
+    /* 财务模块控制区域 */
+    .billing-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .billing-filter {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* 表格响应式设计 */
+    .bills-table-container {
+        overflow-x: auto;
+        border-radius: 8px;
+    }
+
+    .bills-table {
+        min-width: 600px;
+        font-size: 13px;
+    }
+
+    .bills-table-header th {
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+
+    .bill-row td {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .expand-cell {
+        width: 40px;
+    }
+
+    .expand-btn {
+        padding: 6px;
+    }
+
+    .bill-id-cell {
+        font-size: 14px;
+    }
+
+    .invoice-cell {
+        font-size: 11px;
+        padding: 3px 6px;
+    }
+
+    .amount-cell {
+        font-size: 14px;
+    }
+
+    .bill-status {
+        font-size: 10px;
+        padding: 4px 8px;
+        min-width: 60px;
+    }
+
+    .bill-actions {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .btn-action {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    /* 明细表格响应式 */
+    .bill-details-content {
+        padding: 15px;
+    }
+
+    .bill-items-table {
+        font-size: 12px;
+    }
+
+    .bill-items-table th,
+    .bill-items-table td {
+        padding: 8px 6px;
+    }
+
+    .bill-items-total {
+        padding: 10px;
+    }
+
+    .total-row {
+        font-size: 12px;
+    }
+
+    .total-row:last-child {
+        font-size: 14px;
     }
 }
 

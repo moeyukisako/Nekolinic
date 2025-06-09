@@ -285,9 +285,15 @@ const apiClient = {
 
     finance: {
 
-        getBills: () => apiRequest('/api/v1/finance/bills'),
+        getBills: () => apiRequest('/api/v1/finance/bills/'),
 
         getBillById: (id) => apiRequest(`/api/v1/finance/bills/${id}`),
+
+        deleteBill: (id) => apiRequest(`/api/v1/finance/bills/${id}`, {
+
+            method: 'DELETE'
+
+        }),
 
         createPayment: (data) => apiRequest('/api/v1/finance/payments', {
 
@@ -295,12 +301,24 @@ const apiClient = {
 
             body: JSON.stringify(data)
 
+        }),
+
+        generateBillFromRecord: (medicalRecordId) => apiRequest(`/api/v1/finance/billing/generate-from-record/${medicalRecordId}`, {
+
+            method: 'POST'
+
+        }),
+
+        createBill: (billData) => apiRequest('/api/v1/finance/bills', {
+
+            method: 'POST',
+
+            body: JSON.stringify(billData)
+
         })
 
     },
-
     
-
     // 药房相关
     medicines: {
         /**

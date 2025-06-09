@@ -83,6 +83,21 @@ def delete_insurance(
     return service.insurance_service.remove(db=db, id=insurance_id)
 
 # --- 账单API端点 ---
+@router.post("/bills", response_model=schemas.Bill)
+def create_bill(
+    bill_data: schemas.BillCreate,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """创建账单 (需要认证)"""
+    try:
+        return service.billing_service.create_bill(db=db, bill_data=bill_data)
+    except (ResourceNotFoundException, ValidationException) as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
 @router.post("/billing/generate-from-record/{medical_record_id}", response_model=schemas.Bill)
 def generate_bill_from_medical_record(
     medical_record_id: int = Path(..., title="病历ID"),

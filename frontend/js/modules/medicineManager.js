@@ -546,6 +546,16 @@ async function handleAddStockSubmit() {
 }
 
 /**
+ * 调整库存数量的spinner按钮处理函数
+ */
+window.adjustStockQuantity = function(delta) {
+  const input = document.getElementById('stock-quantity');
+  const currentValue = parseInt(input.value) || 1;
+  const newValue = Math.max(1, currentValue + delta); // 最小值为1
+  input.value = newValue;
+};
+
+/**
  * 显示库存历史模态框
  */
 async function showStockHistoryModal(medicineId) {

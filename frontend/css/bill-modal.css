@@ -1,0 +1,349 @@
+/* 生成账单Modal样式 */
+
+.patient-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.patient-info {
+  flex: 1;
+}
+
+.patient-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.generate-bill-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.generate-bill-btn i {
+  font-size: 1rem;
+}
+
+/* 账单Modal内容样式 */
+.bill-modal-content {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.bill-basic-info {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.bill-basic-info h4 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.readonly-field {
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+}
+
+.total-amount {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+/* 账单明细部分 */
+.bill-items-section {
+  margin-top: 2rem;
+}
+
+.bill-items-section h4 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.bill-items-header {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.add-item-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.bill-items-container {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-primary);
+}
+
+.bill-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.bill-items-table thead {
+  background: var(--bg-secondary);
+}
+
+.bill-items-table th,
+.bill-items-table td {
+  padding: 0.75rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.bill-items-table th {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  background: var(--bg-secondary);
+}
+
+.bill-items-table td {
+  color: var(--text-secondary);
+}
+
+.bill-items-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.bill-items-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* 表格内的表单控件 */
+.bill-items-table .form-control {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  min-height: 32px;
+}
+
+.bill-items-table .form-control:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.bill-items-table select.form-control {
+  cursor: pointer;
+}
+
+.bill-items-table input[type="number"].form-control {
+  text-align: left;
+}
+
+.item-subtotal {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+}
+
+/* 删除按钮 */
+.bill-items-table .btn-danger {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  border-radius: 4px;
+}
+
+.bill-items-table .btn-danger:hover {
+  background: #dc3545;
+  border-color: #dc3545;
+}
+
+/* 账单明细项两行布局样式 */
+.bill-detail-item {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.bill-item-wrapper {
+  padding: 1rem;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  margin: 0.5rem 0;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.bill-item-row {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+.bill-item-row:last-child {
+  margin-bottom: 0;
+}
+
+.bill-form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+}
+
+.bill-form-group.item-name-group {
+  flex: 2;
+}
+
+.bill-form-group.item-type-group {
+  flex: 1.5;
+}
+
+.bill-form-group.delete-group {
+  flex: 0 0 auto;
+  align-self: flex-end;
+}
+
+.bill-form-group.quantity-group {
+  flex: 1;
+}
+
+.bill-form-group.price-group {
+  flex: 1.5;
+}
+
+.bill-form-group.subtotal-group {
+  flex: 1;
+}
+
+.bill-form-group label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.subtotal-display {
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+}
+
+.subtotal-display .item-subtotal {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .patient-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .patient-actions {
+    justify-content: center;
+  }
+  
+  .bill-modal-content {
+    padding: 0.5rem;
+  }
+  
+  .bill-item-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .bill-form-group {
+    flex: 1;
+  }
+  
+  .bill-form-group.delete-group {
+    align-self: stretch;
+  }
+  
+  .bill-basic-info {
+    padding: 1rem;
+  }
+  
+  .bill-items-table {
+    font-size: 0.8rem;
+  }
+  
+  .bill-items-table th,
+  .bill-items-table td {
+    padding: 0.5rem 0.3rem;
+  }
+  
+  .bill-items-table .form-control {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.4rem;
+  }
+}
+
+/* 深色主题适配 */
+.theme-dark .bill-basic-info {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.theme-dark .readonly-field {
+  background: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.theme-dark .bill-items-container {
+  border-color: var(--border-color);
+  background: var(--bg-primary);
+}
+
+.theme-dark .bill-items-table th {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.theme-dark .bill-items-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.theme-dark .bill-items-table .form-control {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.theme-dark .bill-items-table .form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}

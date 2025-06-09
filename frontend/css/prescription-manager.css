@@ -353,64 +353,8 @@
     min-width: 80px;
 }
 
-/* --- CSS 最终修正方案 --- */
-
-/* 1. 隐藏所有输入框的原生 Spinner */
-.quantity-input::-webkit-outer-spin-button,
-.quantity-input::-webkit-inner-spin-button,
-.duration-input::-webkit-outer-spin-button,
-.duration-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-.quantity-input,
-.duration-input {
-    -moz-appearance: textfield; /* 针对 Firefox */
-    padding-right: 20px; /* 为自定义按钮留出空间 */
-}
-
-/* 2. 自定义 Spinner 组件的包装容器 */
-.spinner-input-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-/* 3. 自定义按钮的通用样式 */
-.spinner-btn {
-    position: absolute;
-    right: 1px; /* 微调按钮位置 */
-    width: 20px;
-    height: 50%;
-    padding: 0;
-    margin: 0;
-    border: none;
-    background-color: transparent;
-    cursor: pointer;
-    color: #B30074; /* 设置箭头颜色为品牌色 */
-    font-size: 8px;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s, color 0.2s;
-    z-index: 2;
-}
-
-.spinner-btn:hover {
-    background-color: var(--color-bg-hover);
-    color: #B30074; /* 悬停时保持品牌色 */
-}
-
-/* 4. 分别定位上下按钮 */
-.spinner-up {
-    top: 1px;
-    border-top-right-radius: var(--border-radius);
-}
-
-.spinner-down {
-    bottom: 1px;
-    border-bottom-right-radius: var(--border-radius);
-}
+/* 处方管理模块特定的数字输入框样式 - 现在使用全局spinner样式 */
+/* .quantity-input 和 .duration-input 现在使用全局 spinner 样式 */
 
 /* 状态徽章样式 */
 .status-badge {

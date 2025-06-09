@@ -15,7 +15,7 @@
   "preferences": {
     "autoSave": true,
     "showTooltips": true,
-    "sessionTimeout": 30
+    "sessionTimeout": 32
   },
   "backup": {
     "autoBackup": false,

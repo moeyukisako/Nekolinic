@@ -68,7 +68,7 @@ class BillBase(BaseModel):
     medical_record_id: int
 
 class BillCreate(BillBase):
-    pass
+    items: Optional[List[BillItemBase]] = []
 
 class BillUpdate(BaseModel):
     status: Optional[str] = None

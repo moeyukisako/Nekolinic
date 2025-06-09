@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Bill Modal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/bill-modal.css">
+</head>
+<body>
+    <div id="test-container">
+        <table class="bill-items-table">
+            <tbody id="bill-items-tbody">
+            </tbody>
+        </table>
+        <button onclick="addBillItem()">添加收费项目</button>
+        <div class="total-amount">¥0.00</div>
+    </div>
+    <script>
+        window.addBillItem = function() {
+            console.log('addBillItem called');
+            const container = document.getElementById('bill-items-tbody');
+            if (!container) {
+                console.error('Container not found');
+                return;
+            }
+            
+            const detailItem = document.createElement('tr');
+            detailItem.className = 'bill-detail-item';
+            detailItem.innerHTML = `
+                <td colspan="6">
+                    <div class="bill-item-wrapper">
+                        <div class="bill-item-row">
+                            <input type="text" class="item-name" placeholder="项目名称">
+                            <select class="item-type">
+                                <option value="consultation">问诊</option>
+                            </select>
+                            <button onclick="removeBillItem(this)">删除</button>
+                        </div>
+                        <div class="bill-item-row">
+                            <input type="number" class="item-quantity" value="1" onchange="calculateItemSubtotal(this)">
+                            <input type="number" class="item-price" step="0.01" onchange="calculateItemSubtotal(this)">
+                            <span class="item-subtotal">¥0.00</span>
+                        </div>
+                    </div>
+                </td>
+            `;
+            container.appendChild(detailItem);
+            console.log('Item added successfully');
+        };
+        
+        window.removeBillItem = function(button) {
+            button.closest('tr').remove();
+        };
+        
+        window.calculateItemSubtotal = function(input) {
+            const row = input.closest('tr');
+            const quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
+            const subtotal = quantity * price;
+            row.querySelector('.item-subtotal').textContent = `¥${subtotal.toFixed(2)}`;
+        };
+    </script>
+</body>
+</html>

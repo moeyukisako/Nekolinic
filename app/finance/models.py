@@ -147,7 +147,7 @@ class Bill(Base, Auditable):
     status = Column(Enum(BillStatus), nullable=False, default=BillStatus.UNPAID)
     
     patient_id = Column(Integer, ForeignKey('patients.id'), nullable=False)
-    medical_record_id = Column(Integer, ForeignKey('medical_records.id'), unique=True)
+    medical_record_id = Column(Integer, ForeignKey('medical_records.id'), nullable=True)
     
     # 新增支付相关字段
     payment_method = Column(String, nullable=True)  # 例如 'cash', 'alipay', 'wechat_pay'

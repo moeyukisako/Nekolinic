@@ -403,11 +403,8 @@ async function initPrescriptionModal(prescription) {
 /**
  * 添加处方明细项
  */
-// 辅助函数：创建带有自定义按钮的数字输入框
+// 辅助函数：创建数字输入框
 function createSpinnerInput(className, initialValue, placeholder) {
-    const wrapper = document.createElement('div');
-    wrapper.className = `spinner-input-wrapper ${className}-wrapper`;
-
     const input = document.createElement('input');
     input.type = 'number';
     input.className = className;
@@ -416,33 +413,7 @@ function createSpinnerInput(className, initialValue, placeholder) {
     input.placeholder = placeholder;
     input.required = true;
 
-    const btnUp = document.createElement('button');
-    btnUp.type = 'button';
-    btnUp.className = 'spinner-btn spinner-up';
-    btnUp.textContent = '▲';
-    btnUp.tabIndex = -1; // 防止被 Tab 键聚焦
-
-    const btnDown = document.createElement('button');
-    btnDown.type = 'button';
-    btnDown.className = 'spinner-btn spinner-down';
-    btnDown.textContent = '▼';
-    btnDown.tabIndex = -1;
-
-    // 增加按钮的点击事件
-    btnUp.addEventListener('click', () => {
-        input.stepUp();
-    });
-
-    // 减少按钮的点击事件
-    btnDown.addEventListener('click', () => {
-        input.stepDown();
-    });
-
-    wrapper.appendChild(input);
-    wrapper.appendChild(btnUp);
-    wrapper.appendChild(btnDown);
-
-    return wrapper; // 返回整个包装好的组件
+    return input; // 返回输入框元素
 }
 
 async function addPrescriptionDetail() {
@@ -471,14 +442,14 @@ async function addPrescriptionDetail() {
     drugGroup.appendChild(drugLabel);
     drugGroup.appendChild(drugSelect);
     
-    // 数量组（使用自定义spinner）
+    // 数量组
     const quantityGroup = document.createElement('div');
     quantityGroup.className = 'form-group quantity-group';
     const quantityLabel = document.createElement('label');
     quantityLabel.textContent = window.getTranslation ? window.getTranslation('quantity') : '数量';
-    const quantityWrapper = createSpinnerInput('quantity-input', 1, window.getTranslation ? window.getTranslation('quantity') : '数量');
+    const quantityInput = createSpinnerInput('quantity-input', 1, window.getTranslation ? window.getTranslation('quantity') : '数量');
     quantityGroup.appendChild(quantityLabel);
-    quantityGroup.appendChild(quantityWrapper);
+    quantityGroup.appendChild(quantityInput);
     
     // 删除按钮组
     const deleteGroup = document.createElement('div');
@@ -510,14 +481,14 @@ async function addPrescriptionDetail() {
     frequencyGroup.appendChild(frequencyLabel);
     frequencyGroup.appendChild(frequencyInput);
     
-    // 天数组（使用自定义spinner）
+    // 天数组
     const durationGroup = document.createElement('div');
     durationGroup.className = 'form-group';
     const durationLabel = document.createElement('label');
     durationLabel.textContent = window.getTranslation ? window.getTranslation('days') : '天数';
-    const durationWrapper = createSpinnerInput('duration-input', '', window.getTranslation ? window.getTranslation('days') : '天数');
+    const durationInput = createSpinnerInput('duration-input', '', window.getTranslation ? window.getTranslation('days') : '天数');
     durationGroup.appendChild(durationLabel);
-    durationGroup.appendChild(durationWrapper);
+    durationGroup.appendChild(durationInput);
     
     secondRow.appendChild(frequencyGroup);
     secondRow.appendChild(durationGroup);

@@ -31,18 +31,32 @@ export default class Pagination {
     // 清空容器
     this.container.innerHTML = '';
     
-    if (this.totalPages <= 1) {
-      return this; // 只有一页或没有数据，不显示分页
+    if (this.totalPages === 0) {
+      return this; // 没有数据，不显示分页
     }
     
     // 创建分页容器
     const paginationEl = document.createElement('div');
     paginationEl.className = 'pagination';
     
+    // 添加分页信息
+    const paginationInfo = document.createElement('div');
+    paginationInfo.className = 'pagination-info';
+    // 使用国际化翻译
+    const infoText = window.t ? window.t('pagination_info').replace('{current}', this.currentPage).replace('{total}', this.totalPages) : `第 ${this.currentPage} 页，共 ${this.totalPages} 页`;
+    paginationInfo.textContent = infoText;
+    this.container.appendChild(paginationInfo);
+    
+    // 如果只有一页，只显示信息，不显示控件
+    if (this.totalPages === 1) {
+      return this;
+    }
+    
     // 上一页按钮
     const prevButton = document.createElement('button');
     prevButton.className = `pagination-btn prev-btn${this.currentPage <= 1 ? ' disabled' : ''}`;
     prevButton.innerHTML = '&laquo;';
+    prevButton.title = window.t ? window.t('pagination_prev') : '上一页';
     prevButton.disabled = this.currentPage <= 1;
     prevButton.addEventListener('click', () => this.goToPage(this.currentPage - 1));
     paginationEl.appendChild(prevButton);
@@ -61,6 +75,7 @@ export default class Pagination {
       const firstPageBtn = document.createElement('button');
       firstPageBtn.className = 'pagination-btn page-btn';
       firstPageBtn.textContent = '1';
+      firstPageBtn.title = window.t ? window.t('pagination_first') : '首页';
       firstPageBtn.addEventListener('click', () => this.goToPage(1));
       paginationEl.appendChild(firstPageBtn);
       
@@ -95,6 +110,7 @@ export default class Pagination {
       const lastPageBtn = document.createElement('button');
       lastPageBtn.className = 'pagination-btn page-btn';
       lastPageBtn.textContent = this.totalPages;
+      lastPageBtn.title = window.t ? window.t('pagination_last') : '末页';
       lastPageBtn.addEventListener('click', () => this.goToPage(this.totalPages));
       paginationEl.appendChild(lastPageBtn);
     }
@@ -103,6 +119,7 @@ export default class Pagination {
     const nextButton = document.createElement('button');
     nextButton.className = `pagination-btn next-btn${this.currentPage >= this.totalPages ? ' disabled' : ''}`;
     nextButton.innerHTML = '&raquo;';
+    nextButton.title = window.t ? window.t('pagination_next') : '下一页';
     nextButton.disabled = this.currentPage >= this.totalPages;
     nextButton.addEventListener('click', () => this.goToPage(this.currentPage + 1));
     paginationEl.appendChild(nextButton);
@@ -147,4 +164,4 @@ export default class Pagination {
     
     this.render();
   }
-} 
+}

@@ -27,7 +27,7 @@ export default async function render(container, { signal, payload }) {
             <div class="patients-sidebar">
               <div class="sidebar-header">
                 <div class="search-box">
-                  <input type="text" id="patient-search" data-i18n-placeholder="search_patients_placeholder" placeholder="搜索患者...">
+                  <input type="text" id="patient-search" data-i18n-placeholder="search_patients_placeholder" placeholder="搜索患者姓名...">
                 </div>
               </div>
               <div class="patients-list" id="patients-list"></div>
@@ -58,7 +58,7 @@ export default async function render(container, { signal, payload }) {
     renderPatientList(1, query, signal);
   }, { signal });
 
-  document.getElementById('patients-list').addEventListener('click', (e) => handlePatientClick(e, signal), { signal });
+  // 患者列表点击事件将在 bindPatientItemEvents 中处理
   
   initResizer(signal);
 
@@ -78,6 +78,13 @@ export default async function render(container, { signal, payload }) {
   // --- 返回清理函数 ---
   return function cleanup() {
     console.log('Medical records module cleaned up');
+    // 重置模块状态变量
+    currentPatientId = null;
+    currentRecordId = null;
+    currentPatient = null;
+    if (pagination) {
+      pagination = null;
+    }
     // AbortController 会自动清理所有通过 signal 绑定的事件
   };
 }
@@ -130,25 +137,145 @@ async function loadAndSelectPatient(patientId, signal) {
 }
 
 /**
- * 处理左侧患者列表的点击事件
+ * 绑定患者项事件
  */
-function handlePatientClick(e, signal) {
-  const patientItem = e.target.closest('.patient-item');
-  if (patientItem && !patientItem.classList.contains('active')) {
-    const patientId = patientItem.dataset.id;
-    
-    // 更新选中状态
-    document.querySelectorAll('.patient-item').forEach(item => {
-      item.classList.remove('active');
-    });
-    patientItem.classList.add('active');
-    patientItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    
-    currentPatientId = patientId; // 更新当前选中的患者ID
-    
-    // 渲染右侧病历编辑区
-    renderMedicalRecordEditor(patientId, signal);
+function bindPatientItemEvents(signal) {
+  const patientsContainer = document.getElementById('patients-list');
+  if (!patientsContainer) return;
+
+  patientsContainer.addEventListener('click', async (e) => {
+    const action = e.target.closest('[data-action]')?.dataset.action;
+    const patientItem = e.target.closest('.patient-item');
+    const patientId = patientItem?.dataset.id;
+
+    if (!patientId) return;
+
+    switch (action) {
+      case 'toggle-patient':
+        await togglePatientRecords(patientId, patientItem, signal);
+        break;
+      case 'add-record':
+        await handleAddNewRecord(patientId, signal);
+        break;
+      default:
+        // 点击病历项
+        const recordItem = e.target.closest('.record-item');
+        if (recordItem) {
+          const recordId = recordItem.dataset.recordId;
+          await handleRecordClick(patientId, recordId, signal);
+        }
+        break;
+    }
+  }, { signal });
+}
+
+/**
+ * 切换患者病历列表显示
+ */
+async function togglePatientRecords(patientId, patientItem, signal) {
+  const recordsList = patientItem.querySelector('.medical-records-list');
+  const expandIcon = patientItem.querySelector('.expand-icon i');
+  const recordsContent = patientItem.querySelector('.records-content');
+  const recordsLoading = patientItem.querySelector('.records-loading');
+
+  if (recordsList.style.display === 'none') {
+    // 展开病历列表
+    recordsList.style.display = 'block';
+    expandIcon.className = 'fas fa-chevron-down';
+    patientItem.classList.add('expanded');
+
+    // 每次展开都重新加载病历列表，确保显示最新数据
+    recordsLoading.style.display = 'flex';
+    try {
+      const records = await apiClient.medicalRecords.getByPatientId(patientId);
+      renderRecordsList(recordsContent, records);
+    } catch (error) {
+      console.error('加载病历列表失败:', error);
+      recordsContent.innerHTML = `<div class="error-message">加载失败: ${error.message}</div>`;
+    } finally {
+      recordsLoading.style.display = 'none';
+    }
+  } else {
+    // 收起病历列表
+    recordsList.style.display = 'none';
+    expandIcon.className = 'fas fa-chevron-right';
+    patientItem.classList.remove('expanded');
   }
+}
+
+/**
+ * 渲染病历列表
+ */
+function renderRecordsList(container, records) {
+  if (!records || records.length === 0) {
+    container.innerHTML = `
+      <div class="no-records">
+        <i class="fas fa-file-medical"></i>
+        <span data-i18n="no_medical_records">暂无病历</span>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = records.map(record => `
+    <div class="record-item" data-record-id="${record.id}">
+      <div class="record-info">
+        <div class="record-id">${record.display_id || record.id}</div>
+        <div class="record-date">${new Date(record.record_date).toLocaleDateString('zh-CN')}</div>
+        <div class="record-diagnosis">${record.diagnosis || '未填写诊断'}</div>
+      </div>
+      <div class="record-actions">
+        <i class="fas fa-edit"></i>
+      </div>
+    </div>
+  `).join('');
+}
+
+/**
+ * 处理病历点击事件
+ */
+async function handleRecordClick(patientId, recordId, signal) {
+  currentPatientId = patientId;
+  currentRecordId = recordId;
+  
+  // 更新选中状态
+  updateRecordSelection(recordId);
+  
+  // 渲染右侧病历编辑器
+  await renderMedicalRecordEditor(patientId, signal, recordId);
+}
+
+/**
+ * 更新病历选中状态
+ */
+function updateRecordSelection(recordId) {
+  const patientsContainer = document.getElementById('patients-list');
+  if (!patientsContainer) return;
+
+  // 移除所有选中状态
+  patientsContainer.querySelectorAll('.record-item').forEach(item => {
+    item.classList.remove('active');
+  });
+
+  // 添加当前选中状态
+  const recordItem = patientsContainer.querySelector(`.record-item[data-record-id="${recordId}"]`);
+  if (recordItem) {
+    recordItem.classList.add('active');
+  }
+}
+
+/**
+ * 处理添加新病历
+ */
+async function handleAddNewRecord(patientId, signal) {
+  currentPatientId = patientId;
+  currentRecordId = null;
+  
+  // 清除病历选中状态
+  updateRecordSelection(null);
+  
+  // 渲染右侧病历编辑器（新建模式）
+  await renderMedicalRecordEditor(patientId, signal, null);
 }
 
 
@@ -175,21 +302,36 @@ async function renderPatientList(page = 1, query = '', signal) {
 
     patientsContainer.innerHTML = patients.map(patient => `
       <div class="patient-item" data-id="${patient.id}">
-        <div class="patient-info">
+        <div class="patient-row" data-action="toggle-patient">
+          <div class="expand-icon">
+            <i class="fas fa-chevron-right"></i>
+          </div>
           <div class="patient-name">${patient.name || '未命名'}</div>
-          <div class="patient-details">
-            <span>${patient.gender === 'male' ? (window.getTranslation ? window.getTranslation('gender_male') : '男') : (window.getTranslation ? window.getTranslation('gender_female') : '女')}</span>
-            <span>${patient.birth_date ? calculateAge(patient.birth_date) + (window.getTranslation ? window.getTranslation('age_suffix') : '岁') : ''}</span>
+          <div class="patient-age">${patient.birth_date ? calculateAge(patient.birth_date) + (window.getTranslation ? window.getTranslation('age_suffix') : '岁') : ''}</div>
+          <div class="patient-gender">
+            <i class="fas ${patient.gender === 'male' ? 'fa-mars' : 'fa-venus'}"></i>
+          </div>
+        </div>
+        <div class="medical-records-list" style="display: none;">
+          <div class="records-loading" style="display: none;">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span data-i18n="loading">加载中...</span>
+          </div>
+          <div class="records-content">
+            <!-- 病历列表将在这里动态加载 -->
+          </div>
+          <div class="add-record-btn-container">
+            <button class="btn btn-primary btn-sm add-record-btn" data-action="add-record" data-patient-id="${patient.id}">
+              <i class="fas fa-plus"></i>
+              <span data-i18n="add_new_record">添加新病历</span>
+            </button>
           </div>
         </div>
       </div>
     `).join('');
 
-    // 保持当前选中项的高亮
-    if (currentPatientId) {
-        const activeItem = patientsContainer.querySelector(`.patient-item[data-id="${currentPatientId}"]`);
-        if(activeItem) activeItem.classList.add('active');
-    }
+    // 绑定患者项点击事件
+    bindPatientItemEvents(signal);
 
     // 渲染分页
     renderPagination(paginationContainer, page, totalPages, (newPage) => {
@@ -223,7 +365,7 @@ function renderPagination(container, currentPage, totalPages, onPageChange) {
 /**
  * 渲染右侧病历编辑器
  */
-async function renderMedicalRecordEditor(patientId, signal) {
+async function renderMedicalRecordEditor(patientId, signal, recordId = null) {
   const contentContainer = document.getElementById('editor-content');
   if (!contentContainer) return;
 
@@ -233,12 +375,69 @@ async function renderMedicalRecordEditor(patientId, signal) {
     const patient = await apiClient.patients.getById(patientId);
     currentPatient = patient;
 
-    // 获取患者的最新病历，如果没有就为空
-    const records = await apiClient.medicalRecords.getByPatientId(patientId, 1, 1);
-    const latestRecord = (records && records.length > 0) ? records[0] : null;
-    currentRecordId = latestRecord?.id;
+    // 获取指定病历或最新病历
+    let latestRecord = null;
+    if (recordId) {
+      // 编辑模式：加载指定病历
+      latestRecord = await apiClient.medicalRecords.getById(recordId);
+      currentRecordId = recordId;
+    } else {
+      // 新建模式：不加载任何病历数据，保持空白表单
+      latestRecord = null;
+      currentRecordId = null;
+    }
 
     const currentUser = window.store.get('currentUser') || { id: null, full_name: '未知' };
+    
+    // 生成账单按钮事件
+    const generateBillBtn = document.getElementById('generate-bill-btn');
+    if (generateBillBtn) {
+        generateBillBtn.addEventListener('click', async () => {
+            if (!latestRecord || !latestRecord.id) {
+                window.showNotification(window.getTranslation ? window.getTranslation('no_record_to_bill') : '没有可生成账单的病历', 'warning');
+                return;
+            }
+            
+            try {
+                await window.generateBillForRecord(latestRecord.id);
+            } catch (error) {
+                console.error('生成账单失败:', error);
+                window.showNotification((window.getTranslation ? window.getTranslation('generate_bill_failed') : '生成账单失败') + ': ' + error.message, 'error');
+            }
+        });
+    }
+    
+    // 开具新处方按钮事件
+    const newPrescriptionBtn = document.getElementById('new-prescription-btn');
+    if (newPrescriptionBtn) {
+        newPrescriptionBtn.addEventListener('click', async () => {
+            if (!latestRecord || !latestRecord.id) {
+                window.showNotification(window.getTranslation ? window.getTranslation('no_record_for_prescription') : '没有可开具处方的病历', 'warning');
+                return;
+            }
+            
+            if (!latestRecord.patient_name) {
+                window.showNotification(window.getTranslation ? window.getTranslation('patient_info_missing') : '患者信息缺失', 'error');
+                return;
+            }
+            
+            try {
+                // 调用处方管理模块的全局函数
+                if (window.openPrescriptionModalWithContext) {
+                    await window.openPrescriptionModalWithContext(
+                        latestRecord.patient_id,
+                        latestRecord.patient_name,
+                        latestRecord.id
+                    );
+                } else {
+                    window.showNotification(window.getTranslation ? window.getTranslation('prescription_module_not_loaded') : '处方模块未加载', 'error');
+                }
+            } catch (error) {
+                console.error('开具处方失败:', error);
+                window.showNotification((window.getTranslation ? window.getTranslation('open_prescription_failed') : '开具处方失败') + ': ' + error.message, 'error');
+            }
+        });
+    }
     
     // --- 这里是包含了所有字段的完整HTML ---
     contentContainer.innerHTML = `
@@ -248,6 +447,9 @@ async function renderMedicalRecordEditor(patientId, signal) {
             <h3>${patient.name}</h3>
           </div>
           <div class="patient-actions">
+            <button type="button" class="btn btn-success create-prescription-btn" onclick="openPrescriptionModalWithContext(${patient.id}, '${patient.name}', ${latestRecord?.id || 'null'})" data-i18n="add_new_prescription" ${!latestRecord?.id ? 'disabled' : ''}>
+              <i class="fas fa-prescription-bottle"></i> <span data-i18n="add_new_prescription">开具新处方</span>
+            </button>
             <button type="button" class="btn btn-primary generate-bill-btn" onclick="showGenerateBillModal(${patient.id}, '${patient.name}', ${latestRecord?.id || 'null'})" data-i18n="generate_bill">
               <i class="fas fa-file-invoice"></i> <span data-i18n="generate_bill">生成账单</span>
             </button>
@@ -256,7 +458,7 @@ async function renderMedicalRecordEditor(patientId, signal) {
         <form id="medical-record-form">
           <input type="hidden" id="record-id" value="${latestRecord?.id || ''}">
           <input type="hidden" id="patient-id" value="${patient.id}">
-          <input type="hidden" id="doctor-id" value="${currentUser.id}">
+          <input type="hidden" id="doctor-id" value="${currentUser?.id || 1}">
           
           <div class="form-row">
             <div class="form-group">
@@ -394,6 +596,24 @@ async function handleMedicalRecordSubmit(e, signal) {
     }
     // 重新渲染，以确保数据同步
     await renderMedicalRecordEditor(patientId, signal);
+    
+    // 刷新左侧患者列表中的病历列表，确保显示最新保存的病历
+    const patientItem = document.querySelector(`.patient-item[data-id="${patientId}"]`);
+    if (patientItem && patientItem.classList.contains('expanded')) {
+      const recordsContent = patientItem.querySelector('.records-content');
+      const recordsLoading = patientItem.querySelector('.records-loading');
+      if (recordsContent && recordsLoading) {
+        recordsLoading.style.display = 'flex';
+        try {
+          const records = await apiClient.medicalRecords.getByPatientId(patientId);
+          renderRecordsList(recordsContent, records);
+        } catch (error) {
+          console.error('刷新病历列表失败:', error);
+        } finally {
+          recordsLoading.style.display = 'none';
+        }
+      }
+    }
   } catch (error) {
     if (signal?.aborted) return;
     console.error(window.getTranslation ? window.getTranslation('save_medical_record_failed') : '保存病历失败', error);
@@ -455,13 +675,39 @@ window.showGenerateBillModal = function(patientId, patientName, recordId) {
       console.log('账单确认，数据:', billData);
       
       try {
-        // 这里可以调用API保存账单
-        console.log('生成的账单数据:', billData);
-        window.showNotification('账单生成成功', 'success');
+        // 检查是否有账单明细
+        if (!billData.items || billData.items.length === 0) {
+          // 如果没有明细，使用后端自动生成
+          console.log('使用后端自动生成账单，病历ID:', recordId);
+          const result = await apiClient.finance.generateBillFromRecord(recordId);
+          console.log('后端生成账单结果:', result);
+          const successMessage = window.getTranslation ? window.getTranslation('bill_generated_success', '账单生成成功') : '账单生成成功';
+          window.showNotification(`${successMessage}，账单ID: ${result.id}`, 'success');
+        } else {
+          // 如果有明细，调用创建账单API
+          console.log('使用前端明细创建账单');
+          const createBillData = {
+            patient_id: parseInt(patientId),
+            medical_record_id: recordId ? parseInt(recordId) : null,
+            invoice_number: billData.bill.invoice_number,
+            bill_date: billData.bill.bill_date,
+            total_amount: billData.bill.total_amount,
+            status: billData.bill.status || 'UNPAID',
+            items: billData.items
+          };
+          
+          console.log('发送创建账单请求:', createBillData);
+          const result = await apiClient.finance.createBill(createBillData);
+          console.log('创建账单结果:', result);
+          const successMessage = window.getTranslation ? window.getTranslation('bill_generated_success', '账单生成成功') : '账单生成成功';
+          window.showNotification(`${successMessage}，账单ID: ${result.id}，总金额: ¥${billData.bill.total_amount.toFixed(2)}`, 'success');
+        }
+        
         return true; // 允许模态框关闭
       } catch (error) {
         console.error('生成账单失败:', error);
-        window.showNotification('生成账单失败', 'error');
+        const errorMessage = window.getTranslation ? window.getTranslation('bill_generation_failed', '生成账单失败') : '生成账单失败';
+        window.showNotification(`${errorMessage}: ${error.message}`, 'error');
         return false; // 阻止模态框关闭
       }
     },

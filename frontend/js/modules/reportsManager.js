@@ -247,7 +247,8 @@ export default function renderReportsModule(container, options = {}) {
   if (refreshBtn) {
     refreshBtn.addEventListener('click', () => {
       renderReportsHistory();
-      window.showNotification('报表历史已刷新', 'info');
+      const message = window.getTranslation ? window.getTranslation('report_history_refreshed', '报表历史已刷新') : '报表历史已刷新';
+        window.showNotification(message, 'info');
     }, { signal });
   }
   
@@ -259,7 +260,8 @@ export default function renderReportsModule(container, options = {}) {
         reportsHistory = [];
         localStorage.setItem('reportsHistory', JSON.stringify(reportsHistory));
         renderReportsHistory();
-        window.showNotification('报表历史已清理', 'success');
+        const successMessage = window.getTranslation ? window.getTranslation('report_history_cleared', '报表历史已清理') : '报表历史已清理';
+        window.showNotification(successMessage, 'success');
       }
     }, { signal });
   }
@@ -272,7 +274,8 @@ export default function renderReportsModule(container, options = {}) {
       window.showNotification(`正在下载 ${report.name}`, 'info');
       // 这里可以添加实际的下载逻辑
     } else {
-      window.showNotification('报表尚未生成完成', 'warning');
+      const warningMessage = window.getTranslation ? window.getTranslation('report_not_ready', '报表尚未生成完成') : '报表尚未生成完成';
+        window.showNotification(warningMessage, 'warning');
     }
   };
   
@@ -282,7 +285,8 @@ export default function renderReportsModule(container, options = {}) {
       reportsHistory = reportsHistory.filter(r => r.id !== reportId);
       localStorage.setItem('reportsHistory', JSON.stringify(reportsHistory));
       renderReportsHistory();
-      window.showNotification('报表已删除', 'success');
+      const successMessage = window.getTranslation ? window.getTranslation('report_deleted', '报表已删除') : '报表已删除';
+        window.showNotification(successMessage, 'success');
     }
   };
   

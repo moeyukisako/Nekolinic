@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Date, Text, Float, Enum
+from sqlalchemy import Column, Integer, String, Text, DateTime, Date, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from app.core.auditing import Auditable, register_audit_model
@@ -35,6 +35,7 @@ class MedicalRecordHistory(Base):
 
     # Snapshot of MedicalRecord fields
     id = Column(Integer, index=True)
+    display_id = Column(String(50), nullable=True)  # 添加display_id字段
     record_date = Column(DateTime)
     chief_complaint = Column(Text)  # 主诉
     present_illness = Column(Text)  # 现病史
@@ -98,13 +99,14 @@ class Patient(Base, Auditable):
     updated_by_id = Column(Integer, ForeignKey('users.id'), nullable=True)
     deleted_at = Column(DateTime, nullable=True)
     
-    appointments = relationship("Appointment", back_populates="patient")
+    # appointments = relationship("Appointment", back_populates="patient")  # 暂时注释避免循环依赖
     medical_records = relationship("MedicalRecord", back_populates="patient")
 
 @register_audit_model(MedicalRecordHistory)
 class MedicalRecord(Base, Auditable):
     __tablename__ = 'medical_records'
     id = Column(Integer, primary_key=True, index=True)
+    display_id = Column(String(50), unique=True, nullable=False, index=True)  # 显示用的病历ID，格式如MR20241201001
     record_date = Column(DateTime, nullable=False)
     chief_complaint = Column(Text)  # 主诉
     present_illness = Column(Text)  # 现病史
@@ -131,7 +133,7 @@ class MedicalRecord(Base, Auditable):
     deleted_at = Column(DateTime, nullable=True)
     
     patient = relationship("Patient", back_populates="medical_records")
-    appointment = relationship("Appointment", back_populates="medical_record")
+    # appointment = relationship("Appointment", back_populates="medical_record")  # 暂时注释避免循环依赖
     vital_sign = relationship("VitalSign", back_populates="medical_record", uselist=False)
     prescriptions = relationship("Prescription", back_populates="medical_record")
 

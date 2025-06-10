@@ -7,6 +7,7 @@ from app.core.exceptions import ResourceNotFoundException, ValidationException
 from app.core import security
 from app.user import models as user_models
 from app.core.schemas import PaginatedResponse
+from app.clinic.service import medical_record_service
 
 # 修改APIRouter配置
 router = APIRouter(redirect_slashes=False)
@@ -42,6 +43,15 @@ def read_patients(
     
     # 直接返回这个字典，FastAPI会根据response_model将其序列化为正确的JSON
     return data
+
+@router.get("/{patient_id}/medical-records", response_model=List[schemas.MedicalRecord])
+def get_medical_records_for_patient(
+    patient_id: int,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """获取指定患者的所有病历 (需要认证)"""
+    return medical_record_service.get_by_patient_id(db, patient_id=patient_id)
 
 @router.get("/{patient_id}", response_model=schemas.Patient)
 def read_patient(
@@ -111,7 +121,7 @@ def create_patient_medical_record(
     if record_in.patient_id != patient_id:
         raise HTTPException(status_code=400, detail="URL中的患者ID与请求体中的不一致")
     
-    return service.medical_record_service.create(db=db, obj_in=record_in)
+    return medical_record_service.create_medical_record(db=db, obj_in=record_in)
 
 @router.get("/{patient_id}/medical-records/", response_model=List[schemas.MedicalRecord])
 def read_patient_medical_records(
@@ -127,7 +137,7 @@ def read_patient_medical_records(
     if not patient:
         raise HTTPException(status_code=404, detail="患者不存在")
     
-    return service.medical_record_service.get_by_patient_id(db, patient_id=patient_id, skip=skip, limit=limit)
+    return medical_record_service.get_by_patient_id(db, patient_id=patient_id, skip=skip, limit=limit)
 
 # --- MedicalRecord Endpoints (独立) ---
 @router.get("/medical-records/{record_id}", response_model=schemas.MedicalRecord)
@@ -137,7 +147,7 @@ def read_medical_record(
     current_user: user_models.User = Depends(security.get_current_active_user)
 ):
     """获取特定病历 (需要认证)"""
-    record = service.medical_record_service.get(db, id=record_id)
+    record = medical_record_service.get(db, id=record_id)
     if not record:
         raise HTTPException(status_code=404, detail="病历不存在")
     return record
@@ -152,7 +162,7 @@ def update_medical_record(
     """
     Update a medical record.
     """
-    record = service.medical_record_service.get(db, id=record_id)
+    record = medical_record_service.get(db, id=record_id)
     if not record:
         raise HTTPException(status_code=404, detail="Medical record not found")
 
@@ -173,7 +183,7 @@ def update_medical_record(
         )
     # --- 修正结束 ---
 
-    updated_record = service.medical_record_service.update(
+    updated_record = medical_record_service.update(
         db=db, db_obj=record, obj_in=record_in
     )
     return updated_record

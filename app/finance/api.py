@@ -113,7 +113,7 @@ def generate_bill_from_medical_record(
             detail=str(e)
         )
 
-@router.get("/bills/", response_model=List[schemas.BillSummary])
+@router.get("/bills/")
 def read_bills(
     skip: int = 0,
     limit: int = 100,
@@ -121,7 +121,14 @@ def read_bills(
     current_user: user_models.User = Depends(security.get_current_active_user)
 ):
     """获取账单列表 (需要认证)"""
-    return service.billing_service.get_multi_bills(db=db, skip=skip, limit=limit)
+    bills = service.billing_service.get_multi_bills(db=db, skip=skip, limit=limit)
+    total = service.billing_service.get_bills_count(db=db)
+    return {
+        "items": bills,
+        "total": total,
+        "skip": skip,
+        "limit": limit
+    }
 
 @router.get("/bills/{bill_id}", response_model=schemas.Bill)
 def read_bill(

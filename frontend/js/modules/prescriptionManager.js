@@ -18,7 +18,6 @@ export default async function render(container, { signal }) {
                     <div class="table-header-controls">
                         <div class="search-input-group">
                             <input type="text" id="prescription-search-input" data-i18n-placeholder="search_prescription_placeholder" placeholder="按患者姓名、医生姓名搜索...">
-                            <button id="add-prescription-btn" class="search-addon-btn" data-i18n="add_new_prescription">开具新处方</button>
                         </div>
                     </div>
                     <div class="card">
@@ -29,6 +28,7 @@ export default async function render(container, { signal }) {
                                     <th data-i18n="patient_name">患者姓名</th>
                                     <th data-i18n="doctor_name">医生姓名</th>
                                     <th data-i18n="prescription_date">开具日期</th>
+                                    <th data-i18n="bill_status">账单状态</th>
                                     <th data-i18n="dispensing_status">发药状态</th>
                                     <th class="actions-column" data-i18n="actions">操作</th>
                                 </tr>
@@ -64,18 +64,7 @@ export default async function render(container, { signal }) {
  * 绑定事件监听器
  */
 function bindEvents(signal) {
-    // 添加处方按钮
-    const addBtn = document.getElementById('add-prescription-btn');
-    if (addBtn) {
-        addBtn.addEventListener('click', async () => {
-            try {
-                await showPrescriptionModal();
-            } catch (error) {
-                console.error('显示处方模态框失败:', error);
-                window.showNotification((window.getTranslation ? window.getTranslation('open_prescription_form_failed') : '打开处方表单失败') + ': ' + error.message, 'error');
-            }
-        }, { signal });
-    }
+    // 移除原有的"开具新处方"按钮事件监听器，现在通过病历模块调用
     
     // 搜索输入框
     const searchInput = document.getElementById('prescription-search-input');
@@ -99,7 +88,7 @@ async function loadPrescriptions(page = 1, search = '') {
         if (!tableBody) return;
         
         // 显示加载状态
-        tableBody.innerHTML = `<tr><td colspan="6" class="loading-cell">${window.getTranslation ? window.getTranslation('loading_prescription_data') : '正在加载处方数据...'}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7" class="loading-cell">${window.getTranslation ? window.getTranslation('loading_prescription_data') : '正在加载处方数据...'}</td></tr>`;
         
         // 获取处方数据
         const prescriptions = await apiClient.prescriptions.getAll();
@@ -120,7 +109,7 @@ async function loadPrescriptions(page = 1, search = '') {
         console.error('加载处方列表失败:', error);
         const tableBody = document.getElementById('prescription-table-body');
         if (tableBody) {
-            tableBody.innerHTML = `<tr><td colspan="6" class="error-cell">${window.getTranslation ? window.getTranslation('load_prescription_data_failed') : '加载处方数据失败'}</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="7" class="error-cell">${window.getTranslation ? window.getTranslation('load_prescription_data_failed') : '加载处方数据失败'}</td></tr>`;
         }
         window.showNotification((window.getTranslation ? window.getTranslation('load_prescription_data_failed') : '加载处方数据失败') + ': ' + error.message, 'error');
     }
@@ -129,18 +118,54 @@ async function loadPrescriptions(page = 1, search = '') {
 /**
  * 渲染处方表格
  */
-function renderPrescriptionTable(prescriptions) {
+async function renderPrescriptionTable(prescriptions) {
     const tableBody = document.getElementById('prescription-table-body');
     if (!tableBody) return;
     
     if (prescriptions.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="empty-state">${window.getTranslation ? window.getTranslation('no_prescription_records') : '暂无处方记录'}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="7" class="empty-state">${window.getTranslation ? window.getTranslation('no_prescription_records') : '暂无处方记录'}</td></tr>`;
         return;
     }
     
-    tableBody.innerHTML = prescriptions.map(prescription => {
+    // 获取所有处方的账单状态
+    const prescriptionsWithBillStatus = await Promise.all(
+        prescriptions.map(async (prescription) => {
+            try {
+                // 通过medical_record_id获取账单信息
+                const billsResponse = await apiClient.finance.getBills();
+                const bills = billsResponse.items || [];
+                const relatedBill = bills.find(bill => bill.medical_record_id === prescription.medical_record_id);
+                
+                return {
+                    ...prescription,
+                    billStatus: relatedBill ? relatedBill.status : 'no_bill',
+                    billPaid: relatedBill ? relatedBill.status === 'paid' : false
+                };
+            } catch (error) {
+                console.error('获取账单状态失败:', error);
+                return {
+                    ...prescription,
+                    billStatus: 'unknown',
+                    billPaid: false
+                };
+            }
+        })
+    );
+    
+    tableBody.innerHTML = prescriptionsWithBillStatus.map(prescription => {
         const statusText = getDispensingStatusText(prescription.dispensing_status);
         const statusClass = getDispensingStatusClass(prescription.dispensing_status);
+        const billStatusText = getBillStatusText(prescription.billStatus);
+        const billStatusClass = getBillStatusClass(prescription.billStatus);
+        
+        // 发药按钮逻辑：只有待发药状态才显示，已发药状态显示为灰色不可点击
+        let dispenseButton = '';
+        const dispensingStatus = prescription.dispensing_status?.toUpperCase() || '';
+        if (dispensingStatus === 'PENDING') {
+            dispenseButton = `<button class="btn btn-sm btn-success" onclick="showDispenseModal(${prescription.id}, ${prescription.billPaid})" data-i18n="dispense">发药</button>`;
+        } else if (dispensingStatus === 'DISPENSED') {
+            dispenseButton = `<button class="btn btn-sm btn-secondary" disabled data-i18n="dispensed">已发药</button>`;
+        }
         
         return `
             <tr>
@@ -148,40 +173,75 @@ function renderPrescriptionTable(prescriptions) {
                 <td>${prescription.patient?.name || (window.getTranslation ? window.getTranslation('unknown_patient') : '未知患者')}</td>
                 <td>${prescription.doctor?.name || (window.getTranslation ? window.getTranslation('unknown_doctor') : '未知医生')}</td>
                 <td>${formatDate(prescription.prescription_date)}</td>
-                <td><span class="status-badge ${statusClass}" data-i18n="dispensing.status.${prescription.dispensing_status}"></span></td>
+                <td><span class="status-badge ${billStatusClass}" data-i18n="${prescription.billStatus === 'no_bill' ? 'no_bill' : 'bill_' + prescription.billStatus}">${billStatusText}</span></td>
+                <td><span class="status-badge ${statusClass}" data-i18n="dispensing.status.${prescription.dispensing_status}">${statusText}</span></td>
                 <td class="actions-cell">
                     <button class="btn btn-sm btn-outline" onclick="viewPrescriptionDetails(${prescription.id})" data-i18n="view">查看</button>
-                    ${prescription.dispensing_status === 'PENDING' ? 
-                        `<button class="btn btn-sm btn-success" onclick="dispensePrescription(${prescription.id})" data-i18n="dispense">发药</button>` : 
-                        ''
-                    }
+                    ${dispenseButton}
                     <button class="btn btn-sm btn-danger" onclick="deletePrescription(${prescription.id})" data-i18n="delete">删除</button>
                 </td>
             </tr>
         `;
     }).join('');
+    
+    // 翻译新生成的内容
+    if (window.translatePage) {
+        window.translatePage();
+    }
 }
 
 /**
  * 获取发药状态文本
  */
 function getDispensingStatusText(status) {
+    const upperStatus = status?.toUpperCase() || '';
     const statusMap = {
         'PENDING': window.getTranslation ? window.getTranslation('pending_dispensing') : '待发药',
         'DISPENSED': window.getTranslation ? window.getTranslation('dispensed') : '已发药',
         'CANCELLED': window.getTranslation ? window.getTranslation('cancelled') : '已取消'
     };
-    return statusMap[status] || status;
+    return statusMap[upperStatus] || status;
 }
 
 /**
  * 获取发药状态样式类
  */
 function getDispensingStatusClass(status) {
+    const upperStatus = status?.toUpperCase() || '';
     const classMap = {
         'PENDING': 'status-warning',
         'DISPENSED': 'status-success',
         'CANCELLED': 'status-danger'
+    };
+    return classMap[upperStatus] || '';
+}
+
+/**
+ * 获取账单状态文本
+ */
+function getBillStatusText(status) {
+    const statusMap = {
+        'paid': window.getTranslation ? window.getTranslation('bill_paid') : '已支付',
+        'unpaid': window.getTranslation ? window.getTranslation('bill_unpaid') : '未支付',
+        'partially_paid': window.getTranslation ? window.getTranslation('bill_partially_paid') : '部分支付',
+        'void': window.getTranslation ? window.getTranslation('bill_void') : '已作废',
+        'no_bill': window.getTranslation ? window.getTranslation('no_bill') : '无账单',
+        'unknown': window.getTranslation ? window.getTranslation('unknown_status') : '未知状态'
+    };
+    return statusMap[status] || status;
+}
+
+/**
+ * 获取账单状态样式类
+ */
+function getBillStatusClass(status) {
+    const classMap = {
+        'paid': 'status-success',
+        'unpaid': 'status-danger',
+        'partially_paid': 'status-warning',
+        'void': 'status-secondary',
+        'no_bill': 'status-secondary',
+        'unknown': 'status-secondary'
     };
     return classMap[status] || '';
 }
@@ -209,7 +269,105 @@ window.viewPrescriptionDetails = async function(prescriptionId) {
 };
 
 /**
- * 发药操作
+ * 显示发药确认模态框
+ */
+window.showDispenseModal = function(prescriptionId, billPaid) {
+    const modalHtml = `
+        <div class="modal-overlay" id="dispense-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 data-i18n="prescription_dispense">处方发药</h3>
+                    <button class="modal-close" onclick="closeDispenseModal()" data-i18n-title="close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p data-i18n="confirm_dispense_message">是否确认发药？处方状态将会被更新。</p>
+                    <div id="dispense-notification" class="form-notification" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeDispenseModal()" data-i18n="cancel">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmDispense(${prescriptionId}, ${billPaid})" data-i18n="confirm">确认</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // 显示模态框
+    const modal = document.getElementById('dispense-modal');
+    if (modal) {
+        // 使用setTimeout确保DOM已经渲染
+        setTimeout(() => {
+            modal.classList.add('active');
+            // 在模态框显示后再次翻译内容
+            if (window.translatePage) {
+                window.translatePage();
+            }
+        }, 10);
+    }
+    
+    // 立即翻译模态框内容
+    if (window.translatePage) {
+        window.translatePage();
+    }
+};
+
+/**
+ * 关闭发药模态框
+ */
+window.closeDispenseModal = function() {
+    const modal = document.getElementById('dispense-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        // 等待动画完成后移除元素
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+    }
+};
+
+/**
+ * 确认发药操作
+ */
+window.confirmDispense = async function(prescriptionId, billPaid) {
+    const notificationDiv = document.getElementById('dispense-notification');
+    
+    // 检查账单支付状态
+    if (!billPaid) {
+        // 显示错误通知
+        notificationDiv.innerHTML = `
+            <div class="notification error">
+                <span data-i18n="bill_not_paid_cannot_dispense">该处方账单未被支付，无法发药</span>
+            </div>
+        `;
+        notificationDiv.style.display = 'block';
+        
+        // 翻译通知内容
+        if (window.translatePage) {
+            window.translatePage();
+        }
+        return;
+    }
+    
+    try {
+        await apiClient.prescriptions.dispense(prescriptionId);
+        window.showNotification(window.getTranslation ? window.getTranslation('dispense_success') : '发药成功', 'success');
+        closeDispenseModal();
+        await loadPrescriptions();
+    } catch (error) {
+        console.error('发药失败:', error);
+        // 在模态框内显示错误
+        notificationDiv.innerHTML = `
+            <div class="notification error">
+                <span>${(window.getTranslation ? window.getTranslation('dispense_failed') : '发药失败')}: ${error.message}</span>
+            </div>
+        `;
+        notificationDiv.style.display = 'block';
+    }
+};
+
+/**
+ * 发药操作（保留原有函数以兼容）
  */
 window.dispensePrescription = async function(prescriptionId) {
     if (!confirm(window.getTranslation ? window.getTranslation('confirm_dispense_prescription') : '确认要为此处方发药吗？')) {
@@ -251,6 +409,141 @@ window.deletePrescription = async function(prescriptionId) {
         }
     }
 };
+
+/**
+ * 从病历模块调用的处方模态框函数
+ */
+window.openPrescriptionModalWithContext = async function(patientId, patientName, medicalRecordId) {
+    if (!medicalRecordId) {
+        window.showNotification(window.getTranslation ? window.getTranslation('medical_record_required') : '必须先保存病历才能开具处方', 'error');
+        return;
+    }
+    
+    try {
+        await showPrescriptionModalWithContext({
+            patientId: patientId,
+            patientName: patientName,
+            medicalRecordId: medicalRecordId
+        });
+    } catch (error) {
+        console.error('打开处方模态框失败:', error);
+        window.showNotification((window.getTranslation ? window.getTranslation('open_prescription_form_failed') : '打开处方表单失败') + ': ' + error.message, 'error');
+    }
+};
+
+/**
+ * 显示处方模态框（带上下文信息）
+ */
+async function showPrescriptionModalWithContext(context = null) {
+    const prescription = null; // 新建处方
+    
+    // 移除现有模态框
+    const existingModal = document.getElementById('prescription-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modalHtml = `
+        <div class="modal fade" id="prescription-modal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" data-i18n="new_prescription">开具新处方</h5>
+                        <button type="button" class="btn-close" onclick="closePrescriptionModal()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="prescription-form">
+                            ${context ? `
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label" data-i18n="medical_record_id">病历ID</label>
+                                    <input type="text" id="medical-record-display" class="form-control" value="${context.medicalRecordId}" readonly>
+                                    <input type="hidden" id="medical-record-select" value="${context.medicalRecordId}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" data-i18n="patient">患者</label>
+                                    <input type="text" id="patient-display" class="form-control" value="${context.patientName}" readonly>
+                                    <input type="hidden" id="patient-select" value="${context.patientId}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" data-i18n="prescription_date">开具日期</label>
+                                    <input type="datetime-local" id="prescription-date" class="form-control" value="${new Date().toISOString().slice(0, 16)}" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label" data-i18n="doctor">医生</label>
+                                    <input type="text" id="doctor-display" class="form-control" value="当前用户" readonly>
+                                    <input type="hidden" id="doctor-select" value="">
+                                </div>
+                            </div>
+                            ` : `
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="patient-select" class="form-label" data-i18n="patient">患者</label>
+                                    <select id="patient-select" class="form-select" required>
+                                        <option value="" data-i18n="select_patient">请选择患者</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="doctor-select" class="form-label" data-i18n="doctor">医生</label>
+                                    <select id="doctor-select" class="form-select" required>
+                                        <option value="" data-i18n="select_doctor">请选择医生</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="prescription-date" class="form-label" data-i18n="prescription_date">开具日期</label>
+                                    <input type="datetime-local" id="prescription-date" class="form-control" required>
+                                </div>
+                            </div>
+                            `}
+                            
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 data-i18n="prescription_details">处方明细</h6>
+                                    <button type="button" id="add-detail-btn" class="btn btn-sm btn-outline-primary" data-i18n="add_medication">添加药品</button>
+                                </div>
+                                <div id="prescription-details-container">
+                                    <!-- 药品明细将通过添加按钮动态生成 -->
+                                </div>
+                            </div>
+                        
+                        <div class="form-group">
+                            <label for="notes" data-i18n="notes">备注</label>
+                            <textarea id="notes" rows="3" data-i18n-placeholder="prescription_notes_placeholder" placeholder="处方备注信息..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closePrescriptionModal()" data-i18n="cancel">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="savePrescription()" data-i18n="save">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // 显示模态框
+    const modal = document.getElementById('prescription-modal');
+    if (modal) {
+        // 使用Bootstrap模态框
+        const bootstrapModal = new bootstrap.Modal(modal);
+        bootstrapModal.show();
+        
+        // 翻译新添加的内容
+        if (window.translatePage) {
+            window.translatePage();
+        }
+        
+        // 初始化模态框内容
+        await initPrescriptionModal(prescription);
+    }
+}
 
 /**
  * 显示处方模态框
@@ -352,28 +645,45 @@ async function initPrescriptionModal(prescription) {
         const patients = Array.isArray(patientsResponse) ? patientsResponse : patientsResponse.items || [];
         const medicines = Array.isArray(medicinesResponse) ? medicinesResponse : medicinesResponse.items || [];
         
-        // 清空现有选项
+        // 只有在非上下文模式下才需要填充患者和医生选择框
         const patientSelect = document.getElementById('patient-select');
-        patientSelect.innerHTML = `<option value="">${window.getTranslation ? window.getTranslation('select_patient') : '请选择患者'}</option>`;
-        
-        // 填充患者选择框
-        patients.forEach(patient => {
-            const option = document.createElement('option');
-            option.value = patient.id;
-            option.textContent = patient.name;
-            patientSelect.appendChild(option);
-        });
+        if (patientSelect && patientSelect.tagName === 'SELECT') {
+            // 清空现有选项
+            patientSelect.innerHTML = `<option value="">${window.getTranslation ? window.getTranslation('select_patient') : '请选择患者'}</option>`;
+            
+            // 填充患者选择框
+            patients.forEach(patient => {
+                const option = document.createElement('option');
+                option.value = patient.id;
+                option.textContent = patient.name;
+                patientSelect.appendChild(option);
+            });
+        }
         
         // 获取当前用户作为医生
-        const currentUser = await apiClient.auth.getCurrentUser();
         const doctorSelect = document.getElementById('doctor-select');
-        doctorSelect.innerHTML = `<option value="">${window.getTranslation ? window.getTranslation('select_doctor') : '请选择医生'}</option>`;
-        if (currentUser) {
-            const option = document.createElement('option');
-            option.value = currentUser.id;
-            option.textContent = currentUser.name || currentUser.username;
-            option.selected = true;
-            doctorSelect.appendChild(option);
+        const currentUser = await apiClient.auth.getCurrentUser();
+        
+        if (doctorSelect && doctorSelect.tagName === 'SELECT') {
+            // 非上下文模式：填充select选项
+            doctorSelect.innerHTML = `<option value="">${window.getTranslation ? window.getTranslation('select_doctor') : '请选择医生'}</option>`;
+            if (currentUser) {
+                const option = document.createElement('option');
+                option.value = currentUser.id;
+                option.textContent = currentUser.name || currentUser.username;
+                option.selected = true;
+                doctorSelect.appendChild(option);
+            }
+        } else if (doctorSelect && doctorSelect.tagName === 'INPUT') {
+            // 上下文模式：设置hidden input的值
+            if (currentUser) {
+                doctorSelect.value = currentUser.id;
+                // 同时更新显示的医生名称
+                const doctorDisplay = document.getElementById('doctor-display');
+                if (doctorDisplay) {
+                    doctorDisplay.value = currentUser.name || currentUser.username;
+                }
+            }
         }
         
         // 设置默认日期
@@ -706,37 +1016,7 @@ function handleServerValidationErrors(errorMessage) {
     }
 }
 
-/**
- * 创建临时病历记录
- */
-async function createTemporaryMedicalRecord() {
-    try {
-        const patientId = document.getElementById('patient-select').value;
-        if (!patientId) {
-            throw new Error(window.getTranslation ? window.getTranslation('select_patient_first') : '请先选择患者');
-        }
-        
-        const doctorId = document.getElementById('doctor-select').value;
-        if (!doctorId) {
-            throw new Error(window.getTranslation ? window.getTranslation('select_doctor_first') : '请先选择医生');
-        }
-        
-        const medicalRecordData = {
-            patient_id: parseInt(patientId),
-            doctor_id: parseInt(doctorId),
-            record_date: new Date().toISOString().split('T')[0],
-            chief_complaint: '处方开具',
-            diagnosis: '待诊断',
-            treatment_plan: '药物治疗'
-        };
-        
-        const response = await apiClient.medicalRecords.create(medicalRecordData);
-        return response.id;
-    } catch (error) {
-        console.error('创建临时病历失败:', error);
-        throw error;
-    }
-}
+// 移除创建临时病历的逻辑，现在处方只能通过已有病历创建
 
 /**
  * 保存处方
@@ -774,14 +1054,33 @@ window.savePrescription = async function() {
             });
         }
         
-        // 获取medical_record_id - 如果没有则创建一个临时的
-        const medicalRecordId = document.getElementById('medical-record-select')?.value || 
-                               await createTemporaryMedicalRecord();
+        // 获取medical_record_id - 必须从上下文中获取
+        const medicalRecordId = document.getElementById('medical-record-select')?.value;
+        if (!medicalRecordId) {
+            throw new Error(window.getTranslation ? window.getTranslation('medical_record_required') : '必须选择病历才能开具处方');
+        }
+        
+        // 安全获取表单元素值
+        const patientSelectElement = document.getElementById('patient-select');
+        const doctorSelectElement = document.getElementById('doctor-select');
+        const prescriptionDateElement = document.getElementById('prescription-date');
+        
+        if (!patientSelectElement || !patientSelectElement.value) {
+            throw new Error(window.getTranslation ? window.getTranslation('patient_required') : '请选择患者');
+        }
+        
+        if (!doctorSelectElement || !doctorSelectElement.value) {
+            throw new Error(window.getTranslation ? window.getTranslation('doctor_required') : '请选择医生');
+        }
+        
+        if (!prescriptionDateElement || !prescriptionDateElement.value) {
+            throw new Error(window.getTranslation ? window.getTranslation('prescription_date_required') : '请选择开具日期');
+        }
         
         const prescriptionData = {
-            patient_id: parseInt(document.getElementById('patient-select').value),
-            doctor_id: parseInt(document.getElementById('doctor-select').value),
-            prescription_date: document.getElementById('prescription-date').value,
+            patient_id: parseInt(patientSelectElement.value),
+            doctor_id: parseInt(doctorSelectElement.value),
+            prescription_date: prescriptionDateElement.value,
             medical_record_id: parseInt(medicalRecordId),
             details: details
         };

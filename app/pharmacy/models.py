@@ -120,7 +120,7 @@ class Prescription(Base, Auditable):
     updated_by_id = Column(Integer, ForeignKey('users.id'))
     deleted_at = Column(DateTime, nullable=True)
 
-    medical_record = relationship("MedicalRecord")
+    medical_record = relationship("MedicalRecord", back_populates="prescriptions")
     doctor = relationship("Doctor")
     details = relationship("PrescriptionDetail", back_populates="prescription")
 

@@ -2,6 +2,8 @@
  * 财务管理模块 - 重新设计版本
  */
 
+import Pagination from '../components/pagination.js';
+
 export default function renderFinanceModule(container, options = {}) {
   const { signal } = options;
   
@@ -100,10 +102,7 @@ export default function renderFinanceModule(container, options = {}) {
                   <i class="fas fa-spinner fa-spin"></i>
                   <span data-i18n="loading">加载中...</span>
                 </div>
-                <div id="bills-empty" class="bills-empty" style="display: none;">
-                  <i class="fas fa-inbox"></i>
-                  <p data-i18n="no_billing_data">暂无账单数据</p>
-                </div>
+
                 <div id="bills-error" class="bills-error" style="display: none;">
                   <i class="fas fa-exclamation-triangle"></i>
                   <p>加载账单失败，请稍后重试</p>
@@ -127,6 +126,7 @@ export default function renderFinanceModule(container, options = {}) {
                     </tbody>
                   </table>
                 </div>
+                <div id="bills-pagination" class="pagination-container"></div>
               </div>
             </div>
           </div>
@@ -161,35 +161,51 @@ export default function renderFinanceModule(container, options = {}) {
   // 存储原始账单数据
   let allBills = [];
   let filteredBills = [];
+  
+  // 分页相关变量
+  let currentPage = 1;
+  let pageSize = 20;
+  let totalCount = 0;
+  let pagination = null;
 
   // 加载账单数据
-  async function loadBills() {
+  async function loadBills(page = 1) {
     const loadingEl = container.querySelector('#bills-loading');
-    const emptyEl = container.querySelector('#bills-empty');
     const errorEl = container.querySelector('#bills-error');
     const tableEl = container.querySelector('#bills-table');
     
     try {
       console.log('开始加载账单数据...');
       if (loadingEl) loadingEl.style.display = 'block';
-      if (emptyEl) emptyEl.style.display = 'none';
       if (errorEl) errorEl.style.display = 'none';
       if (tableEl) tableEl.style.display = 'none';
       
-      const response = await window.apiClient.finance.getBills();
+      currentPage = page;
+      const skip = (page - 1) * pageSize;
+      const response = await window.apiClient.finance.getBills({ skip, limit: pageSize });
       console.log('API响应:', response);
       
-      if (response && Array.isArray(response)) {
-        console.log('获取到账单数据:', response.length, '条');
-        allBills = response;
+      if (response && response.items && Array.isArray(response.items)) {
+        console.log('获取到账单数据:', response.items.length, '条，总计:', response.total, '条');
+        allBills = response.items;
         filteredBills = [...allBills];
+        totalCount = response.total;
         renderBills(filteredBills);
         updateStats(allBills);
         setupFilters();
+        
+        // 初始化或更新分页组件
+        if (!pagination) {
+          initPagination();
+        } else {
+          updatePagination();
+        }
       } else {
         console.log('响应数据格式不正确或为空:', response);
         allBills = [];
         filteredBills = [];
+        totalCount = 0;
+        const emptyEl = container.querySelector('#bills-empty');
         if (emptyEl) emptyEl.style.display = 'flex';
       }
     } catch (error) {
@@ -210,26 +226,22 @@ export default function renderFinanceModule(container, options = {}) {
     const billsTable = container.querySelector('#bills-table');
     const billsTbody = container.querySelector('#bills-tbody');
     const loadingEl = container.querySelector('#bills-loading');
-    const emptyEl = container.querySelector('#bills-empty');
     const errorEl = container.querySelector('#bills-error');
     
     console.log('找到的DOM元素:', {
       billsTable: !!billsTable,
       billsTbody: !!billsTbody,
       loadingEl: !!loadingEl,
-      emptyEl: !!emptyEl,
       errorEl: !!errorEl
     });
     
     // 隐藏所有状态元素
     if (loadingEl) loadingEl.style.display = 'none';
-    if (emptyEl) emptyEl.style.display = 'none';
     if (errorEl) errorEl.style.display = 'none';
     
     if (!bills || bills.length === 0) {
-      console.log('账单数据为空，显示空状态');
+      console.log('账单数据为空');
       if (billsTable) billsTable.style.display = 'none';
-      if (emptyEl) emptyEl.style.display = 'flex';
       return;
     }
     
@@ -424,12 +436,16 @@ export default function renderFinanceModule(container, options = {}) {
       
       // 显示成功消息
       if (window.showNotification) {
-        window.showNotification('成功', '账单已删除', 'success');
+        const successTitle = window.getTranslation ? window.getTranslation('success', '成功') : '成功';
+        const successMessage = window.getTranslation ? window.getTranslation('bill_deleted_success', '账单已删除') : '账单已删除';
+        window.showNotification(successTitle, successMessage, 'success');
       }
     } catch (error) {
       console.error('删除账单失败:', error);
       if (window.showNotification) {
-        window.showNotification('错误', '删除账单失败: ' + error.message, 'error');
+        const errorTitle = window.getTranslation ? window.getTranslation('error', '错误') : '错误';
+        const errorMessage = window.getTranslation ? window.getTranslation('bill_delete_failed', '删除账单失败') : '删除账单失败';
+        window.showNotification(errorTitle, errorMessage + ': ' + error.message, 'error');
       }
     }
   }
@@ -817,10 +833,37 @@ export default function renderFinanceModule(container, options = {}) {
     }, { signal });
   }
 
+  // 初始化分页组件
+  function initPagination() {
+    const paginationContainer = container.querySelector('#bills-pagination');
+    if (!paginationContainer) return;
+    
+    const totalPages = Math.ceil(totalCount / pageSize);
+    pagination = new Pagination({
+      containerId: paginationContainer,
+      currentPage: currentPage,
+      totalPages: totalPages,
+      onPageChange: (page) => {
+        loadBills(page);
+      }
+    });
+    pagination.render();
+  }
+  
+  // 更新分页组件
+  function updatePagination() {
+    if (!pagination) return;
+    
+    const totalPages = Math.ceil(totalCount / pageSize);
+    pagination.currentPage = currentPage;
+    pagination.totalPages = totalPages;
+    pagination.render();
+  }
+
   // 绑定刷新按钮事件
   const refreshBtn = container.querySelector('#refresh-bills-btn');
   if (refreshBtn) {
-    refreshBtn.addEventListener('click', loadBills, { signal });
+    refreshBtn.addEventListener('click', () => loadBills(1), { signal });
   }
 
   // 初始加载账单数据

@@ -1984,36 +1984,7 @@ body .sidebar:hover + .content {
     color: var(--color-text-secondary);
 }
 
-.bills-empty {
-    text-align: center;
-    padding: 60px 40px;
-    color: var(--color-text-secondary);
-    background: linear-gradient(135deg, rgba(var(--color-bar-primary-rgb), 0.05), rgba(var(--color-bar-primary-rgb), 0.02));
-    border-radius: 16px;
-    margin: 20px;
-    border: 2px dashed var(--color-border);
-    transition: all 0.3s ease;
-}
 
-.bills-empty:hover {
-    border-color: var(--color-bar-primary);
-    background: linear-gradient(135deg, rgba(var(--color-bar-primary-rgb), 0.08), rgba(var(--color-bar-primary-rgb), 0.03));
-}
-
-.bills-empty i {
-    font-size: 48px;
-    color: var(--color-bar-primary);
-    margin-bottom: 16px;
-    opacity: 0.7;
-    display: block;
-}
-
-.bills-empty p {
-    font-size: 16px;
-    font-weight: 500;
-    margin: 0;
-    color: var(--color-text-secondary);
-}
 
 .bills-error {
     text-align: center;

@@ -148,6 +148,16 @@ def update_prescription(
         )
     return service.prescription_service.update(db=db, db_obj=prescription, obj_in=prescription_in)
 
+@router.get("/prescriptions/medical_record/{medical_record_id}", response_model=List[schemas.Prescription])
+def read_prescriptions_by_medical_record(
+    medical_record_id: int,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """根据病历ID获取所有处方 (需要认证)"""
+    prescriptions = service.prescription_service.get_by_medical_record_id(db, medical_record_id=medical_record_id)
+    return prescriptions
+
 @router.delete("/prescriptions/{prescription_id}")
 def delete_prescription(
     prescription_id: int,

@@ -1,4 +1,4 @@
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from sqlalchemy.orm import Session, joinedload
 from datetime import datetime, UTC
 from decimal import Decimal
@@ -196,8 +196,7 @@ class BillingService:
         """根据病历生成账单"""
         # 1. 使用预加载一次性获取所需数据
         record = db.query(patient_models.MedicalRecord).options(
-            joinedload(patient_models.MedicalRecord.patient),
-            joinedload(patient_models.MedicalRecord.appointment)
+            joinedload(patient_models.MedicalRecord.patient)
         ).filter(
             patient_models.MedicalRecord.id == medical_record_id,
             patient_models.MedicalRecord.deleted_at.is_(None)
@@ -256,7 +255,28 @@ class BillingService:
             bill_items.append(consultation_item)
             total_amount += consultation_fee
 
-        # 添加药品费用 - 从处方明细获取药品信息
+        # 添加药品费用 - 从处方明细获取药品信息，排除已结算的处方
+        # 1. 查找该病历下所有已结清账单中包含的药品账单明细
+        paid_drug_items = db.query(
+            models.BillItem.item_name,
+            models.BillItem.unit_price,
+            models.BillItem.quantity
+        ).join(
+            models.Bill, models.Bill.id == models.BillItem.bill_id
+        ).filter(
+            models.Bill.medical_record_id == medical_record_id,
+            models.Bill.status == models.BillStatus.PAID,
+            models.BillItem.item_type == "药物",
+            models.Bill.deleted_at.is_(None),
+            models.BillItem.deleted_at.is_(None)
+        ).all()
+        
+        # 创建已结算药品的集合，用于快速查找
+        paid_drugs_set = set()
+        for item in paid_drug_items:
+            paid_drugs_set.add((item.item_name, float(item.unit_price), item.quantity))
+        
+        # 2. 获取所有处方，但排除已结算的处方明细
         prescriptions = db.query(pharmacy_models.Prescription).filter(
             pharmacy_models.Prescription.medical_record_id == medical_record_id,
             pharmacy_models.Prescription.deleted_at.is_(None)
@@ -275,6 +295,12 @@ class BillingService:
                 drug_name = detail.drug.name
                 if detail.drug.specification:
                     drug_name = f"{detail.drug.name}（{detail.drug.specification}）"
+                
+                # 检查这个药品是否已经在已结算的账单中
+                drug_key = (drug_name, float(detail.drug.unit_price), detail.quantity)
+                if drug_key in paid_drugs_set:
+                    # 跳过已结算的药品
+                    continue
                 
                 drug_item = models.BillItem(
                     item_name=drug_name,
@@ -317,6 +343,12 @@ class BillingService:
         return db.query(models.Bill).filter(
             models.Bill.deleted_at.is_(None)
         ).order_by(models.Bill.bill_date.desc()).offset(skip).limit(limit).all()
+    
+    def get_bills_count(self, db: Session) -> int:
+        """获取账单总数"""
+        return db.query(models.Bill).filter(
+            models.Bill.deleted_at.is_(None)
+        ).count()
     
     def void_bill(self, db: Session, *, bill_id: int) -> models.Bill:
         """作废账单"""

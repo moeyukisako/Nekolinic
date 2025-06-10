@@ -65,3 +65,30 @@ class AppointmentWithDoctor(AppointmentBase):
 class Appointment(AppointmentBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
+
+# --- Medical Record Schemas ---
+class MedicalRecordBase(BaseModel):
+    record_date: datetime
+    chief_complaint: Optional[str] = None
+    present_illness: Optional[str] = None
+    past_history: Optional[str] = None
+    temperature: Optional[float] = None
+    pulse: Optional[int] = None
+    respiratory_rate: Optional[int] = None
+    blood_pressure: Optional[str] = None
+    physical_examination: Optional[str] = None
+    diagnosis: Optional[str] = None
+    treatment_plan: Optional[str] = None
+    prescription: Optional[str] = None
+    notes: Optional[str] = None
+    symptoms: Optional[str] = None
+    patient_id: int
+    doctor_id: int
+
+class MedicalRecordCreate(MedicalRecordBase):
+    pass
+
+class MedicalRecord(MedicalRecordBase):
+    id: int
+    display_id: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)

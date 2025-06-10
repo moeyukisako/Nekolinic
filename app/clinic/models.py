@@ -79,7 +79,7 @@ class Doctor(Base, Auditable):
     deleted_at = Column(DateTime, nullable=True)
 
     user = relationship("User", foreign_keys=[user_id], back_populates="doctor")
-    appointments = relationship("Appointment", back_populates="doctor")
+    # appointments = relationship("Appointment", back_populates="doctor")
 
 class AppointmentStatus(str, enum.Enum):
     SCHEDULED = "scheduled"
@@ -102,6 +102,6 @@ class Appointment(Base, Auditable):
     updated_by_id = Column(Integer, ForeignKey('users.id'), nullable=True)
     deleted_at = Column(DateTime, nullable=True)
 
-    doctor = relationship("Doctor", back_populates="appointments")
-    patient = relationship("Patient", back_populates="appointments")
-    medical_record = relationship("MedicalRecord", back_populates="appointment", uselist=False)
+    # doctor = relationship("Doctor", back_populates="appointments")
+    # patient = relationship("Patient", back_populates="appointments")
+    # medical_record = relationship("MedicalRecord", back_populates="appointment", uselist=False)

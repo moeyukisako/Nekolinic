@@ -9,6 +9,16 @@ from app.user import models as user_models
 
 router = APIRouter()
 
+# --- Medical Record Endpoints ---
+@router.post("/medical-records/", response_model=schemas.MedicalRecord)
+def create_medical_record_for_patient(
+    record: schemas.MedicalRecordCreate,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """为患者创建病历 (需要认证)"""
+    return service.medical_record_service.create_medical_record(db=db, obj_in=record)
+
 # --- Doctor Endpoints ---
 @router.post("/doctors/", response_model=schemas.Doctor)
 def create_doctor(

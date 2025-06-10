@@ -362,7 +362,8 @@ function initializeSettings(container, signal) {
         window.showNotification(message, 'success');
       } catch (error) {
         console.error('保存主题设置失败:', error);
-        window.showNotification('保存主题设置失败', 'error');
+        const errorMessage = window.getTranslation ? window.getTranslation('theme_save_failed', '保存主题设置失败') : '保存主题设置失败';
+        window.showNotification(errorMessage, 'error');
       }
     });
   }
@@ -494,7 +495,8 @@ async function handlePasswordChange(container) {
     container.querySelector('#confirm-password').value = '';
   } catch (error) {
     console.error('密码修改错误:', error);
-    window.showNotification('密码修改失败，请稍后重试', 'error');
+    const errorMessage = window.getTranslation ? window.getTranslation('password_change_failed', '密码修改失败，请稍后重试') : '密码修改失败，请稍后重试';
+        window.showNotification(errorMessage, 'error');
   }
 }
 
@@ -503,20 +505,23 @@ async function handlePasswordChange(container) {
  */
 async function handleBackupNow() {
   try {
-    window.showNotification('正在创建备份...', 'info');
+    const message = window.getTranslation ? window.getTranslation('creating_backup', '正在创建备份...') : '正在创建备份...';
+        window.showNotification(message, 'info');
     
     const response = await apiClient.request('/api/system/backup', {
       method: 'POST'
     });
     
     if (response.success) {
-      window.showNotification('备份创建成功', 'success');
+      const successMessage = window.getTranslation ? window.getTranslation('backup_created_success', '备份创建成功') : '备份创建成功';
+        window.showNotification(successMessage, 'success');
     } else {
       window.showNotification(response.message || '备份创建失败', 'error');
     }
   } catch (error) {
     console.error('备份错误:', error);
-    window.showNotification('备份创建失败，请稍后重试', 'error');
+    const errorMessage = window.getTranslation ? window.getTranslation('backup_creation_failed', '备份创建失败，请稍后重试') : '备份创建失败，请稍后重试';
+        window.showNotification(errorMessage, 'error');
   }
 }
 
@@ -526,7 +531,9 @@ async function handleBackupNow() {
 async function handleRestoreBackup() {
   const confirmed = await new Promise(resolve => {
             if (window.showNotification) {
-                window.showNotification('确定要恢复备份吗？这将覆盖当前数据。', 'confirm', '确认恢复备份', resolve);
+                const message = window.getTranslation ? window.getTranslation('confirm_restore_backup', '确定要恢复备份吗？这将覆盖当前数据。') : '确定要恢复备份吗？这将覆盖当前数据。';
+        const title = window.getTranslation ? window.getTranslation('confirm_restore_backup_title', '确认恢复备份') : '确认恢复备份';
+        window.showNotification(message, 'confirm', title, resolve);
             } else {
                 // 使用confirmModal替代showNotification进行确认操作
                 resolve(true);
@@ -538,14 +545,16 @@ async function handleRestoreBackup() {
         }
   
   try {
-    window.showNotification('正在恢复备份...', 'info');
+    const message = window.getTranslation ? window.getTranslation('restoring_backup', '正在恢复备份...') : '正在恢复备份...';
+        window.showNotification(message, 'info');
     
     const response = await apiClient.request('/api/system/restore', {
       method: 'POST'
     });
     
     if (response.success) {
-      window.showNotification('备份恢复成功', 'success');
+      const successMessage = window.getTranslation ? window.getTranslation('backup_restored_success', '备份恢复成功') : '备份恢复成功';
+        window.showNotification(successMessage, 'success');
       // 可能需要刷新页面
       setTimeout(() => {
         window.location.reload();
@@ -555,7 +564,8 @@ async function handleRestoreBackup() {
     }
   } catch (error) {
     console.error('恢复错误:', error);
-    window.showNotification('备份恢复失败，请稍后重试', 'error');
+    const errorMessage = window.getTranslation ? window.getTranslation('backup_restore_failed', '备份恢复失败，请稍后重试') : '备份恢复失败，请稍后重试';
+        window.showNotification(errorMessage, 'error');
   }
 }
 
@@ -583,13 +593,15 @@ async function saveAllSettings(container) {
     });
     
     if (response.success) {
-      window.showNotification('设置保存成功', 'success');
+      const successMessage = window.getTranslation ? window.getTranslation('settings_saved_success', '设置保存成功') : '设置保存成功';
+        window.showNotification(successMessage, 'success');
     } else {
       window.showNotification(response.message || '设置保存失败', 'error');
     }
   } catch (error) {
     console.error('保存设置错误:', error);
-    window.showNotification('设置保存失败，请稍后重试', 'error');
+    const errorMessage = window.getTranslation ? window.getTranslation('settings_save_failed', '设置保存失败，请稍后重试') : '设置保存失败，请稍后重试';
+        window.showNotification(errorMessage, 'error');
   }
 }
 
@@ -599,7 +611,9 @@ async function saveAllSettings(container) {
 async function resetToDefault(container) {
   const confirmed = await new Promise(resolve => {
         if (window.showNotification) {
-            window.showNotification('确定要重置所有设置为默认值吗？', 'confirm', '确认重置设置', resolve);
+            const message = window.getTranslation ? window.getTranslation('confirm_reset_settings', '确定要重置所有设置为默认值吗？') : '确定要重置所有设置为默认值吗？';
+        const title = window.getTranslation ? window.getTranslation('confirm_reset_settings_title', '确认重置设置') : '确认重置设置';
+        window.showNotification(message, 'confirm', title, resolve);
         } else {
             // 使用confirmModal替代showNotification进行确认操作
                 resolve(true);
@@ -643,7 +657,8 @@ async function resetToDefault(container) {
   applyTheme('light');
   applyBackground('default');
   
-  window.showNotification('设置已重置为默认值', 'success');
+  const successMessage = window.getTranslation ? window.getTranslation('settings_reset_success', '设置已重置为默认值') : '设置已重置为默认值';
+        window.showNotification(successMessage, 'success');
 }
 
 /**
@@ -769,9 +784,11 @@ function initBackgroundSettingsInSettings(container) {
                 })
               }).then(user => {
                 document.documentElement.style.setProperty('--bg-image', `url(${user.background_preference})`);
-                window.showNotification('背景图片已成功应用并保存', 'success');
+                const successMessage = window.getTranslation ? window.getTranslation('background_applied_success', '背景图片已成功应用并保存') : '背景图片已成功应用并保存';
+        window.showNotification(successMessage, 'success');
               }).catch(err => {
-                window.showNotification('保存背景图片失败: ' + err.message, 'error');
+                const errorMessage = window.getTranslation ? window.getTranslation('background_save_failed', '保存背景图片失败') : '保存背景图片失败';
+        window.showNotification(errorMessage + ': ' + err.message, 'error');
               });
             }
           });
@@ -868,9 +885,11 @@ function resetBackgroundInSettings(container) {
     apiClient.auth.updatePreferences({
       background_preference: null
     }).then(() => {
-      window.showNotification('背景已重置', 'success');
+      const successMessage = window.getTranslation ? window.getTranslation('background_reset_success', '背景已重置') : '背景已重置';
+        window.showNotification(successMessage, 'success');
     }).catch(err => {
-      window.showNotification('重置背景设置失败: ' + err.message, 'error');
+      const errorMessage = window.getTranslation ? window.getTranslation('background_reset_failed', '重置背景设置失败') : '重置背景设置失败';
+        window.showNotification(errorMessage + ': ' + err.message, 'error');
     });
   }
 }
@@ -977,7 +996,8 @@ function loadLocalBackgroundsInSettings(container) {
 function applySelectedColor(container, color) {
   // 验证颜色格式
   if (!/^#[0-9A-F]{6}$/i.test(color)) {
-    window.showNotification('请输入有效的颜色代码（如：#3498db）', 'error');
+    const errorMessage = window.getTranslation ? window.getTranslation('invalid_color_code', '请输入有效的颜色代码（如：#3498db）') : '请输入有效的颜色代码（如：#3498db）';
+        window.showNotification(errorMessage, 'error');
     return;
   }
   
@@ -998,9 +1018,11 @@ function applySelectedColor(container, color) {
     apiClient.auth.updatePreferences({
       background_preference: `color:${color}`
     }).then(() => {
-      window.showNotification('背景颜色已应用', 'success');
+      const successMessage = window.getTranslation ? window.getTranslation('background_color_applied', '背景颜色已应用') : '背景颜色已应用';
+        window.showNotification(successMessage, 'success');
     }).catch(err => {
-      window.showNotification('保存背景设置失败: ' + err.message, 'error');
+      const errorMessage = window.getTranslation ? window.getTranslation('background_settings_save_failed', '保存背景设置失败') : '保存背景设置失败';
+        window.showNotification(errorMessage + ': ' + err.message, 'error');
     });
   }
 }
@@ -1140,7 +1162,8 @@ async function saveIndividualSetting(input) {
     // 只有在确实是服务器错误时才显示错误通知
     // 网络错误或认证错误不显示设置保存失败的通知
     if (window.showNotification && !error.message.includes('401') && !error.message.includes('网络')) {
-      window.showNotification('保存设置失败', 'error');
+      const errorMessage = window.getTranslation ? window.getTranslation('settings_save_failed_general', '保存设置失败') : '保存设置失败';
+        window.showNotification(errorMessage, 'error');
     }
   }
 }

@@ -144,13 +144,23 @@ class PrescriptionService(BaseService[models.Prescription, schemas.PrescriptionC
 
     def create(self, db: Session, *, obj_in: schemas.PrescriptionCreate) -> models.Prescription:
         """重写create方法，支持嵌套创建处方明细"""
+        from app.patient.models import MedicalRecord
+        
+        # 通过medical_record_id获取病历信息
+        medical_record = db.query(MedicalRecord).filter(
+            MedicalRecord.id == obj_in.medical_record_id
+        ).first()
+        if not medical_record:
+            raise ValidationException(f"病历ID {obj_in.medical_record_id} 不存在")
+        
         # 提取处方明细数据
         details_data = obj_in.details
         
-        # 创建处方主表 (使用BaseService处理审计字段)
-        obj_in_data = obj_in.model_dump(exclude={"details"})
+        # 创建处方主表，从病历中获取doctor_id
+        obj_in_data = obj_in.model_dump(exclude={"details", "doctor_id"})
+        obj_in_data["doctor_id"] = medical_record.doctor_id
         
-        # 使用基础服务创建处方对象，但不使用PrescriptionCreate验证模型
+        # 使用基础服务创建处方对象
         db_obj = models.Prescription(**obj_in_data)
         
         # 获取当前用户ID用于审计
@@ -204,6 +214,30 @@ class PrescriptionService(BaseService[models.Prescription, schemas.PrescriptionC
             prescription.patient = prescription.medical_record.patient
         
         return prescription
+    
+    def get_by_medical_record_id(self, db: Session, *, medical_record_id: int) -> List[models.Prescription]:
+        """根据病历ID获取所有处方"""
+        from app.patient.models import MedicalRecord
+        
+        prescriptions = (
+            db.query(models.Prescription)
+            .options(
+                joinedload(models.Prescription.details).joinedload(models.PrescriptionDetail.drug),
+                joinedload(models.Prescription.medical_record).joinedload(MedicalRecord.patient),
+                joinedload(models.Prescription.doctor)
+            )
+            .filter(models.Prescription.medical_record_id == medical_record_id)
+            .filter(models.Prescription.deleted_at.is_(None))
+            .order_by(models.Prescription.prescription_date.desc())
+            .all()
+        )
+        
+        # 为每个处方映射patient信息
+        for prescription in prescriptions:
+            if prescription.medical_record and prescription.medical_record.patient:
+                prescription.patient = prescription.medical_record.patient
+        
+        return prescriptions
     
     def get_multi_with_details(self, db: Session, *, skip: int = 0, limit: int = 100) -> List[models.Prescription]:
         """获取处方列表，包含患者和医生信息"""

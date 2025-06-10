@@ -3,7 +3,7 @@ from datetime import datetime, date
 from typing import Optional, List, Dict, Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from app.pharmacy.schemas import Prescription
+    from app.pharmacy.schemas import Prescription, PrescriptionInMedicalRecord
 
 # --- VitalSign Schemas ---
 class VitalSignBase(BaseModel):
@@ -69,6 +69,7 @@ class MedicalRecordUpdate(BaseModel):
 
 class MedicalRecord(MedicalRecordBase):
     id: int
+    display_id: Optional[str] = None
     record_date: datetime
     chief_complaint: Optional[str] = None
     present_illness: Optional[str] = None
@@ -84,7 +85,7 @@ class MedicalRecord(MedicalRecordBase):
     notes: Optional[str] = None
     symptoms: Optional[str] = None  # 保留兼容性
     vital_sign: Optional[VitalSign] = None
-    prescriptions: List['Prescription'] = []
+    prescriptions: List['PrescriptionInMedicalRecord'] = []
     model_config = ConfigDict(from_attributes=True)
 
 # --- Patient Schemas ---
@@ -111,3 +112,13 @@ class Patient(PatientBase):
 class PatientWithMedicalRecords(Patient):
     medical_records: List['MedicalRecord'] = []
     model_config = ConfigDict(from_attributes=True)
+
+# -------- 修改/新增代码开始 --------
+# 在文件末尾，为了让 model_rebuild 能够找到定义，在这里执行真正的导入
+from app.pharmacy.schemas import Prescription, PrescriptionInMedicalRecord
+
+# 现在，重建模型，此时 'Prescription' 已经在当前作用域中定义
+Patient.model_rebuild()
+MedicalRecord.model_rebuild()
+PatientWithMedicalRecords.model_rebuild()
+# -------- 修改/新增代码结束 --------

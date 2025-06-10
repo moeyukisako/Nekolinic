@@ -242,6 +242,12 @@ const apiClient = {
             if (search) params.append('search', search);
             return apiRequest(`/api/v1/patients/medical-records/?${params.toString()}`);
         },
+        
+        // 获取指定患者的所有病历
+        getMedicalRecords: (patientId) => {
+            return apiRequest(`/api/v1/patients/${patientId}/medical-records`);
+        },
+        
         getByPatientId: (patientId, page = 1, per_page = 10) => {
             const params = new URLSearchParams({ page, per_page });
             return apiRequest(`/api/v1/patients/${patientId}/medical-records/?${params.toString()}`);
@@ -253,11 +259,15 @@ const apiClient = {
          * @param {object} recordData 包含所有必需字段的病历对象 (patient_id, doctor_id, record_date, etc.)
          */
         create: (recordData) => {
-            const patientId = recordData.patient_id;
-            if (!patientId) {
-                throw new Error("创建病历时，数据中必须提供 patient_id");
-            }
-            return apiRequest(`/api/v1/patients/${patientId}/medical-records/`, {
+            return apiRequest('/api/v1/clinic/medical-records/', {
+                method: 'POST',
+                body: JSON.stringify(recordData)
+            });
+        },
+        
+        // 为指定患者创建病历
+        createMedicalRecord: (recordData) => {
+            return apiRequest('/api/v1/clinic/medical-records/', {
                 method: 'POST',
                 body: JSON.stringify(recordData)
             });
@@ -285,7 +295,10 @@ const apiClient = {
 
     finance: {
 
-        getBills: () => apiRequest('/api/v1/finance/bills/'),
+        getBills: (params = {}) => {
+            const { skip = 0, limit = 20 } = params;
+            return apiRequest(`/api/v1/finance/bills/?skip=${skip}&limit=${limit}`);
+        },
 
         getBillById: (id) => apiRequest(`/api/v1/finance/bills/${id}`),
 
@@ -441,7 +454,7 @@ const apiClient = {
     prescriptions: {
         /**
          * 为指定病历创建一条处方记录
-         * @param {object} prescriptionData - { medical_record_id, medicine_id, dosage, frequency, notes }
+         * @param {object} prescriptionData - { medical_record_id, prescription_date, details: [{ drug_id, quantity, dosage, frequency, notes }] }
          * @returns {Promise<object>} 创建成功的处方对象
          */
         create: (prescriptionData) => apiRequest('/api/v1/pharmacy/prescriptions/', {

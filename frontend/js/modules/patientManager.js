@@ -463,10 +463,12 @@ async function handlePatientFormSubmit(isEdit) {
   try {
     if (isEdit && idInput) {
       await apiClient.patients.update(idInput.value, patientData);
-      window.showNotification('患者信息已更新', 'success');
+      const successMessage = window.getTranslation ? window.getTranslation('patient_info_updated', '患者信息已更新') : '患者信息已更新';
+        window.showNotification(successMessage, 'success');
     } else {
       await apiClient.patients.create(patientData);
-      window.showNotification('新患者已添加', 'success');
+      const successMessage = window.getTranslation ? window.getTranslation('new_patient_added', '新患者已添加') : '新患者已添加';
+        window.showNotification(successMessage, 'success');
     }
     
     // 触发更新事件
@@ -474,7 +476,9 @@ async function handlePatientFormSubmit(isEdit) {
     
     return true; // 允许模态框关闭
   } catch (error) {
-    window.showNotification('错误', `保存失败: ${error.message}`, 'error');
+    const errorTitle = window.getTranslation ? window.getTranslation('error', '错误') : '错误';
+        const errorMessage = window.getTranslation ? window.getTranslation('save_failed_error', '保存失败') : '保存失败';
+        window.showNotification(errorTitle, `${errorMessage}: ${error.message}`, 'error');
     return false; // 阻止模态框关闭
   }
 }

@@ -66,7 +66,9 @@ class PrescriptionBase(BaseModel):
     medical_record_id: int
     doctor_id: int
 
-class PrescriptionCreate(PrescriptionBase):
+class PrescriptionCreate(BaseModel):
+    prescription_date: datetime
+    medical_record_id: int
     details: List[PrescriptionDetailCreate]  # 创建主表时同时创建明细
 
 class PrescriptionUpdate(BaseModel):
@@ -79,6 +81,14 @@ class Prescription(PrescriptionBase):
     # 嵌套的患者和医生信息
     patient: Optional['Patient'] = None
     doctor: Optional['DoctorSchema'] = None
+    model_config = ConfigDict(from_attributes=True)
+
+# 这个Schema用于在病历中显示处方，它不包含指回病历或患者的链接，从而打破循环
+class PrescriptionInMedicalRecord(PrescriptionBase):
+    id: int
+    dispensing_status: str
+    details: List[PrescriptionDetail] = []
+    
     model_config = ConfigDict(from_attributes=True)
 
 # --- Inventory Schemas ---
@@ -129,3 +139,13 @@ class DrugWithStock(DrugBase):
     id: int
     stock: int  # 当前库存
     model_config = ConfigDict(from_attributes=True)
+
+# -------- 修改/新增代码开始 --------
+# 在文件末尾，执行真正的导入
+from app.patient.schemas import Patient
+from app.clinic.schemas import Doctor as DoctorSchema
+
+# 重建模型
+Prescription.model_rebuild()
+PrescriptionInMedicalRecord.model_rebuild()
+# -------- 修改/新增代码结束 --------

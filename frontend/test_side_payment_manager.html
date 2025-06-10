@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Side Payment Manager 测试页面</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/merged-payment.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .test-header {
+            background: linear-gradient(135deg, #2da2d4 0%, #39c5bb 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .test-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .test-info h5 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+        .test-info ul {
+            margin-bottom: 0;
+        }
+        .module-container {
+            min-height: 600px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .debug-panel {
+            background: #f5f5f5;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .debug-panel h6 {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .debug-info {
+            font-family: monospace;
+            font-size: 12px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .btn-test {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="fas fa-credit-card"></i> Side Payment Manager 测试页面</h1>
+            <p>独立测试聚合支付模块功能</p>
+        </div>
+        
+        <div class="test-info">
+            <h5><i class="fas fa-info-circle"></i> 测试说明</h5>
+            <ul>
+                <li>本页面用于独立测试 sidePaymentManager 模块</li>
+                <li>模拟了完整的认证环境和API客户端</li>
+                <li>可以测试患者搜索、账单获取、支付流程等功能</li>
+                <li>查看浏览器控制台获取详细的调试信息</li>
+            </ul>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="module-container" id="module-container">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                        <p class="mt-2">正在加载 Side Payment Manager 模块...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="debug-panel">
+                    <h6><i class="fas fa-bug"></i> 调试面板</h6>
+                    
+                    <div class="mb-3">
+                        <button class="btn btn-sm btn-primary btn-test" onclick="testModuleLoad()">重新加载模块</button>
+                        <button class="btn btn-sm btn-info btn-test" onclick="testPatientSearch()">测试患者搜索</button>
+                        <button class="btn btn-sm btn-success btn-test" onclick="testBillFetch()">测试账单获取</button>
+                        <button class="btn btn-sm btn-warning btn-test" onclick="clearDebugLog()">清空日志</button>
+                    </div>
+                    
+                    <div class="debug-info" id="debug-log">
+                        <div class="text-muted">调试信息将在这里显示...</div>
+                    </div>
+                </div>
+                
+                <div class="debug-panel mt-3">
+                    <h6><i class="fas fa-cog"></i> 模块状态</h6>
+                    <div class="debug-info" id="module-status">
+                        <div class="text-muted">模块状态信息...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知容器 -->    
+    <div id="notification-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1055"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 模拟认证环境 -->
+    <script>
+        // 模拟localStorage中的认证token
+        if (!localStorage.getItem('accessToken')) {
+            localStorage.setItem('accessToken', 'test-token-for-side-payment-manager');
+        }
+        
+        // 全局调试日志函数
+        window.debugLog = function(message, type = 'info') {
+            const logContainer = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `text-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'dark'}`;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(`[SidePaymentTest] ${message}`);
+        };
+        
+        // 清空调试日志
+        window.clearDebugLog = function() {
+            document.getElementById('debug-log').innerHTML = '<div class="text-muted">调试信息将在这里显示...</div>';
+        };
+        
+        // 更新模块状态显示
+        window.updateModuleStatus = function(status) {
+            const statusContainer = document.getElementById('module-status');
+            statusContainer.innerHTML = `<pre>${JSON.stringify(status, null, 2)}</pre>`;
+        };
+        
+        // 全局通知函数
+        window.showNotification = function(message, type = 'info', duration = 3000) {
+            debugLog(`通知: ${message} (${type})`, type);
+            
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, duration);
+        };
+        
+        debugLog('测试环境初始化完成', 'success');
+    </script>
+    
+    <!-- 加载模块 -->
+    <script type="module">
+        import apiClient from './js/apiClient.js';
+        
+        // 全局变量
+        let sidePaymentModule = null;
+        let moduleCleanup = null;
+        
+        // 测试函数
+        window.testModuleLoad = async function() {
+            debugLog('开始重新加载模块...');
+            await loadSidePaymentModule();
+        };
+        
+        window.testPatientSearch = function() {
+            debugLog('测试患者搜索功能...');
+            const searchInput = document.getElementById('side-patient-search');
+            if (searchInput) {
+                searchInput.value = '测试患者';
+                searchInput.dispatchEvent(new Event('input'));
+                debugLog('已触发患者搜索', 'success');
+            } else {
+                debugLog('未找到患者搜索输入框', 'error');
+            }
+        };
+        
+        window.testBillFetch = function() {
+            debugLog('测试账单获取功能...');
+            if (sidePaymentModule && sidePaymentModule.state) {
+                debugLog(`当前选中患者: ${sidePaymentModule.state.selectedPatient ? sidePaymentModule.state.selectedPatient.name : '无'}`);
+                debugLog(`未支付账单数量: ${sidePaymentModule.state.unpaidBills.length}`);
+                updateModuleStatus(sidePaymentModule.state);
+            } else {
+                debugLog('模块未正确加载', 'error');
+            }
+        };
+        
+        // 加载 sidePaymentManager 模块
+        async function loadSidePaymentModule() {
+            try {
+                debugLog('正在导入 sidePaymentManager 模块...');
+                
+                // 清理之前的模块
+                if (moduleCleanup) {
+                    debugLog('清理之前的模块实例...');
+                    moduleCleanup();
+                }
+                
+                // 动态导入模块
+                const module = await import('./js/modules/sidePaymentManager.js');
+                sidePaymentModule = module.default;
+                
+                debugLog('模块导入成功', 'success');
+                
+                // 获取容器并初始化模块
+                const container = document.getElementById('module-container');
+                if (container && sidePaymentModule) {
+                    debugLog('正在初始化模块...');
+                    moduleCleanup = sidePaymentModule.init(container);
+                    debugLog('模块初始化完成', 'success');
+                    
+                    // 更新状态显示
+                    updateModuleStatus(sidePaymentModule.state || {});
+                } else {
+                    throw new Error('容器或模块未找到');
+                }
+                
+            } catch (error) {
+                debugLog(`模块加载失败: ${error.message}`, 'error');
+                console.error('Side Payment Manager 加载错误:', error);
+                
+                // 显示错误信息
+                const container = document.getElementById('module-container');
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5><i class="fas fa-exclamation-triangle"></i> 模块加载失败</h5>
+                        <p><strong>错误信息:</strong> ${error.message}</p>
+                        <p><strong>可能原因:</strong></p>
+                        <ul>
+                            <li>模块文件路径不正确</li>
+                            <li>模块代码存在语法错误</li>
+                            <li>依赖的其他模块未正确加载</li>
+                        </ul>
+                        <button class="btn btn-primary" onclick="testModuleLoad()">重试加载</button>
+                    </div>
+                `;
+            }
+        }
+        
+        // 页面加载完成后自动加载模块
+        document.addEventListener('DOMContentLoaded', function() {
+            debugLog('页面DOM加载完成，开始加载模块...');
+            loadSidePaymentModule();
+        });
+        
+        // 暴露到全局以便调试
+        window.sidePaymentModule = sidePaymentModule;
+        window.apiClient = apiClient;
+        
+    </script>
+</body>
+</html>

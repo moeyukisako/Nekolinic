@@ -297,15 +297,15 @@ export default function renderFinanceModule(container, options = {}) {
           </button>
         </td>
         <td class="bill-id-cell">#${bill.id}</td>
-        <td class="invoice-cell">${bill.invoice_number || 'N/A'}</td>
-        <td class="patient-cell" data-patient-id="${bill.patient_id}">${bill.patient_name || '加载中...'}</td>
+        <td class="invoice-cell"><div class="invoice-box">${bill.invoice_number || 'N/A'}</div></td>
+        <td class="patient-cell" data-patient-id="${bill.patient_id}"><div class="patient-box">${bill.patient_name || '加载中...'}</div></td>
         <td class="status-cell">
           <span class="bill-status-text ${statusClass}">
             <span data-i18n="finance.status.${bill.status}"></span>
           </span>
         </td>
         <td class="date-cell">${billDate}</td>
-        <td class="amount-cell">¥${parseFloat(bill.total_amount).toFixed(2)}</td>
+        <td class="amount-cell"><div class="amount-box">¥${parseFloat(bill.total_amount).toFixed(2)}</div></td>
         <td class="actions-cell">
           <div class="bill-actions">
             <button class="btn-text btn-text-danger" data-action="delete" title="删除" data-i18n-title="finance.actions.delete">

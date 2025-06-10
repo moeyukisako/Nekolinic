@@ -1439,8 +1439,366 @@ body .sidebar:hover + .content {
     margin-bottom: 15px;
 }
 
+/* 聚合支付卡片透明样式 */
+.aggregated-payment-card .card-content {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+}
+
+/* 账单文本摘要样式 */
+.bills-text-summary {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--color-text-primary);
+    padding: 8px;
+}
+
+.bills-text-summary br {
+    margin-bottom: 4px;
+}
+
+.total-summary {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 14px;
+    color: var(--color-bar-primary);
+}
+
+/* 深色主题适配 */
+[data-theme="dark"] .total-summary {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 账单表格样式 */
+.bill-table {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* 当账单明细区域显示时，允许内容向下延展 */
+#side-bill-details-area {
+    max-height: none;
+}
+
+#side-bill-details-area .bill-table {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.bill-row {
+    display: grid;
+    grid-template-columns: 20px 80px 90px 80px 1fr 80px;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    font-size: 12px;
+    transition: background-color 0.2s ease;
+}
+
+.bill-row:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.bill-row .bill-checkbox {
+    margin: 0;
+    width: 14px;
+    height: 14px;
+}
+
+.bill-row .bill-id {
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bill-row .bill-date {
+    color: var(--color-text-tertiary);
+    font-size: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bill-row .bill-type {
+    color: var(--color-text-tertiary);
+    font-size: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bill-row .bill-patient {
+    color: var(--color-text-secondary);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bill-row .bill-amount {
+    color: var(--color-bar-primary);
+    font-weight: 600;
+    text-align: right;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 账单操作区域 */
+.bill-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 8px;
+}
+
+.select-all-compact {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+}
+
+.select-all-compact input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+}
+
+.selected-summary {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
+.selected-summary span {
+    color: var(--color-bar-primary);
+    font-weight: 600;
+}
+
+.generate-payment-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.generate-payment-btn i {
+    margin-right: 4px;
+    font-size: 11px;
+}
+
+/* 超小按钮样式 */
+.btn-xs {
+    padding: 4px 8px;
+    font-size: 11px;
+    line-height: 1.2;
+    border-radius: 3px;
+}
+
+.btn-xs i {
+    font-size: 10px;
+    margin-right: 3px;
+}
+
+/* 调整聚合支付卡片头部布局 */
+.aggregated-card .card-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 8px 12px;
+}
+
+.aggregated-card .card-actions {
+    display: flex;
+    gap: 6px;
+}
+
+/* 深色主题适配 */
+[data-theme="dark"] .bill-row {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+[data-theme="dark"] .bill-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .bill-actions {
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .bill-details-area {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .bill-details-header {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .bill-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .bill-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .bill-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .bill-details-actions {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
 .selected-patient-card {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+}
+
+/* 新的选中患者信息卡片样式 */
+.selected-patient-info-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #39c5bb 0%, #2da2d4 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(57, 197, 187, 0.2);
+    color: white;
+    position: relative;
+    overflow: hidden;
+    min-height: 80px;
+}
+
+.theme-dark .selected-patient-info-card {
+    background: linear-gradient(135deg, #b30074 0%, #9b3c66 100%);
+    box-shadow: 0 4px 12px rgba(179, 0, 116, 0.2);
+}
+
+.selected-patient-info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23ffffff" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
+    pointer-events: none;
+}
+
+.selected-patient-info-card .patient-avatar {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    flex-shrink: 0;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.selected-patient-info-card .patient-info-content {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.selected-patient-info-card .patient-main-info {
+    flex: 1;
+}
+
+.selected-patient-info-card .patient-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    margin: 0 0 6px 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.selected-patient-info-card .patient-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.selected-patient-info-card .patient-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.selected-patient-info-card .patient-meta i {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.selected-patient-info-card .patient-contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: right;
+}
+
+.selected-patient-info-card .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.selected-patient-info-card .contact-item i {
+    font-size: 11px;
+    opacity: 0.8;
+    width: 12px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .selected-patient-info-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 16px;
+    }
+    
+    .selected-patient-info-card .patient-info-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        width: 100%;
+    }
+    
+    .selected-patient-info-card .patient-contact-info {
+        text-align: left;
+    }
+    
+    .selected-patient-info-card .contact-item {
+        justify-content: flex-start;
+    }
 }
 
 .patient-card {
@@ -1596,118 +1954,247 @@ body .sidebar:hover + .content {
     font-size: 16px;
 }
 
-/* 账单明细区域 */
+/* 账单明细区域 - 紧凑设计 */
 .bill-details-area {
-    background: var(--color-bg-primary);
-    border-radius: 12px;
-    border: 2px solid var(--color-border);
-    padding: 20px;
-    margin-top: 20px;
+    background: transparent;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 12px;
+    margin-top: 15px;
+    backdrop-filter: blur(10px);
 }
 
 .bill-details-area h4 {
     color: var(--color-text-primary);
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bill-details-area h4::before {
+    content: "\f0ca";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    color: var(--color-bar-primary);
 }
 
 .bill-details-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    background: var(--color-bg-card);
-    border-radius: 8px;
-    margin-bottom: 15px;
-    border: 1px solid var(--color-border);
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 14px;
 }
 
-.checkbox-container {
+/* 紧凑的复选框样式 */
+.checkbox-container,
+.select-all-container {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
     user-select: none;
 }
 
-.checkbox-container input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+.checkbox-container input[type="checkbox"],
+.select-all-container input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
     margin: 0;
     cursor: pointer;
 }
 
-.selected-total {
-    font-size: 16px;
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+    color: var(--color-text-primary);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.selected-total,
+.selected-amount {
+    font-size: 13px;
     font-weight: 600;
     color: var(--color-text-primary);
 }
 
-.selected-total .amount {
+.selected-total .amount,
+.selected-amount {
     color: var(--color-bar-primary);
-    font-size: 18px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* 紧凑的账单列表 */
+.bill-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.bill-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.bill-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.bill-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+.bill-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .bill-items {
-    max-height: 400px;
+    max-height: 300px;
     overflow-y: auto;
 }
 
 .bill-detail-item {
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 15px 20px;
-    background: var(--color-bg-card);
-    border-radius: 8px;
-    margin-bottom: 10px;
-    border: 1px solid var(--color-border);
-    transition: all 0.3s;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.2s ease;
+    font-size: 13px;
 }
 
 .bill-detail-item:hover {
+    background: rgba(255, 255, 255, 0.12);
     border-color: var(--color-bar-primary);
-    box-shadow: 0 2px 8px rgba(0,123,255,0.1);
+    transform: translateY(-1px);
 }
 
+/* 紧凑的账单信息布局 */
 .bill-info {
     flex: 1;
+    min-width: 0;
 }
 
 .bill-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
 }
 
-.bill-number {
-    font-size: 16px;
+.bill-number,
+.bill-id {
+    font-size: 13px;
     font-weight: 600;
     color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.bill-number i,
+.bill-id i {
+    font-size: 11px;
+    color: var(--color-bar-primary);
 }
 
 .bill-amount {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--color-bar-primary);
 }
 
 .bill-details {
     display: flex;
-    gap: 20px;
-    font-size: 14px;
+    gap: 12px;
+    font-size: 11px;
     color: var(--color-text-secondary);
+    opacity: 0.8;
 }
 
+.bill-details > * {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.bill-details i {
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+.bill-date,
+.bill-type,
+.bill-patient {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 紧凑的操作按钮区域 */
 .bill-details-actions {
     display: flex;
-    gap: 15px;
-    justify-content: flex-end;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--color-border);
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.bill-details-actions .select-all-compact {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+}
+
+.bill-details-actions .selected-summary {
+    flex: 1;
+    text-align: center;
+    font-weight: 500;
+    font-size: 13px;
+    color: #333;
+}
+
+.bill-details-actions .btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.bill-details-actions .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.bill-details-actions .btn i {
+    font-size: 11px;
+    margin-right: 4px;
 }
 
 /* 支付二维码区域 */
@@ -2059,69 +2546,194 @@ body .sidebar:hover + .content {
     max-height: calc(100vh - 300px);
 }
 
-/* 账单表格容器 */
+/* 账单表格容器 - 重新设计 */
 .bills-table-container {
     background: var(--color-bg-card);
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border: 2px solid var(--color-border);
+    overflow-x: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 1px solid var(--color-border);
+    backdrop-filter: blur(10px);
+    position: relative;
 }
 
-/* 账单表格样式 */
+.bills-table-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-bar-primary), var(--color-bar-secondary, var(--color-bar-primary)));
+    z-index: 1;
+}
+
+/* 账单表格样式 - 现代化设计 */
 .bills-table {
     width: 100%;
-    border-collapse: collapse;
-    background: var(--color-bg-card);
+    min-width: 900px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: transparent;
+    table-layout: fixed;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .bills-table-header {
-    background: var(--color-bg-primary);
-    border-bottom: 2px solid var(--color-border);
+    background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%);
+    position: relative;
+}
+
+.bills-table-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-bar-primary), transparent, var(--color-bar-primary));
 }
 
 .bills-table-header th {
-    padding: 15px 12px;
+    padding: 18px 16px;
     text-align: left;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--color-text-primary);
-    font-size: 14px;
-    border-right: 1px solid var(--color-border);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+    box-sizing: border-box;
 }
 
-.bills-table-header th:last-child {
-    border-right: none;
+.bills-table-header th:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 25%;
+    bottom: 25%;
+    width: 1px;
+    background: var(--color-border);
+    opacity: 0.5;
 }
 
+/* 表头列宽固定设置 - 与单元格对齐 */
 .expand-column {
-    width: 50px;
+    width: 50px !important;
+    min-width: 50px;
+    max-width: 50px;
     text-align: center;
 }
 
-/* 账单行样式 */
+.bills-table-header th:nth-child(2) { /* 账单ID列 */
+    width: 100px !important;
+    min-width: 100px;
+    max-width: 100px;
+}
+
+.bills-table-header th:nth-child(3) { /* 发票号列 */
+    width: 180px !important;
+    min-width: 180px;
+    max-width: 180px;
+}
+
+.bills-table-header th:nth-child(4) { /* 患者列 */
+    width: 170px !important;
+    min-width: 170px;
+    max-width: 170px;
+}
+
+.bills-table-header th:nth-child(5) { /* 状态列 */
+    width: 120px !important;
+    min-width: 120px;
+    max-width: 120px;
+}
+
+.bills-table-header th:nth-child(6) { /* 日期列 */
+    width: 140px !important;
+    min-width: 140px;
+    max-width: 140px;
+}
+
+.bills-table-header th:nth-child(7) { /* 金额列 */
+    width: 130px !important;
+    min-width: 130px;
+    max-width: 130px;
+}
+
+.bills-table-header th:nth-child(8) { /* 操作列 */
+    width: 150px !important;
+    min-width: 150px;
+    max-width: 150px;
+}
+
+/* 账单行样式 - 现代化重设计 */
 .bill-row {
-    border-bottom: 1px solid var(--color-border);
-    transition: background-color 0.2s ease;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    background: var(--color-bg-card);
+}
+
+.bill-row::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 16px;
+    right: 16px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+    opacity: 0.6;
+}
+
+.bill-row:last-child::after {
+    display: none;
 }
 
 .bill-row:hover {
     background: var(--color-bg-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.bill-row:hover::after {
+    opacity: 0;
 }
 
 .bill-row td {
-    padding: 12px;
+    padding: 16px;
     vertical-align: middle;
-    border-right: 1px solid var(--color-border);
+    border: none;
+    position: relative;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.bill-row td:first-child {
+    padding-left: 20px;
 }
 
 .bill-row td:last-child {
-    border-right: none;
+    padding-right: 20px;
 }
 
-/* 展开按钮样式 */
+/* 展开按钮样式 - 现代化重设计 */
 .expand-cell {
     text-align: center;
-    width: 50px;
+    width: 50px !important;
+    min-width: 50px;
+    max-width: 50px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px !important;
 }
 
 .expand-btn {
@@ -2129,48 +2741,212 @@ body .sidebar:hover + .content {
     border: none;
     cursor: pointer;
     padding: 8px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     color: var(--color-text-secondary);
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    position: relative;
 }
 
 .expand-btn:hover {
     background: var(--color-bg-primary);
     color: var(--color-bar-primary);
+    transform: scale(1.1);
 }
 
 .expand-btn i {
-    font-size: 14px;
-    transition: transform 0.2s ease;
+    font-size: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--color-text-secondary);
 }
 
-/* 表格单元格样式 */
-.bill-id-cell {
-    font-weight: 700;
+.expand-btn:hover i {
     color: var(--color-bar-primary);
-    font-size: 16px;
+}
+
+.expand-btn.expanded i {
+    transform: rotate(90deg);
+    color: var(--color-bar-primary);
+}
+
+.expand-btn.expanded {
+    background: var(--color-bg-primary);
+    color: var(--color-bar-primary);
+}
+
+/* 表格单元格样式 - 固定Box布局对齐 */
+.bill-id-cell {
+    font-weight: 800;
+    color: var(--color-bar-primary);
+    font-size: 15px;
+    width: 100px !important;
+    min-width: 100px;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.bill-id-cell::before {
+    content: '#';
+    opacity: 0.6;
+    margin-right: 2px;
+    flex-shrink: 0;
 }
 
 .invoice-cell {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--color-text-primary);
     font-size: 14px;
+    width: 180px !important;
+    min-width: 180px;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Courier New', monospace;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
+}
+
+.invoice-cell .invoice-box {
+    background: var(--color-bg-primary);
+    border-radius: 6px;
+    padding: 6px 10px;
+    border: 1px solid var(--color-border);
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .patient-cell {
     font-weight: 600;
     color: var(--color-text-primary);
+    width: 170px !important;
+    min-width: 170px;
+    max-width: 170px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.patient-cell .patient-box {
+    border-radius: 8px;
+    padding: 6px 10px;
+    transition: all 0.3s ease;
+    position: relative;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.patient-cell .patient-box::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--color-bar-primary);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.patient-cell:hover .patient-box {
+    color: var(--color-bar-primary);
+    background: var(--color-bg-primary);
+    transform: translateY(-1px);
+}
+
+.patient-cell:hover .patient-box::before {
+    width: 80%;
 }
 
 .date-cell {
     color: var(--color-text-secondary);
     font-size: 13px;
+    width: 140px !important;
+    min-width: 140px;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Courier New', monospace;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+}
+
+.date-cell::before {
+    content: '📅';
+    font-size: 12px;
+    opacity: 0.7;
+    flex-shrink: 0;
 }
 
 .amount-cell {
-    font-weight: 700;
+    font-weight: 800;
     color: var(--color-bar-primary);
     font-size: 16px;
+    width: 130px !important;
+    min-width: 130px;
+    max-width: 130px;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: 'Courier New', monospace;
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.amount-cell .amount-box {
+    background: linear-gradient(135deg, var(--color-bg-primary), var(--color-bg-secondary));
+    border-radius: 8px;
+    padding: 6px 10px;
+    border: 1px solid var(--color-border);
+    display: inline-block;
+    position: relative;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.amount-cell .amount-box::before {
+    content: '¥';
+    font-size: 14px;
+    opacity: 0.8;
+    margin-right: 2px;
 }
 
 .bill-basic-info {
@@ -2277,42 +3053,110 @@ body .sidebar:hover + .content {
 /* 账单状态样式 */
 .status-cell {
     text-align: center;
+    width: 120px !important;
+    min-width: 120px;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .bill-status {
-    padding: 6px 12px;
-    border-radius: 20px;
+    padding: 8px 16px;
+    border-radius: 25px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: inline-block;
-    min-width: 80px;
+    letter-spacing: 0.8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 90px;
     text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.bill-status::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.bill-status:hover::before {
+    left: 100%;
 }
 
 .bill-status.paid {
-    background: rgba(40, 167, 69, 0.1);
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(76, 175, 80, 0.15));
     color: #28a745;
-    border: 1px solid rgba(40, 167, 69, 0.3);
+    border: 2px solid rgba(40, 167, 69, 0.4);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+}
+
+.bill-status.paid:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(40, 167, 69, 0.3);
 }
 
 .bill-status.pending {
-    background: rgba(255, 193, 7, 0.1);
-    color: #ffc107;
-    border: 1px solid rgba(255, 193, 7, 0.3);
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 152, 0, 0.15));
+    color: #ff8c00;
+    border: 2px solid rgba(255, 193, 7, 0.4);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+}
+
+.bill-status.pending:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 193, 7, 0.3);
 }
 
 .bill-status.overdue {
-    background: rgba(220, 53, 69, 0.1);
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.15), rgba(244, 67, 54, 0.15));
     color: #dc3545;
-    border: 1px solid rgba(220, 53, 69, 0.3);
+    border: 2px solid rgba(220, 53, 69, 0.4);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
+    animation: pulse-red 2s infinite;
+}
+
+.bill-status.overdue:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.3);
 }
 
 .bill-status.cancelled {
-    background: rgba(108, 117, 125, 0.1);
+    background: linear-gradient(135deg, rgba(108, 117, 125, 0.15), rgba(158, 158, 158, 0.15));
     color: #6c757d;
-    border: 1px solid rgba(108, 117, 125, 0.3);
+    border: 2px solid rgba(108, 117, 125, 0.4);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
+    opacity: 0.8;
+}
+
+.bill-status.cancelled:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(108, 117, 125, 0.3);
+    opacity: 1;
+}
+
+@keyframes pulse-red {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
+    }
+    50% {
+        box-shadow: 0 4px 16px rgba(220, 53, 69, 0.4);
+    }
 }
 
 /* 新的文本状态样式 */
@@ -2380,17 +3224,122 @@ body .sidebar:hover + .content {
     background: rgba(40, 167, 69, 0.1);
 }
 
-/* 操作按钮样式 */
+/* 操作按钮样式 - 现代化重设计 */
 .actions-cell {
     text-align: center;
     white-space: nowrap;
+    width: 150px !important;
+    min-width: 150px;
+    max-width: 150px;
+    padding: 12px 8px !important;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .bill-actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     justify-content: center;
     align-items: center;
+    flex-wrap: wrap;
+}
+
+.bill-actions .btn {
+    padding: 8px 14px;
+    font-size: 11px;
+    border-radius: 20px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    min-width: 60px;
+    justify-content: center;
+}
+
+.bill-actions .btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+}
+
+.bill-actions .btn:hover::before {
+    width: 300%;
+    height: 300%;
+}
+
+.bill-actions .btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.bill-actions .btn i,
+.bill-actions .btn span {
+    position: relative;
+    z-index: 1;
+}
+
+.bill-actions .btn-primary {
+    background: linear-gradient(135deg, var(--color-bar-primary), var(--color-bar-secondary));
+    color: white;
+    border-color: var(--color-bar-primary);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.bill-actions .btn-primary::before {
+    background: rgba(255,255,255,0.2);
+}
+
+.bill-actions .btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.bill-actions .btn-secondary {
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.bill-actions .btn-secondary::before {
+    background: var(--color-bar-primary);
+}
+
+.bill-actions .btn-secondary:hover {
+    border-color: var(--color-bar-primary);
+    color: white;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.bill-actions .btn-danger {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+    border-color: #dc3545;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.2);
+}
+
+.bill-actions .btn-danger::before {
+    background: rgba(255,255,255,0.2);
+}
+
+.bill-actions .btn-danger:hover {
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
 }
 
 /* 展开的明细行样式 */
@@ -2415,36 +3364,66 @@ body .sidebar:hover + .content {
     background: var(--color-bg-primary);
 }
 
-/* 明细表格样式 */
+/* 明细表格样式 - 现代化重设计 */
 .bill-items-table {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 20px;
     background: var(--color-bg-card);
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border: 1px solid var(--color-border);
 }
 
 .bill-items-table th {
-    background: var(--color-bg-secondary);
-    padding: 12px;
+    background: linear-gradient(135deg, var(--color-bg-secondary), var(--color-bg-primary));
+    padding: 16px 15px;
     text-align: left;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--color-text-primary);
     font-size: 13px;
-    border-bottom: 2px solid var(--color-border);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 3px solid var(--color-bar-primary);
+    position: relative;
+}
+
+.bill-items-table th::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-bar-primary), var(--color-bar-secondary));
 }
 
 .bill-items-table td {
-    padding: 10px 12px;
+    padding: 14px 15px;
     border-bottom: 1px solid var(--color-border);
     color: var(--color-text-primary);
     font-size: 13px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.bill-items-table tr:hover td {
+    background: var(--color-bg-primary);
+    transform: scale(1.01);
 }
 
 .bill-items-table tr:last-child td {
     border-bottom: none;
+}
+
+.bill-items-table tr:last-child td:first-child {
+    border-bottom-left-radius: 12px;
+}
+
+.bill-items-table tr:last-child td:last-child {
+    border-bottom-right-radius: 12px;
 }
 
 .bill-items-table tr:hover {
@@ -2476,40 +3455,83 @@ body .sidebar:hover + .content {
     font-family: 'Courier New', monospace;
 }
 
-/* 明细总计样式 */
+/* 明细总计样式 - 现代化重设计 */
 .bill-items-total {
-    margin-top: 15px;
-    padding: 15px;
-    background: var(--color-bg-card);
-    border-radius: 8px;
+    margin-top: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--color-bg-card), var(--color-bg-primary));
+    border-radius: 12px;
     border: 2px solid var(--color-border);
     text-align: right;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.bill-items-total::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-bar-primary), var(--color-bar-secondary));
 }
 
 .total-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     font-size: 14px;
+    padding: 8px 0;
+    transition: all 0.2s ease;
+}
+
+.total-row:hover {
+    background: var(--color-bg-primary);
+    margin: 0 -10px 12px;
+    padding: 8px 10px;
+    border-radius: 8px;
 }
 
 .total-row:last-child {
     margin-bottom: 0;
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 800;
     color: var(--color-bar-primary);
-    border-top: 2px solid var(--color-border);
-    padding-top: 8px;
+    border-top: 3px solid var(--color-bar-primary);
+    padding: 16px 15px;
+    margin: 12px -5px 0;
+    background: var(--color-bg-primary);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .total-label {
     color: var(--color-text-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
 }
 
 .total-value {
     font-family: 'Courier New', monospace;
-    font-weight: 600;
+    font-weight: 700;
+    padding: 4px 8px;
+    background: var(--color-bg-primary);
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+}
+
+.total-row:last-child .total-value {
+    color: var(--color-bar-primary);
+    font-size: 18px;
+    font-weight: 800;
+    background: white;
+    border: 2px solid var(--color-bar-primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 /* 展开按钮旋转动画 */
@@ -5253,7 +6275,7 @@ legend {
     }
 }
 
-/* 财务模块表格响应式设计 */
+/* 财务模块表格响应式设计 - 现代化重设计 */
 @media (max-width: 768px) {
     /* 财务模块控制区域 */
     .billing-controls {
@@ -5269,56 +6291,130 @@ legend {
     /* 表格响应式设计 */
     .bills-table-container {
         overflow-x: auto;
-        border-radius: 8px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
 
     .bills-table {
-        min-width: 600px;
-        font-size: 13px;
+        min-width: 900px;
+        font-size: 12px;
     }
 
     .bills-table-header th {
-        padding: 10px 8px;
-        font-size: 12px;
+        padding: 12px 8px;
+        font-size: 11px;
+        letter-spacing: 0.3px;
     }
 
     .bill-row td {
-        padding: 8px;
-        font-size: 12px;
+        padding: 10px 6px;
+        font-size: 11px;
     }
 
     .expand-cell {
-        width: 40px;
+        width: 40px !important;
+        min-width: 40px;
+        max-width: 40px;
+        padding: 4px !important;
     }
 
     .expand-btn {
         padding: 6px;
+        width: 28px;
+        height: 28px;
     }
 
-    .bill-id-cell {
+    .expand-btn i {
         font-size: 14px;
     }
 
+    .bill-id-cell {
+        font-size: 13px;
+        width: 80px !important;
+        min-width: 80px;
+        max-width: 80px;
+        padding: 6px 8px !important;
+    }
+
     .invoice-cell {
+        font-size: 11px;
+        width: 120px !important;
+        min-width: 120px;
+        max-width: 120px;
+        padding: 6px 10px !important;
+    }
+
+    .invoice-cell .invoice-box {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    .patient-cell {
+        width: 110px !important;
+        min-width: 110px;
+        max-width: 110px;
+        padding: 6px 10px !important;
+    }
+
+    .patient-cell .patient-box {
+        padding: 4px 8px;
         font-size: 12px;
+    }
+
+    .status-cell {
+        width: 90px !important;
+        min-width: 90px;
+        max-width: 90px;
+    }
+
+    .date-cell {
+        width: 100px !important;
+        min-width: 100px;
+        max-width: 100px;
+        font-size: 11px;
     }
 
     .amount-cell {
         font-size: 14px;
+        width: 100px !important;
+        min-width: 100px;
+        max-width: 100px;
+        padding: 6px 10px !important;
+    }
+
+    .amount-cell .amount-box {
+        padding: 4px 8px;
+        font-size: 13px;
+    }
+
+    .actions-cell {
+        width: 120px !important;
+        min-width: 120px;
+        max-width: 120px;
+        padding: 8px 4px !important;
     }
 
     .bill-status {
         font-size: 10px;
-        padding: 4px 8px;
-        min-width: 60px;
+        padding: 6px 12px;
+        min-width: 70px;
+        letter-spacing: 0.4px;
     }
 
     .bill-actions {
-        flex-direction: column;
+        flex-wrap: wrap;
         gap: 4px;
+        justify-content: center;
     }
 
-    .btn-action {
+    .bill-actions .btn {
+        padding: 6px 10px;
+        font-size: 10px;
+        min-width: 50px;
+        letter-spacing: 0.3px;
+    }
+
+    .btn-text {
         padding: 6px 10px;
         font-size: 11px;
     }
@@ -5329,24 +6425,43 @@ legend {
     }
 
     .bill-items-table {
-        font-size: 12px;
+        font-size: 11px;
+        border-radius: 8px;
     }
 
-    .bill-items-table th,
+    .bill-items-table th {
+        padding: 12px 8px;
+        font-size: 11px;
+    }
+
     .bill-items-table td {
-        padding: 8px 6px;
+        padding: 10px 8px;
+        font-size: 11px;
     }
 
     .bill-items-total {
-        padding: 10px;
+        padding: 15px;
+        margin-top: 15px;
+        border-radius: 8px;
     }
 
     .total-row {
         font-size: 12px;
+        margin-bottom: 8px;
     }
 
     .total-row:last-child {
-        font-size: 14px;
+        font-size: 16px;
+        padding: 12px 10px;
+    }
+
+    .total-value {
+        font-size: 12px;
+        padding: 3px 6px;
+    }
+
+    .total-row:last-child .total-value {
+        font-size: 16px;
     }
 }
 

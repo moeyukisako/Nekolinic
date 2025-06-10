@@ -314,15 +314,15 @@ const apiClient = {
         }),
         // 获取患者未支付账单
         getPatientUnpaidBills: (patientId) => {
-            return apiRequest(`/api/v1/finance/bills/?patient_id=${patientId}&status=unpaid`);
+            return apiRequest(`/api/v1/finance/merged-payments/patients/${patientId}/unpaid-bills`);
         },
         // 创建合并支付会话
-        createMergedPaymentSession: (data) => apiRequest('/api/v1/finance/merged-payment-sessions', {
+        createMergedPaymentSession: (data) => apiRequest('/api/v1/finance/merged-payments/sessions', {
             method: 'POST',
             body: JSON.stringify(data)
         }),
         // 获取合并支付会话状态
-        getMergedPaymentSessionStatus: (sessionId) => apiRequest(`/api/v1/finance/merged-payment-sessions/${sessionId}/status`)
+        getMergedPaymentSessionStatus: (sessionId) => apiRequest(`/api/v1/finance/merged-payments/sessions/${sessionId}/status`)
     },
     
     // 药房相关

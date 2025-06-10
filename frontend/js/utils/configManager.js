@@ -244,6 +244,9 @@ class ConfigManager {
     const background = this.get('background');
     if (background) {
       this.applyBackground(background);
+    } else {
+      // 如果没有背景配置，应用默认背景
+      this.applyDefaultBackground();
     }
     
     const language = this.get('language');
@@ -270,20 +273,63 @@ class ConfigManager {
    * 应用背景设置
    */
   applyBackground(backgroundConfig) {
-    // ... (此部分无需修改)
     const url = backgroundConfig.url;
+    const color = backgroundConfig.color;
     const brightness = backgroundConfig.brightness || 1;
     const blur = backgroundConfig.blur || 0;
 
     const bgContainer = document.querySelector('.bg-container');
-    if(bgContainer) {
-        if (url) {
-            bgContainer.style.backgroundImage = `url('${url}')`;
-            bgContainer.style.filter = `brightness(${brightness}) blur(${blur}px)`;
-            bgContainer.style.display = 'block';
-        } else {
-            bgContainer.style.backgroundImage = 'none';
-        }
+    const bgOverlay = document.querySelector('.bg-overlay');
+    
+    if (bgContainer) {
+      if (url) {
+        // 设置背景图片
+        bgContainer.style.backgroundImage = `url('${url}')`;
+        bgContainer.style.filter = `brightness(${brightness}) blur(${blur}px)`;
+        bgContainer.style.display = 'block';
+        
+        // 设置CSS变量
+        document.documentElement.style.setProperty('--bg-image', `url('${url}')`);
+        document.documentElement.style.setProperty('--bg-brightness', brightness);
+        document.documentElement.style.setProperty('--bg-blur', `${blur}px`);
+      } else {
+        bgContainer.style.backgroundImage = 'none';
+        document.documentElement.style.setProperty('--bg-image', 'none');
+      }
+    }
+    
+    if (bgOverlay && color) {
+      // 设置背景颜色
+      bgOverlay.style.backgroundColor = color;
+      document.documentElement.style.setProperty('--bg-overlay', color);
+    } else if (bgOverlay) {
+      bgOverlay.style.backgroundColor = '';
+      document.documentElement.style.setProperty('--bg-overlay', 'transparent');
+    }
+  }
+
+  /**
+   * 应用默认背景
+   */
+  applyDefaultBackground() {
+    const bgContainer = document.querySelector('.bg-container');
+    const bgOverlay = document.querySelector('.bg-overlay');
+    const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
+    
+    if (bgContainer) {
+      bgContainer.style.backgroundImage = defaultBg;
+      bgContainer.style.filter = 'brightness(1) blur(0px)';
+      bgContainer.style.display = 'block';
+      
+      // 设置CSS变量
+      document.documentElement.style.setProperty('--bg-image', defaultBg);
+      document.documentElement.style.setProperty('--bg-brightness', '1');
+      document.documentElement.style.setProperty('--bg-blur', '0px');
+    }
+    
+    if (bgOverlay) {
+      bgOverlay.style.backgroundColor = '';
+      document.documentElement.style.setProperty('--bg-overlay', 'transparent');
     }
   }
 

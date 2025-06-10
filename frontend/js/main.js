@@ -148,6 +148,8 @@ function bindSidebarNavigation() {
  * @returns {Promise<Object>} 模块渲染器映射表
  */
 async function loadModuleRenderers() {
+  console.log('🔄 开始加载模块渲染器...');
+  
   // 动态导入
   const [
     dashboardModule,
@@ -184,7 +186,11 @@ async function loadModuleRenderers() {
       console.error('Failed to load financeManager module:', err); 
       return { default: fallbackRenderer('财务管理') }; 
     }),
-    import('./modules/sidePaymentManager.js').catch((err) => { 
+    import('./modules/sidePaymentManager.js').then((module) => {
+      console.log('sidePaymentManager module loaded successfully:', module);
+      // 使用renderSidePaymentModule函数作为默认导出
+      return { default: module.renderSidePaymentModule || fallbackRenderer('聚合支付') };
+    }).catch((err) => { 
       console.error('Failed to load sidePaymentManager module:', err); 
       console.error('sidePaymentManager error details:', err.stack);
       return { default: fallbackRenderer('聚合支付') }; 
@@ -198,6 +204,10 @@ async function loadModuleRenderers() {
       return { default: fallbackRenderer('设置管理') }; 
     })
   ]);
+  
+  // 验证sidePaymentModule
+  console.log('sidePaymentModule after import:', sidePaymentModule);
+  console.log('sidePaymentModule.default:', sidePaymentModule.default);
   
   // 模块映射
   return {

@@ -99,6 +99,32 @@
     gap: 8px;
 }
 
+/* 无数据提示样式 */
+.no-data-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+.no-data-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.no-data-text h6 {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.no-data-text p {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
 .method-icons i {
     font-size: 1.5rem;
     opacity: 0.8;

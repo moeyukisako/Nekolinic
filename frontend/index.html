@@ -537,6 +537,7 @@
             }
         }
     </style>
+    <script type="module" src="utils/i18n.js"></script>
 </head>
 <body>
     <!-- 背景图片容器 -->
@@ -646,10 +647,7 @@ function updateLanguageSelection() {
   }
 }
 
-// 加载 i18n 模块
-const i18nScript = document.createElement('script');
-i18nScript.src = 'utils/i18n.js';
-document.head.appendChild(i18nScript);
+// i18n 模块将通过静态script标签加载
 
 // 加载用户背景设置
 async function loadUserBackgroundSetting() {
@@ -701,22 +699,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 初始化配置管理器
   await configManager.init();
   
-  // 等待i18n脚本加载完成
-  await new Promise((resolve) => {
-    if (window.initI18n) {
-      resolve();
-    } else {
-      i18nScript.onload = resolve;
-    }
-  });
+  // 等待i18n模块加载完成
+  let retryCount = 0;
+  const maxRetries = 50; // 最多等待5秒
+  
+  while (!window.initI18n && retryCount < maxRetries) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    retryCount++;
+  }
   
   // 初始化国际化
   if (window.initI18n) {
     await window.initI18n();
+  } else {
+    console.error('i18n模块加载失败');
   }
   
-  // 延迟一点加载背景，确保页面元素已准备好
-  setTimeout(loadUserBackgroundSetting, 100);
+  // 注意：背景已经在 configManager.init() 中的 applyConfig() 方法中设置了
+  // 不需要再调用 loadUserBackgroundSetting，避免冲突
 });
 </script>
 </body>

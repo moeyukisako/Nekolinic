@@ -653,9 +653,11 @@ document.head.appendChild(i18nScript);
 
 // 加载用户背景设置
 async function loadUserBackgroundSetting() {
+  const bgContainer = document.querySelector('.bg-container');
+  const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
+  
   try {
     const user = await apiClient.auth.getCurrentUser();
-    const bgContainer = document.querySelector('.bg-container');
     
     if (user && user.background_preference) {
       let backgroundUrl = user.background_preference;
@@ -663,6 +665,7 @@ async function loadUserBackgroundSetting() {
       if (backgroundUrl.startsWith('color:')) {
         const color = backgroundUrl.replace('color:', '');
         document.body.style.backgroundColor = color;
+        document.documentElement.style.setProperty('--bg-image', 'none');
         if (bgContainer) bgContainer.style.backgroundImage = 'none';
       } else {
         if (backgroundUrl.startsWith('image:')) {
@@ -676,7 +679,6 @@ async function loadUserBackgroundSetting() {
       }
     } else {
       // 用户未设置背景时，使用默认背景
-      const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
       document.documentElement.style.setProperty('--bg-image', defaultBg);
       if (bgContainer) {
         bgContainer.style.backgroundImage = defaultBg;
@@ -686,12 +688,10 @@ async function loadUserBackgroundSetting() {
   } catch (err) {
     console.log('用户未登录或加载背景设置失败，使用默认背景');
     // 出错时也使用默认背景
-    const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
-    const bgContainer = document.querySelector('.bg-container');
+    document.documentElement.style.setProperty('--bg-image', defaultBg);
     if (bgContainer) {
       bgContainer.style.backgroundImage = defaultBg;
     }
-    document.documentElement.style.setProperty('--bg-image', defaultBg);
     document.body.style.backgroundColor = '';
   }
 }

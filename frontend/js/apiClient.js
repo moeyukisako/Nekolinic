@@ -292,44 +292,37 @@ const apiClient = {
     
 
     // 财务相关
-
     finance: {
-
         getBills: (params = {}) => {
             const { skip = 0, limit = 20 } = params;
             return apiRequest(`/api/v1/finance/bills/?skip=${skip}&limit=${limit}`);
         },
-
         getBillById: (id) => apiRequest(`/api/v1/finance/bills/${id}`),
-
         deleteBill: (id) => apiRequest(`/api/v1/finance/bills/${id}`, {
-
             method: 'DELETE'
-
         }),
-
         createPayment: (data) => apiRequest('/api/v1/finance/payments', {
-
             method: 'POST',
-
             body: JSON.stringify(data)
-
         }),
-
         generateBillFromRecord: (medicalRecordId) => apiRequest(`/api/v1/finance/billing/generate-from-record/${medicalRecordId}`, {
-
             method: 'POST'
-
         }),
-
         createBill: (billData) => apiRequest('/api/v1/finance/bills', {
-
             method: 'POST',
-
             body: JSON.stringify(billData)
-
-        })
-
+        }),
+        // 获取患者未支付账单
+        getPatientUnpaidBills: (patientId) => {
+            return apiRequest(`/api/v1/finance/bills/?patient_id=${patientId}&status=unpaid`);
+        },
+        // 创建合并支付会话
+        createMergedPaymentSession: (data) => apiRequest('/api/v1/finance/merged-payment-sessions', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        }),
+        // 获取合并支付会话状态
+        getMergedPaymentSessionStatus: (sessionId) => apiRequest(`/api/v1/finance/merged-payment-sessions/${sessionId}/status`)
     },
     
     // 药房相关

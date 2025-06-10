@@ -120,3 +120,56 @@ class PaymentNotificationData(BaseModel):
 
 class PaymentResponse(Payment):
     pass
+
+# --- 合并支付相关 Schemas ---
+class MergedPaymentSessionBase(BaseModel):
+    patient_id: int
+    total_amount: Decimal
+    payment_method: str
+    status: str
+    expires_at: datetime
+    qr_code_content: Optional[str] = None
+    provider_transaction_id: Optional[str] = None
+
+class MergedPaymentSessionCreate(BaseModel):
+    patient_id: int
+    bill_ids: List[int]
+    payment_method: str
+    timeout_minutes: int = 15
+
+class MergedPaymentSessionRead(MergedPaymentSessionBase):
+    id: int
+    session_id: str
+    created_at: datetime
+    updated_at: datetime
+    bills: List[BillSummary] = []
+    model_config = ConfigDict(from_attributes=True)
+
+class MergedPaymentSessionBillBase(BaseModel):
+    merged_session_id: int
+    bill_id: int
+    bill_amount: Decimal
+
+class MergedPaymentSessionBillRead(MergedPaymentSessionBillBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
+
+# --- 合并支付请求响应 Schemas ---
+class MergedPaymentRequest(BaseModel):
+    patient_id: int
+    bill_ids: List[int]
+    payment_method: str = Field(..., pattern="^(alipay|wechat)$")
+    timeout_minutes: int = Field(default=15, ge=5, le=60)
+
+class MergedPaymentResponse(BaseModel):
+    session_id: str
+    qr_code_content: str
+    total_amount: Decimal
+    expires_at: datetime
+    bills: List[BillSummary]
+
+class MergedPaymentCallbackResponse(BaseModel):
+    session_id: str
+    total_amount: Decimal
+    processed_bills: List[dict]
+    transaction_id: str

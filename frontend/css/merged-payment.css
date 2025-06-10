@@ -1,0 +1,722 @@
+/**
+ * 合并支付模块样式
+ * 支持浅色/深色主题切换
+ */
+
+/* 主容器 */
+.merged-payment-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--bg-color);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+/* 头部区域 */
+.merged-payment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.merged-payment-header h2 {
+    margin: 0;
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 1.8rem;
+}
+
+.back-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 聚合支付卡片 */
+.payment-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.payment-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.aggregated-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+    color: white;
+    border: none;
+}
+
+.card-icon {
+    font-size: 3rem;
+    opacity: 0.9;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.card-content h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.card-content p {
+    margin: 0 0 16px 0;
+    opacity: 0.9;
+    font-size: 1rem;
+}
+
+.payment-methods {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+}
+
+.method-icons {
+    display: flex;
+    gap: 8px;
+}
+
+.method-icons i {
+    font-size: 1.5rem;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.method-icons i:hover {
+    opacity: 1;
+}
+
+.card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.quick-pay-btn {
+    padding: 12px 24px;
+    font-weight: 600;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.quick-pay-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+/* 账单选择区域 */
+.bill-selection-area {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 30px;
+}
+
+.selection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.selection-header h3 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.selection-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.selection-controls .btn {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    border-radius: 6px;
+}
+
+/* 加载状态 */
+.bills-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px;
+    color: var(--text-muted);
+}
+
+/* 账单列表 */
+.bills-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.bill-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg-color);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.bill-item:hover {
+    border-color: var(--primary-color);
+    background: var(--hover-bg);
+}
+
+.bill-item.selected {
+    border-color: var(--primary-color);
+    background: var(--primary-bg-light);
+    box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.bill-checkbox {
+    position: relative;
+}
+
+.bill-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.bill-info {
+    flex: 1;
+}
+
+.bill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.bill-invoice {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
+.bill-amount {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.bill-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.bill-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.bill-status.status-PENDING {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.bill-status.status-PAID {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.bill-status.status-CANCELLED {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.bill-description {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* 无账单消息 */
+.no-bills-message {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+
+.no-bills-message i {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.no-bills-message p {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* 支付摘要 */
+.payment-summary {
+    position: sticky;
+    bottom: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.summary-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.selected-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.selected-count {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.total-amount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.proceed-payment-btn {
+    padding: 12px 32px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    min-width: 150px;
+}
+
+.proceed-payment-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.proceed-payment-btn:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
+}
+
+/* 支付方式选择 */
+.payment-methods-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 20px 0;
+}
+
+.payment-method {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px;
+    background: var(--bg-color);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.payment-method:hover {
+    border-color: var(--primary-color);
+    background: var(--hover-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.payment-method i {
+    font-size: 3rem;
+    color: var(--primary-color);
+}
+
+.payment-method span {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
+/* 支付状态 */
+.payment-status {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.payment-status .status-icon {
+    margin-bottom: 20px;
+}
+
+.payment-status .status-icon i {
+    font-size: 4rem;
+}
+
+.payment-status h4 {
+    margin: 0 0 16px 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.payment-status p {
+    margin: 0 0 24px 0;
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* 二维码区域 */
+.qr-code-section {
+    margin-bottom: 30px;
+}
+
+.qr-code-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#qr-code {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 支付信息 */
+.payment-info {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item span:first-child {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.info-item strong {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.info-item code {
+    background: var(--code-bg);
+    color: var(--code-color);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+/* 状态指示器 */
+.status-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+
+.pulse-dot {
+    width: 12px;
+    height: 12px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(var(--primary-color-rgb), 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0);
+    }
+}
+
+/* 成功详情 */
+.success-details {
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 20px;
+}
+
+/* 深色主题适配 */
+[data-theme="dark"] .aggregated-card {
+    background: linear-gradient(135deg, var(--primary-color), #1a365d);
+}
+
+[data-theme="dark"] .qr-code-container {
+    background: #f8f9fa;
+}
+
+[data-theme="dark"] .bill-status.status-PENDING {
+    background: #3d3d00;
+    color: #ffeb3b;
+    border-color: #5d5d00;
+}
+
+[data-theme="dark"] .bill-status.status-PAID {
+    background: #1b4332;
+    color: #4caf50;
+    border-color: #2d5a3d;
+}
+
+[data-theme="dark"] .bill-status.status-CANCELLED {
+    background: #4a1e1e;
+    color: #f44336;
+    border-color: #6d2c2c;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .merged-payment-container {
+        padding: 15px;
+    }
+    
+    .merged-payment-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .aggregated-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+    
+    .selection-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .selection-controls {
+        justify-content: center;
+    }
+    
+    .bill-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .bill-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+    }
+    
+    .summary-content {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    .payment-methods-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .payment-status {
+        padding: 20px 10px;
+    }
+    
+    .qr-code-container {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .merged-payment-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .card-content h3 {
+        font-size: 1.3rem;
+    }
+    
+    .bill-amount {
+        font-size: 1.1rem;
+    }
+    
+    .total-amount {
+        font-size: 1.3rem;
+    }
+    
+    .proceed-payment-btn {
+        padding: 10px 20px;
+        font-size: 1rem;
+    }
+}
+
+/* 动画效果 */
+.merged-payment-container * {
+    transition: all 0.3s ease;
+}
+
+.bill-item {
+    animation: slideInUp 0.3s ease;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.payment-card {
+    animation: fadeInScale 0.4s ease;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* 加载动画 */
+.spinner-border {
+    width: 2rem;
+    height: 2rem;
+    border-width: 0.25em;
+}
+
+/* 工具提示 */
+.tooltip {
+    font-size: 0.875rem;
+}
+
+/* 焦点样式 */
+.bill-checkbox input[type="checkbox"]:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.payment-method:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+    .bill-item {
+        border-width: 3px;
+    }
+    
+    .payment-method {
+        border-width: 3px;
+    }
+    
+    .bill-status {
+        border-width: 2px;
+    }
+}
+
+/* 减少动画模式支持 */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .pulse-dot {
+        animation: none;
+    }
+}

@@ -11,11 +11,116 @@ from app.user import models as user_models
 from . import schemas, service
 from .payment_gateway import alipay_gateway
 from . import payment_session_routes
+from .service import (
+    insurance_service,
+    payment_service,
+    billing_service,
+    online_payment_service,
+    merged_payment_service
+)
 
 router = APIRouter()
 
+# 合并支付路由
+merged_payment_router = APIRouter()
+
+@merged_payment_router.get("/patients/{patient_id}/unpaid-bills", response_model=List[schemas.Bill])
+def get_patient_unpaid_bills(
+    patient_id: int,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """获取患者未支付账单列表"""
+    bills = merged_payment_service.get_patient_unpaid_bills(db, patient_id=patient_id)
+    return bills
+
+@merged_payment_router.post("/sessions", response_model=schemas.MergedPaymentSessionRead)
+def create_merged_payment_session(
+    session_data: schemas.MergedPaymentSessionCreate,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """创建合并支付会话"""
+    session = merged_payment_service.create_merged_payment_session(
+        db,
+        patient_id=session_data.patient_id,
+        bill_ids=session_data.bill_ids,
+        payment_method=session_data.payment_method,
+        timeout_minutes=session_data.timeout_minutes
+    )
+    return session
+
+@merged_payment_router.get("/sessions/{session_id}", response_model=schemas.MergedPaymentSessionRead)
+def get_merged_payment_session(
+    session_id: str,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """获取合并支付会话详情"""
+    session = merged_payment_service.get_merged_payment_session(db, session_id=session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="合并支付会话不存在")
+    return session
+
+@merged_payment_router.post("/alipay/callback")
+def alipay_merged_payment_callback(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """支付宝合并支付回调"""
+    try:
+        # 这里应该验证支付宝回调签名
+        # 简化处理，实际应该按照支付宝文档验证
+        form_data = request.form()
+        session_id = form_data.get("out_trade_no")
+        transaction_id = form_data.get("trade_no")
+        
+        if not session_id or not transaction_id:
+            raise HTTPException(status_code=400, detail="回调参数不完整")
+        
+        result = merged_payment_service.process_merged_payment_success(
+            db,
+            session_id=session_id,
+            provider_transaction_id=transaction_id
+        )
+        
+        return {"status": "success", "data": result}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"处理支付回调失败: {str(e)}")
+
+@merged_payment_router.post("/wechat/callback")
+def wechat_merged_payment_callback(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """微信合并支付回调"""
+    try:
+        # 这里应该验证微信回调签名
+        # 简化处理，实际应该按照微信文档验证
+        xml_data = request.body
+        # 解析XML获取订单号和交易号
+        # 简化处理
+        session_id = ""  # 从XML中解析
+        transaction_id = ""  # 从XML中解析
+        
+        if not session_id or not transaction_id:
+            raise HTTPException(status_code=400, detail="回调参数不完整")
+        
+        result = merged_payment_service.process_merged_payment_success(
+            db,
+            session_id=session_id,
+            provider_transaction_id=transaction_id
+        )
+        
+        return {"status": "success", "data": result}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"处理支付回调失败: {str(e)}")
+
 # 注册支付会话子路由
 router.include_router(payment_session_routes.router)
+router.include_router(merged_payment_router, prefix="/merged-payments", tags=["Merged Payments"])
 
 # --- 保险API端点 ---
 @router.post("/insurances/", response_model=schemas.Insurance)
@@ -154,6 +259,35 @@ def void_bill(
     """作废账单 (需要认证)"""
     try:
         return service.billing_service.void_bill(db=db, bill_id=bill_id)
+    except (ResourceNotFoundException, ValidationException, BusinessLogicException) as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+@router.delete("/bills/{bill_id}", response_model=schemas.Bill)
+def delete_bill(
+    bill_id: int = Path(..., title="账单ID"),
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """删除账单 (需要认证)"""
+    try:
+        bill = service.billing_service.get_bill_with_details(db=db, bill_id=bill_id)
+        if not bill:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"账单ID {bill_id} 不存在"
+            )
+        
+        # 检查账单状态，只允许删除未支付或部分支付的账单
+        if bill.status == service.models.BillStatus.PAID:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="已支付的账单不能删除，请使用作废功能"
+            )
+        
+        return service.billing_service.delete_bill(db=db, bill_id=bill_id)
     except (ResourceNotFoundException, ValidationException, BusinessLogicException) as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

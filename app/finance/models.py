@@ -214,3 +214,49 @@ class Payment(Base, Auditable):
 
 
 # PaymentSession模型已移至payment_session_models.py文件中
+
+# --- 合并支付相关模型 ---
+class MergedPaymentSessionStatus(str, enum.Enum):
+    """合并支付会话状态"""
+    PENDING = "pending"
+    PAID = "paid"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
+
+@register_audit_model(PaymentHistory)
+class MergedPaymentSession(Base, Auditable):
+    """合并支付会话表"""
+    __tablename__ = 'merged_payment_sessions'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(String(100), unique=True, nullable=False, index=True)
+    patient_id = Column(Integer, ForeignKey('patients.id'), nullable=False, index=True)
+    total_amount = Column(Numeric(10, 2), nullable=False)
+    payment_method = Column(String(20), nullable=False)
+    qr_code_content = Column(Text, nullable=True)
+    status = Column(Enum(MergedPaymentSessionStatus), default=MergedPaymentSessionStatus.PENDING, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    prepay_id = Column(String(100), nullable=True)
+    provider_transaction_id = Column(String(100), nullable=True)
+    
+    # Audit fields
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+    created_by_id = Column(Integer, ForeignKey('users.id'))
+    updated_by_id = Column(Integer, ForeignKey('users.id'))
+    deleted_at = Column(DateTime, nullable=True)
+    
+    patient = relationship("Patient")
+    bill_associations = relationship("MergedPaymentSessionBill", back_populates="merged_session")
+
+class MergedPaymentSessionBill(Base):
+    """合并支付会话与账单关联表"""
+    __tablename__ = 'merged_payment_session_bills'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    merged_session_id = Column(Integer, ForeignKey('merged_payment_sessions.id'), nullable=False)
+    bill_id = Column(Integer, ForeignKey('bills.id'), nullable=False)
+    bill_amount = Column(Numeric(10, 2), nullable=False)
+    
+    merged_session = relationship("MergedPaymentSession", back_populates="bill_associations")
+    bill = relationship("Bill")

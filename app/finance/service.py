@@ -388,6 +388,58 @@ class BillingService:
         db.refresh(bill)
         
         return bill
+    
+    def delete_bill(self, db: Session, *, bill_id: int) -> models.Bill:
+        """删除账单（软删除）"""
+        # 1. 检查账单是否存在
+        bill = db.query(models.Bill).filter(
+            models.Bill.id == bill_id,
+            models.Bill.deleted_at.is_(None)
+        ).first()
+        
+        if not bill:
+            raise ResourceNotFoundException(resource_type="Bill", resource_id=bill_id)
+        
+        # 2. 检查账单状态，不允许删除已支付的账单
+        if bill.status == models.BillStatus.PAID:
+            raise BusinessLogicException("已支付的账单不能删除，请使用作废功能")
+        
+        # 3. 检查是否有支付记录
+        payment_count = db.query(func.count(models.Payment.id)).filter(
+            models.Payment.bill_id == bill_id,
+            models.Payment.deleted_at.is_(None)
+        ).scalar()
+        
+        if payment_count > 0:
+            raise BusinessLogicException("此账单已有支付记录，不能删除")
+        
+        # 4. 软删除账单及其明细
+        user_id = current_user_id.get()
+        if user_id is None:
+            raise AuthenticationException("无法获取当前用户信息，请先登录")
+        
+        now = datetime.now(UTC)
+        
+        # 软删除账单明细
+        db.query(models.BillItem).filter(
+            models.BillItem.bill_id == bill_id,
+            models.BillItem.deleted_at.is_(None)
+        ).update({
+            "deleted_at": now,
+            "updated_at": now,
+            "updated_by_id": user_id
+        })
+        
+        # 软删除账单
+        bill.deleted_at = now
+        bill.updated_at = now
+        bill.updated_by_id = user_id
+        
+        # 5. 提交事务
+        db.commit()
+        db.refresh(bill)
+        
+        return bill
 
 class OnlinePaymentService:
     """在线支付服务类"""
@@ -498,8 +550,228 @@ class OnlinePaymentService:
         pass
 
 
-# 实例化所有服务
+class MergedPaymentService:
+    """合并支付服务类"""
+    
+    def __init__(self):
+        self.alipay_gateway = alipay_gateway
+        self.wechat_gateway = wechat_gateway
+    
+    def get_patient_unpaid_bills(self, db: Session, *, patient_id: int) -> List[models.Bill]:
+        """获取患者所有未支付的账单"""
+        return db.query(models.Bill).filter(
+            models.Bill.patient_id == patient_id,
+            models.Bill.status == models.BillStatus.UNPAID,
+            models.Bill.deleted_at.is_(None)
+        ).all()
+    
+    def create_merged_payment_session(
+        self, 
+        db: Session, 
+        *, 
+        patient_id: int, 
+        bill_ids: List[int], 
+        payment_method: str, 
+        timeout_minutes: int = 15
+    ) -> models.MergedPaymentSession:
+        """创建合并支付会话"""
+        # 1. 验证患者存在
+        patient = db.query(patient_models.Patient).filter(
+            patient_models.Patient.id == patient_id,
+            patient_models.Patient.deleted_at.is_(None)
+        ).first()
+        
+        if not patient:
+            raise ResourceNotFoundException(resource_type="Patient", resource_id=patient_id)
+        
+        # 2. 验证账单存在且属于该患者
+        bills = db.query(models.Bill).filter(
+            models.Bill.id.in_(bill_ids),
+            models.Bill.patient_id == patient_id,
+            models.Bill.status == models.BillStatus.UNPAID,
+            models.Bill.deleted_at.is_(None)
+        ).all()
+        
+        if len(bills) != len(bill_ids):
+            raise ValidationException("部分账单不存在或不属于该患者")
+        
+        # 3. 计算总金额
+        total_amount = sum(bill.total_amount for bill in bills)
+        
+        if total_amount <= 0:
+            raise ValidationException("合并支付总金额必须大于0")
+        
+        # 4. 生成会话ID
+        session_id = f"MERGED_{uuid.uuid4().hex[:16].upper()}"
+        
+        # 5. 创建合并支付会话
+        expires_at = datetime.now(UTC) + timedelta(minutes=timeout_minutes)
+        
+        merged_session = models.MergedPaymentSession(
+            session_id=session_id,
+            patient_id=patient_id,
+            total_amount=total_amount,
+            payment_method=payment_method,
+            status=models.MergedPaymentSessionStatus.PENDING,
+            expires_at=expires_at
+        )
+        
+        # 获取当前用户ID
+        user_id = current_user_id.get()
+        if user_id is None:
+            raise AuthenticationException("无法获取当前用户信息，请先登录")
+        
+        # 设置审计字段
+        now = datetime.now(UTC)
+        merged_session.created_at = merged_session.updated_at = now
+        merged_session.created_by_id = merged_session.updated_by_id = user_id
+        
+        db.add(merged_session)
+        db.flush()  # 获取会话ID
+        
+        # 6. 创建账单关联记录
+        bill_associations = []
+        for bill in bills:
+            association = models.MergedPaymentSessionBill(
+                merged_session_id=merged_session.id,
+                bill_id=bill.id,
+                bill_amount=bill.total_amount
+            )
+            bill_associations.append(association)
+        
+        db.add_all(bill_associations)
+        
+        # 7. 生成支付二维码
+        try:
+            if payment_method == "alipay":
+                qr_content = self.alipay_gateway.create_payment_url(
+                    order_id=session_id,
+                    amount=float(total_amount),
+                    subject=f"合并支付-患者{patient.name}"
+                )
+            elif payment_method == "wechat":
+                qr_content = self.wechat_gateway.create_payment_url(
+                    order_id=session_id,
+                    amount=float(total_amount),
+                    subject=f"合并支付-患者{patient.name}"
+                )
+            else:
+                raise ValidationException(f"不支持的支付方式: {payment_method}")
+            
+            merged_session.qr_code_content = qr_content
+            
+        except Exception as e:
+            raise BusinessLogicException(f"生成支付二维码失败: {str(e)}")
+        
+        db.commit()
+        db.refresh(merged_session)
+        
+        return merged_session
+    
+    def process_merged_payment_success(
+        self, 
+        db: Session, 
+        *, 
+        session_id: str, 
+        provider_transaction_id: str
+    ) -> Dict[str, Any]:
+        """处理合并支付成功回调"""
+        # 1. 查找合并支付会话
+        merged_session = db.query(models.MergedPaymentSession).filter(
+            models.MergedPaymentSession.session_id == session_id,
+            models.MergedPaymentSession.deleted_at.is_(None)
+        ).first()
+        
+        if not merged_session:
+            raise ResourceNotFoundException(resource_type="MergedPaymentSession", resource_id=session_id)
+        
+        if merged_session.status != models.MergedPaymentSessionStatus.PENDING:
+            raise ValidationException(f"合并支付会话状态异常: {merged_session.status}")
+        
+        # 2. 获取关联的账单
+        bill_associations = db.query(models.MergedPaymentSessionBill).filter(
+            models.MergedPaymentSessionBill.merged_session_id == merged_session.id
+        ).all()
+        
+        if not bill_associations:
+            raise ValidationException("合并支付会话没有关联的账单")
+        
+        # 3. 为每个账单创建支付记录并更新状态
+        user_id = current_user_id.get()
+        if user_id is None:
+            raise AuthenticationException("无法获取当前用户信息，请先登录")
+        
+        now = datetime.now(UTC)
+        processed_bills = []
+        
+        try:
+            for association in bill_associations:
+                # 创建支付记录
+                payment = models.Payment(
+                    payment_date=now,
+                    amount=association.bill_amount,
+                    payment_method=merged_session.payment_method,
+                    provider_transaction_id=provider_transaction_id,
+                    bill_id=association.bill_id,
+                    created_at=now,
+                    updated_at=now,
+                    created_by_id=user_id,
+                    updated_by_id=user_id
+                )
+                db.add(payment)
+                
+                # 更新账单状态
+                bill = db.query(models.Bill).filter(
+                    models.Bill.id == association.bill_id
+                ).first()
+                
+                if bill:
+                    bill.status = models.BillStatus.PAID
+                    bill.payment_method = merged_session.payment_method
+                    bill.provider_transaction_id = provider_transaction_id
+                    bill.updated_at = now
+                    bill.updated_by_id = user_id
+                    
+                    processed_bills.append({
+                        "bill_id": bill.id,
+                        "invoice_number": bill.invoice_number,
+                        "amount": association.bill_amount
+                    })
+            
+            # 4. 更新合并支付会话状态
+            merged_session.status = models.MergedPaymentSessionStatus.PAID
+            merged_session.provider_transaction_id = provider_transaction_id
+            merged_session.updated_at = now
+            merged_session.updated_by_id = user_id
+            
+            db.commit()
+            
+            return {
+                "session_id": session_id,
+                "total_amount": merged_session.total_amount,
+                "processed_bills": processed_bills,
+                "transaction_id": provider_transaction_id
+            }
+            
+        except Exception as e:
+            db.rollback()
+            raise BusinessLogicException(f"处理合并支付失败: {str(e)}")
+    
+    def get_merged_payment_session(
+        self, 
+        db: Session, 
+        *, 
+        session_id: str
+    ) -> Optional[models.MergedPaymentSession]:
+        """获取合并支付会话详情"""
+        return db.query(models.MergedPaymentSession).filter(
+            models.MergedPaymentSession.session_id == session_id,
+            models.MergedPaymentSession.deleted_at.is_(None)
+        ).first()
+
+# 创建服务实例
 insurance_service = InsuranceService()
 payment_service = PaymentService()
 billing_service = BillingService()
+merged_payment_service = MergedPaymentService()
 online_payment_service = OnlinePaymentService()

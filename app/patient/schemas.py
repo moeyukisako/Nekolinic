@@ -1,6 +1,9 @@
 from pydantic import BaseModel, ConfigDict
 from datetime import datetime, date
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.pharmacy.schemas import Prescription
 
 # --- VitalSign Schemas ---
 class VitalSignBase(BaseModel):
@@ -81,6 +84,7 @@ class MedicalRecord(MedicalRecordBase):
     notes: Optional[str] = None
     symptoms: Optional[str] = None  # 保留兼容性
     vital_sign: Optional[VitalSign] = None
+    prescriptions: List['Prescription'] = []
     model_config = ConfigDict(from_attributes=True)
 
 # --- Patient Schemas ---
@@ -100,10 +104,10 @@ class PatientUpdate(PatientBase):
 
 class Patient(PatientBase):
     id: int
-    medical_records: List[MedicalRecord] = []
+    medical_records: List['MedicalRecord'] = []
     vital_signs: List[VitalSign] = []
     model_config = ConfigDict(from_attributes=True)
 
 class PatientWithMedicalRecords(Patient):
-    medical_records: List[MedicalRecord] = []
+    medical_records: List['MedicalRecord'] = []
     model_config = ConfigDict(from_attributes=True)

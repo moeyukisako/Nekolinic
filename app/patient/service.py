@@ -24,7 +24,7 @@ class PatientService(BaseService[models.Patient, schemas.PatientCreate, schemas.
             present_illness="",
             past_history="",
             physical_examination="",
-            diagnosis="",
+            diagnosis="N/A",
             treatment_plan="",
             prescription="",
             notes="系统自动创建的空白病历"

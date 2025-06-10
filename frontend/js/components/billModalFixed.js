@@ -192,6 +192,7 @@ class BillModalFixed {
                         <h5>${t('bill_modal_title')} - ${this.options.patientName}</h5>
                         <button type="button" class="btn btn-secondary" onclick="window.billModalInstance && window.billModalInstance.close()" style="padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; background: #6c757d; color: white;">×</button>
                     </div>
+                    <div class="modal-notification" style="display: none; margin: 10px 20px; padding: 12px; border-radius: 4px; font-size: 14px; transition: all 0.3s ease;"></div>
                     <div class="bill-modal-body" style="padding: 20px;">
                         <div class="bill-info" style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
                             <div class="row" style="display: flex; margin-bottom: 15px;">
@@ -418,14 +419,14 @@ class BillModalFixed {
         
         // 验证数据
         if (this.items.length === 0) {
-            alert(t('alert_add_at_least_one_item'));
+            this.showNotification(t('bill_validation_no_items'), 'error');
             return;
         }
         
         // 验证每个项目的必填字段
         for (let item of this.items) {
             if (!item.name || !item.type || item.quantity <= 0 || item.price <= 0) {
-                alert(t('alert_complete_all_items'));
+                this.showNotification(t('bill_validation_incomplete_items'), 'error');
                 return;
             }
         }
@@ -446,7 +447,7 @@ class BillModalFixed {
             this.close();
             
             // 显示成功消息
-            alert(t('alert_bill_generated_success'));
+            this.showNotification(t('bill_generation_success'), 'success');
         }, 2000);
     }
     
@@ -515,7 +516,7 @@ class BillModalFixed {
         overlay.innerHTML = `
             <div class="bill-loading-content">
                 <i class="fas fa-spinner loading-spinner"></i>
-                <span>${t('loading_overlay_text')}</span>
+                <span>${t('generating_bill_message')}</span>
             </div>
         `;
         
@@ -536,6 +537,51 @@ class BillModalFixed {
         if (loadingOverlay) {
             loadingOverlay.remove();
         }
+    }
+    
+    showNotification(message, type = 'info') {
+        const notificationContainer = this.modal.querySelector('.modal-notification');
+        if (!notificationContainer) {
+            console.warn('Modal notification container not found');
+            return;
+        }
+        
+        // 设置通知样式
+        const colors = {
+            success: { bg: '#d4edda', text: '#155724', border: '#c3e6cb' },
+            error: { bg: '#f8d7da', text: '#721c24', border: '#f5c6cb' },
+            warning: { bg: '#fff3cd', text: '#856404', border: '#ffeaa7' },
+            info: { bg: '#d1ecf1', text: '#0c5460', border: '#bee5eb' }
+        };
+        
+        const color = colors[type] || colors.info;
+        
+        notificationContainer.style.backgroundColor = color.bg;
+        notificationContainer.style.color = color.text;
+        notificationContainer.style.borderColor = color.border;
+        notificationContainer.style.border = `1px solid ${color.border}`;
+        notificationContainer.textContent = message;
+        notificationContainer.style.display = 'block';
+        
+        // 显示动画
+        setTimeout(() => {
+            notificationContainer.style.opacity = '1';
+        }, 10);
+        
+        // 清除之前的定时器
+        if (notificationContainer.hideTimer) {
+            clearTimeout(notificationContainer.hideTimer);
+        }
+        
+        // 自动隐藏（成功消息3秒后隐藏，错误消息5秒后隐藏）
+        const hideDelay = type === 'error' ? 5000 : 3000;
+        notificationContainer.hideTimer = setTimeout(() => {
+            notificationContainer.style.opacity = '0';
+            setTimeout(() => {
+                notificationContainer.style.display = 'none';
+                notificationContainer.textContent = '';
+            }, 300);
+        }, hideDelay);
     }
     
     getBillData() {

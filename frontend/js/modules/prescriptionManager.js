@@ -793,7 +793,7 @@ window.savePrescription = async function() {
         }
         
         await apiClient.prescriptions.create(prescriptionData);
-        window.showNotification(window.getTranslation ? window.getTranslation('prescription_saved_successfully') : '处方保存成功', 'success');
+        window.showNotification(window.getTranslation ? window.getTranslation('prescription_saved_successfully') : '处方保存成功，账单已自动生成', 'success');
         closePrescriptionModal();
         await loadPrescriptions();
         

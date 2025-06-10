@@ -90,7 +90,22 @@ def create_prescription(
     current_user: user_models.User = Depends(security.get_current_active_user)
 ):
     """创建处方（含明细） (需要认证)"""
-    return service.prescription_service.create(db=db, obj_in=prescription_in)
+    # 创建处方
+    prescription = service.prescription_service.create(db=db, obj_in=prescription_in)
+    
+    # 自动生成对应账单（不包含诊疗费，因为处方开具时不应包含诊疗费）
+    try:
+        from app.finance import service as finance_service
+        finance_service.billing_service.generate_bill_for_record(
+            db=db, 
+            medical_record_id=prescription.medical_record_id,
+            include_consultation_fee=False
+        )
+    except Exception as e:
+        # 如果账单生成失败，记录错误但不影响处方创建
+        print(f"处方创建成功，但账单生成失败: {str(e)}")
+    
+    return prescription
 
 @router.get("/prescriptions/", response_model=List[schemas.Prescription])
 def read_prescriptions(

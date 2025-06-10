@@ -133,6 +133,7 @@ class MedicalRecord(Base, Auditable):
     patient = relationship("Patient", back_populates="medical_records")
     appointment = relationship("Appointment", back_populates="medical_record")
     vital_sign = relationship("VitalSign", back_populates="medical_record", uselist=False)
+    prescriptions = relationship("Prescription", back_populates="medical_record")
 
 @register_audit_model(VitalSignHistory)
 class VitalSign(Base, Auditable):

@@ -228,7 +228,7 @@ const translations = {
     keep_at_least_one_medication: '至少需要保留一个药品明细',
     add_at_least_one_medication: '请至少添加一个药品明细',
     fill_complete_medication_info: '请填写完整的药品明细信息',
-    prescription_saved_successfully: '处方保存成功',
+    prescription_saved_successfully: '处方保存成功，账单已自动生成',
     save_prescription_failed: '保存处方失败',
     data_validation_failed: '数据验证失败，请检查表单内容',
     select_patient_first: '请先选择患者',
@@ -295,11 +295,19 @@ const translations = {
     'finance.status.PAID': '已支付',
     'finance.status.CANCELLED': '已取消',
     'finance.status.REFUNDED': '已退款',
+    'finance.status.unpaid': '待支付',
+    'finance.status.paid': '已支付',
+    'finance.status.partially_paid': '部分支付',
+    'finance.status.void': '已作废',
     
     // 发药状态
     'dispensing.status.PENDING': '待发药',
     'dispensing.status.DISPENSED': '已发药',
     'dispensing.status.CANCELLED': '已取消',
+    // 发药状态（小写，匹配后端格式）
+    'dispensing.status.pending': '待发药',
+    'dispensing.status.dispensed': '已发药',
+    'dispensing.status.cancelled': '已取消',
     
     // 账单操作
     'finance.actions.delete': '删除',
@@ -492,6 +500,7 @@ const translations = {
     'login_username': '用户名',
     'login_password': '密码',
     'login_button': '登录',
+    'logging_in': '登录中...',
     'login_username_placeholder': '请输入用户名 (测试账号: admin)',
     'login_password_placeholder': '请输入密码 (测试密码: password)',
     'login_welcome_back': '欢迎回来',
@@ -552,7 +561,7 @@ const translations = {
     keep_at_least_one_medication: 'At least one medication detail must be kept',
     add_at_least_one_medication: 'Please add at least one medication detail',
     fill_complete_medication_info: 'Please fill in complete medication information',
-    prescription_saved_successfully: 'Prescription saved successfully',
+    prescription_saved_successfully: 'Prescription saved successfully, bill generated automatically',
     save_prescription_failed: 'Failed to save prescription',
     data_validation_failed: 'Data validation failed, please check form content',
     select_patient_first: 'Please select a patient first',
@@ -823,11 +832,19 @@ const translations = {
     'finance.status.PAID': 'Paid',
     'finance.status.CANCELLED': 'Cancelled',
     'finance.status.REFUNDED': 'Refunded',
+    'finance.status.unpaid': 'Unpaid',
+    'finance.status.paid': 'Paid',
+    'finance.status.partially_paid': 'Partially Paid',
+    'finance.status.void': 'Void',
     
     // Dispensing Status
     'dispensing.status.PENDING': 'Pending Dispensing',
     'dispensing.status.DISPENSED': 'Dispensed',
     'dispensing.status.CANCELLED': 'Cancelled',
+    // Dispensing Status (lowercase, matching backend format)
+    'dispensing.status.pending': 'Pending Dispensing',
+    'dispensing.status.dispensed': 'Dispensed',
+    'dispensing.status.cancelled': 'Cancelled',
     
     // Bill Actions
     'finance.actions.delete': 'Delete',
@@ -1033,6 +1050,7 @@ const translations = {
     'login_username': 'Username',
     'login_password': 'Password',
     'login_button': 'Login',
+    'logging_in': 'Logging in...',
     'login_username_placeholder': 'Please enter username (Test account: admin)',
     'login_password_placeholder': 'Please enter password (Test password: password)',
     'login_welcome_back': 'Welcome back',
@@ -1093,7 +1111,7 @@ const translations = {
     keep_at_least_one_medication: '少なくとも一つの薬剤詳細を保持する必要があります',
     add_at_least_one_medication: '少なくとも一つの薬剤詳細を追加してください',
     fill_complete_medication_info: '完全な薬剤情報を入力してください',
-    prescription_saved_successfully: '処方箋が正常に保存されました',
+    prescription_saved_successfully: '処方箋が正常に保存されました、請求書が自動生成されました',
     save_prescription_failed: '処方箋の保存に失敗しました',
     data_validation_failed: 'データ検証に失敗しました。フォーム内容を確認してください',
     select_patient_first: '最初に患者を選択してください',
@@ -1350,15 +1368,23 @@ const translations = {
     'finance.table.actions': 'アクション',
     
     // 請求書ステータス
-    'finance.status.PENDING': '未払い',
-    'finance.status.PAID': '支払済み',
+    'finance.status.PENDING': '支払い待ち',
+    'finance.status.PAID': '支払い済み',
     'finance.status.CANCELLED': 'キャンセル済み',
     'finance.status.REFUNDED': '返金済み',
+    'finance.status.unpaid': '支払い待ち',
+    'finance.status.paid': '支払い済み',
+    'finance.status.partially_paid': '一部支払い',
+    'finance.status.void': '無効',
     
     // 調剤ステータス
     'dispensing.status.PENDING': '調剤待ち',
     'dispensing.status.DISPENSED': '調剤済み',
     'dispensing.status.CANCELLED': 'キャンセル済み',
+    // 調剤状況（小文字、バックエンド形式に対応）
+    'dispensing.status.pending': '調剤待ち',
+    'dispensing.status.dispensed': '調剤済み',
+    'dispensing.status.cancelled': 'キャンセル済み',
     
     // 請求書アクション
     'finance.actions.delete': '削除',
@@ -1561,6 +1587,7 @@ const translations = {
     'login_username': 'ユーザー名',
     'login_password': 'パスワード',
     'login_button': 'ログイン',
+    'logging_in': 'ログイン中...',
     'login_username_placeholder': 'ユーザー名を入力してください（テストアカウント: admin）',
     'login_password_placeholder': 'パスワードを入力してください（テストパスワード: password）',
     'login_welcome_back': 'おかえりなさい',

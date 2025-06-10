@@ -6,7 +6,7 @@
     margin-left: 35px;
     margin-right: 35px;
     margin-bottom: 50px; /* 距离浏览器窗口下边缘50px */
-    background-color: rgba(107, 107, 107, 0.3);
+    background-color: rgba(255, 255, 255, 0.3);
     border-radius: var(--border-radius);
     padding: 35px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);

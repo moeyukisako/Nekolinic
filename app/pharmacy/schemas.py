@@ -1,11 +1,14 @@
 from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from decimal import Decimal
 
-# Import related schemas for nested data
-from app.patient.schemas import Patient
-from app.clinic.schemas import Doctor as DoctorSchema
+if TYPE_CHECKING:
+    from app.patient.schemas import Patient
+    from app.clinic.schemas import Doctor as DoctorSchema
+else:
+    # Import related schemas for nested data
+    from app.clinic.schemas import Doctor as DoctorSchema
 
 # --- Drug Schemas ---
 class DrugBase(BaseModel):
@@ -74,8 +77,8 @@ class Prescription(PrescriptionBase):
     dispensing_status: str
     details: List[PrescriptionDetail] = []
     # 嵌套的患者和医生信息
-    patient: Optional[Patient] = None
-    doctor: Optional[DoctorSchema] = None
+    patient: Optional['Patient'] = None
+    doctor: Optional['DoctorSchema'] = None
     model_config = ConfigDict(from_attributes=True)
 
 # --- Inventory Schemas ---

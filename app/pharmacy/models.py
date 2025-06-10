@@ -110,7 +110,7 @@ class Prescription(Base, Auditable):
     prescription_date = Column(DateTime, nullable=False)
     dispensing_status = Column(Enum(DispensingStatus), nullable=False, default=DispensingStatus.PENDING)
     
-    medical_record_id = Column(Integer, ForeignKey('medical_records.id'), nullable=False, unique=True)
+    medical_record_id = Column(Integer, ForeignKey('medical_records.id'), nullable=False)
     doctor_id = Column(Integer, ForeignKey('doctors.id'), nullable=False)
     
     # Audit fields

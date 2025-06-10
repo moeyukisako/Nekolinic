@@ -192,7 +192,7 @@ class BillingService:
         
         return new_bill
     
-    def generate_bill_for_record(self, db: Session, *, medical_record_id: int) -> models.Bill:
+    def generate_bill_for_record(self, db: Session, *, medical_record_id: int, include_consultation_fee: bool = True) -> models.Bill:
         """根据病历生成账单"""
         # 1. 使用预加载一次性获取所需数据
         record = db.query(patient_models.MedicalRecord).options(
@@ -235,25 +235,26 @@ class BillingService:
         bill_items = []
         total_amount = Decimal('0.00')
 
-        # 添加挂号/诊费
-        # 从配置文件中获取诊疗费
-        consultation_fee = settings.CONSULTATION_FEE
-        
-        consultation_item = models.BillItem(
-            item_name="诊疗费",
-            item_type="consultation",
-            quantity=1,
-            unit_price=consultation_fee,
-            subtotal=consultation_fee,
-            bill_id=new_bill.id,
-            created_at=now,
-            updated_at=now,
-            created_by_id=user_id,
-            updated_by_id=user_id
-        )
-        
-        bill_items.append(consultation_item)
-        total_amount += consultation_fee
+        # 根据参数决定是否添加挂号/诊费
+        if include_consultation_fee:
+            # 从配置文件中获取诊疗费
+            consultation_fee = settings.CONSULTATION_FEE
+            
+            consultation_item = models.BillItem(
+                item_name="诊疗费",
+                item_type="consultation",
+                quantity=1,
+                unit_price=consultation_fee,
+                subtotal=consultation_fee,
+                bill_id=new_bill.id,
+                created_at=now,
+                updated_at=now,
+                created_by_id=user_id,
+                updated_by_id=user_id
+            )
+            
+            bill_items.append(consultation_item)
+            total_amount += consultation_fee
 
         # 添加药品费用 - 从处方明细获取药品信息
         prescriptions = db.query(pharmacy_models.Prescription).filter(
@@ -270,9 +271,14 @@ class BillingService:
             ).all()
             
             for detail in prescription_details:
+                # 构建药品名称：药品名（药品规格）
+                drug_name = detail.drug.name
+                if detail.drug.specification:
+                    drug_name = f"{detail.drug.name}（{detail.drug.specification}）"
+                
                 drug_item = models.BillItem(
-                    item_name=detail.drug.name,
-                    item_type="medication",
+                    item_name=drug_name,
+                    item_type="药物",  # 按要求设置为"药物"
                     quantity=detail.quantity,
                     unit_price=detail.drug.unit_price,
                     subtotal=detail.drug.unit_price * detail.quantity,

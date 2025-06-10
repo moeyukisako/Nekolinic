@@ -141,7 +141,7 @@ async function handleLogin(e) {
   
   // 禁用按钮防止重复提交
   loginButton.disabled = true;
-  loginButton.textContent = '登录中...';
+  loginButton.textContent = window.getTranslation ? window.getTranslation('logging_in', '登录中...') : '登录中...';
   
   try {
     await apiClient.auth.login(username, password);
@@ -171,7 +171,7 @@ async function handleLogin(e) {
     
     // 重置按钮状态
     loginButton.disabled = false;
-    loginButton.textContent = '登录';
+    loginButton.textContent = window.getTranslation ? window.getTranslation('login_button', '登录') : '登录';
   }
 }
 

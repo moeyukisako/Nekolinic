@@ -3011,7 +3011,7 @@ legend {
     margin-left: 35px;
     margin-right: 35px;
     margin-bottom: 50px;
-    background-color: rgba(107, 107, 107, 0.3);
+    background-color: rgba(255, 255, 255, 0.3);
     border-radius: 20px;
     padding: 35px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.04);
@@ -3407,6 +3407,11 @@ legend {
     background: rgba(45, 47, 47, 0.9);
 }
 
+.theme-dark .prescription-module-wrapper {
+    background-color: rgba(107, 107, 107, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .theme-dark .setting-label {
     color: #e2e8f0;
 }
@@ -3515,6 +3520,11 @@ legend {
 }
 
 [data-theme="dark"] .medical-records-module-wrapper {
+    background-color: rgba(107, 107, 107, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .prescription-module-wrapper {
     background-color: rgba(107, 107, 107, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }

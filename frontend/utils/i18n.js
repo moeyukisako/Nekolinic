@@ -12,6 +12,7 @@ const translations = {
     nav_pharmacy: '药品',
     nav_prescriptions: '处方',
     nav_finance: '财务',
+    nav_side_payment: '聚合支付',
     nav_reports: '报表',
     nav_settings: '设置',
     

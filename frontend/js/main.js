@@ -58,8 +58,15 @@ function initApp() {
   
   // 加载模块渲染器
   loadModuleRenderers().then(moduleRenderers => {
+    // 添加调试日志
+    console.log('loadModuleRenderers completed:', moduleRenderers);
+    console.log('Available module keys:', Object.keys(moduleRenderers));
+    
     // 保存到全局存储
     store.set('moduleRenderers', moduleRenderers);
+    
+    // 验证存储
+    console.log('Stored moduleRenderers:', store.get('moduleRenderers'));
     
     // 初始加载默认模块
     const defaultModuleName = '状态';
@@ -67,6 +74,8 @@ function initApp() {
     
     // 标记默认模块为激活状态
     document.querySelector(`.sidebar-item[data-module="${defaultModuleName}"]`)?.classList.add('active');
+  }).catch(error => {
+    console.error('Failed to load module renderers:', error);
   });
   
   // 初始化模态框
@@ -147,6 +156,7 @@ async function loadModuleRenderers() {
     medicineModule,
     prescriptionModule,
     financeModule,
+    sidePaymentModule,
     reportsModule,
     settingsModule
   ] = await Promise.all([
@@ -174,6 +184,11 @@ async function loadModuleRenderers() {
       console.error('Failed to load financeManager module:', err); 
       return { default: fallbackRenderer('财务管理') }; 
     }),
+    import('./modules/sidePaymentManager.js').catch((err) => { 
+      console.error('Failed to load sidePaymentManager module:', err); 
+      console.error('sidePaymentManager error details:', err.stack);
+      return { default: fallbackRenderer('聚合支付') }; 
+    }),
     import('./modules/reportsManager.js').catch((err) => { 
       console.error('Failed to load reportsManager module:', err); 
       return { default: fallbackRenderer('报表管理') }; 
@@ -192,6 +207,7 @@ async function loadModuleRenderers() {
     '药品': medicineModule.default,
     '处方': prescriptionModule.default,
     '财务': financeModule.default,
+    '聚合支付': sidePaymentModule.default,
     '报表': reportsModule.default,
     '设置': settingsModule.default
   };
@@ -205,6 +221,9 @@ async function loadModuleRenderers() {
 async function switchModule(moduleName, payload = {}) {
   const mainContent = document.querySelector('.main-content');
   if (!mainContent) return;
+  
+  // 添加调试日志
+  console.log('switchModule called with:', moduleName);
   
   // 清理当前模块
   if (currentModuleCleanup) {
@@ -240,7 +259,14 @@ async function switchModule(moduleName, payload = {}) {
     // 获取模块渲染器
     const moduleRenderers = store.get('moduleRenderers');
     
+    // 添加调试日志
+    console.log('moduleRenderers:', moduleRenderers);
+    console.log('Looking for module:', moduleName);
+    console.log('Available modules:', moduleRenderers ? Object.keys(moduleRenderers) : 'none');
+    
     if (moduleRenderers && moduleRenderers[moduleName]) {
+      console.log('Found module renderer for:', moduleName);
+      
       // 创建AbortController用于清理事件
       const abortController = new AbortController();
       

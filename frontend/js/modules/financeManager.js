@@ -1,9 +1,9 @@
-/**
+/*
  * 财务管理模块 - 重新设计版本
  */
 
+import apiClient from '../apiClient.js';
 import Pagination from '../components/pagination.js';
-import { MergedPaymentManager } from './mergedPaymentManager.js';
 import { confirmModal } from '../utils/ui.js';
 
 export default function renderFinanceModule(container, options = {}) {
@@ -96,10 +96,7 @@ export default function renderFinanceModule(container, options = {}) {
                       <i class="fas fa-sync-alt"></i>
                       <span data-i18n="refresh">刷新</span>
                     </button>
-                    <button id="merged-payment-btn" class="btn btn-primary">
-                      <i class="fas fa-layer-group"></i>
-                      <span data-i18n="mergedPayment.title">合并支付</span>
-                    </button>
+
                   </div>
                 </div>
               </div>
@@ -139,99 +136,12 @@ export default function renderFinanceModule(container, options = {}) {
           </div>
           
           <div id="payment-collection-tab" class="tab-pane">
-            <div class="payment-collection-section">
-              <div class="payment-collection-header">
-                <h3 data-i18n="payment_collection">费用收取</h3>
-                <div class="patient-search-box">
-                  <i class="fas fa-search"></i>
-                  <input type="text" id="patient-search" placeholder="搜索患者姓名或ID..." data-i18n-placeholder="search_patient">
-                  <button id="search-patient-btn" class="btn btn-primary">
-                    <i class="fas fa-search"></i>
-                    <span data-i18n="search">搜索</span>
-                  </button>
-                </div>
+            <div class="placeholder-content">
+              <div class="placeholder-icon">
+                <i class="fas fa-credit-card"></i>
               </div>
-              
-              <div id="patient-selection-area" class="patient-selection-area" style="display: none;">
-                <div class="patient-list-container">
-                  <h4 data-i18n="select_patient">选择患者</h4>
-                  <div id="patient-search-results" class="patient-search-results">
-                    <!-- 患者搜索结果将在这里显示 -->
-                  </div>
-                </div>
-              </div>
-              
-              <div id="payment-cards-area" class="payment-cards-area" style="display: none;">
-                <div class="selected-patient-info">
-                  <h4 data-i18n="selected_patient">选中患者</h4>
-                  <div id="selected-patient-card" class="selected-patient-card">
-                    <!-- 选中的患者信息将在这里显示 -->
-                  </div>
-                </div>
-                
-                <div class="aggregated-payment-cards">
-                  <h4 data-i18n="payment_summary">支付汇总</h4>
-                  <div id="aggregated-payment-card" class="aggregated-payment-card">
-                    <!-- 聚合支付卡片将在这里显示 -->
-                  </div>
-                </div>
-                
-                <div id="bill-details-area" class="bill-details-area" style="display: none;">
-                  <h4 data-i18n="bill_details">账单明细</h4>
-                  <div id="bill-details-list" class="bill-details-list">
-                    <!-- 账单明细列表将在这里显示 -->
-                  </div>
-                  <div class="bill-details-actions">
-                    <button id="generate-selected-payment-btn" class="btn btn-primary">
-                      <i class="fas fa-qrcode"></i>
-                      <span data-i18n="generate_payment">生成支付</span>
-                    </button>
-                    <button id="cancel-details-btn" class="btn btn-secondary">
-                      <i class="fas fa-times"></i>
-                      <span data-i18n="cancel">取消</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <div id="payment-qr-area" class="payment-qr-area" style="display: none;">
-                <div class="payment-qr-container">
-                  <h4 data-i18n="scan_to_pay">扫码支付</h4>
-                  <div id="payment-qr-code" class="payment-qr-code">
-                    <!-- 支付二维码将在这里显示 -->
-                  </div>
-                  <div class="payment-info">
-                    <div class="payment-amount" id="payment-amount-display">¥0.00</div>
-                    <div class="payment-description" id="payment-description">等待支付...</div>
-                  </div>
-                  <div class="payment-actions">
-                    <button id="refresh-payment-status-btn" class="btn btn-primary">
-                      <i class="fas fa-sync-alt"></i>
-                      <span data-i18n="refresh_status">刷新状态</span>
-                    </button>
-                    <button id="cancel-payment-btn" class="btn btn-secondary">
-                      <i class="fas fa-times"></i>
-                      <span data-i18n="cancel_payment">取消支付</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <div id="payment-success-area" class="payment-success-area" style="display: none;">
-                <div class="payment-success-container">
-                  <div class="success-icon">
-                    <i class="fas fa-check-circle"></i>
-                  </div>
-                  <h4 data-i18n="payment_success">支付成功</h4>
-                  <div id="payment-success-details" class="payment-success-details">
-                    <!-- 支付成功详情将在这里显示 -->
-                  </div>
-                  <button id="new-payment-btn" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    <span data-i18n="new_payment">新建支付</span>
-                  </button>
-                </div>
-              </div>
+              <h3 data-i18n="payment_collection">费用收取</h3>
+              <p>聚合支付功能已迁移到独立模块</p>
             </div>
           </div>
           
@@ -286,7 +196,7 @@ export default function renderFinanceModule(container, options = {}) {
       
       currentPage = page;
       const skip = (page - 1) * pageSize;
-      const response = await window.apiClient.finance.getBills({ skip, limit: pageSize });
+      const response = await apiClient.finance.getBills({ skip, limit: pageSize });
       console.log('API响应:', response);
       
       if (response && response.items && Array.isArray(response.items)) {
@@ -502,7 +412,7 @@ export default function renderFinanceModule(container, options = {}) {
     
     for (const patientId of patientIds) {
       try {
-        const patient = await window.apiClient.patients.getById(patientId);
+        const patient = await apiClient.patients.getById(patientId);
         const patientName = patient.name || '未知患者';
         
         // 更新所有该患者的账单行
@@ -537,7 +447,7 @@ export default function renderFinanceModule(container, options = {}) {
       
       if (!confirmed) return;
       
-      await window.apiClient.finance.deleteBill(billId);
+      await apiClient.finance.deleteBill(billId);
       
       // 从本地数据中移除
       const index = allBills.findIndex(b => b.id == billId);
@@ -630,7 +540,7 @@ export default function renderFinanceModule(container, options = {}) {
     
     try {
       console.log('开始加载账单明细，账单ID:', billId);
-      const response = await window.apiClient.finance.getBillById(billId);
+      const response = await apiClient.finance.getBillById(billId);
       console.log('账单明细API响应:', response);
       
       // 处理不同的响应格式
@@ -746,7 +656,7 @@ export default function renderFinanceModule(container, options = {}) {
     
     try {
       // 获取账单详情（包含明细）
-      const billDetails = await window.apiClient.finance.getBillById(billId);
+      const billDetails = await apiClient.finance.getBillById(billId);
       
       if (billDetails && billDetails.items && billDetails.items.length > 0) {
         const itemsHtml = billDetails.items.map(item => `
@@ -981,191 +891,19 @@ export default function renderFinanceModule(container, options = {}) {
     refreshBtn.addEventListener('click', () => loadBills(1), { signal });
   }
 
-  // 绑定合并支付按钮事件
-  const mergedPaymentBtn = container.querySelector('#merged-payment-btn');
-  if (mergedPaymentBtn) {
-    mergedPaymentBtn.addEventListener('click', () => {
-      showMergedPayment();
-    }, { signal });
-  }
 
-  // 显示合并支付功能
-  async function showMergedPayment() {
-    try {
-      // 显示患者选择界面
-      await showPatientSelectionForMergedPayment();
-    } catch (error) {
-      console.error('显示合并支付界面失败:', error);
-      showNotification('加载合并支付界面失败，请重试', 'error');
-    }
-  }
+
+
   
-  // 显示患者选择界面用于合并支付
-  async function showPatientSelectionForMergedPayment() {
-    const getTranslation = window.getTranslation || ((key, fallback) => fallback);
-    
-    // 创建患者选择模态框
-    const modalHtml = `
-      <div class="modal fade" id="patientSelectionModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" data-i18n="patient_selection.title">${getTranslation('patient_selection.title', '选择患者进行合并支付')}</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-              <div class="patient-search-box mb-3">
-                <input type="text" class="form-control" id="patient-search-input" data-i18n-placeholder="patient_selection.search_placeholder" placeholder="${getTranslation('patient_selection.search_placeholder', '搜索患者姓名或ID...')}">
-              </div>
-              <div class="patients-loading" style="display: none;">
-                <div class="text-center">
-                  <div class="spinner-border" role="status"></div>
-                  <p class="mt-2" data-i18n="patient_selection.loading">${getTranslation('patient_selection.loading', '加载患者列表...')}</p>
-                </div>
-              </div>
-              <div class="patients-list"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-    
-    // 添加模态框到页面
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-    
-    const modal = new bootstrap.Modal(document.getElementById('patientSelectionModal'));
-    
-    // 加载患者列表
-    await loadPatientsForSelection();
-    
-    // 绑定搜索事件
-    const searchInput = document.getElementById('patient-search-input');
-    searchInput.addEventListener('input', debounce(handlePatientSearch, 300));
-    
-    // 显示模态框
-    modal.show();
-    
-    // 模态框关闭时清理
-    document.getElementById('patientSelectionModal').addEventListener('hidden.bs.modal', function() {
-      this.remove();
-    });
-  }
+
   
-  // 加载患者列表用于选择
-  async function loadPatientsForSelection() {
-    const loadingElement = document.querySelector('.patients-loading');
-    const patientsListElement = document.querySelector('.patients-list');
-    
-    loadingElement.style.display = 'block';
-    
-    try {
-      const response = await apiClient.patients.getAll(1, 50, '');
-      
-      if (response.success && response.data) {
-        renderPatientsList(patientsListElement, response.data);
-      } else {
-        const getTranslation = window.getTranslation || ((key, fallback) => fallback);
-        patientsListElement.innerHTML = `<p class="text-center text-muted" data-i18n="patient_selection.no_patients">${getTranslation('patient_selection.no_patients', '暂无患者数据')}</p>`;
-      }
-    } catch (error) {
-      console.error('加载患者列表失败:', error);
-      const getTranslation = window.getTranslation || ((key, fallback) => fallback);
-      patientsListElement.innerHTML = `<p class="text-center text-danger" data-i18n="patient_selection.load_failed">${getTranslation('patient_selection.load_failed', '加载患者列表失败，请重试')}</p>`;
-    } finally {
-      loadingElement.style.display = 'none';
-    }
-  }
+
   
-  // 渲染患者列表
-  function renderPatientsList(container, patients) {
-    const getTranslation = window.getTranslation || ((key, fallback) => fallback);
-    
-    if (!patients || patients.length === 0) {
-      container.innerHTML = `<p class="text-center text-muted" data-i18n="patient_selection.no_patients">${getTranslation('patient_selection.no_patients', '暂无患者数据')}</p>`;
-      return;
-    }
-    
-    container.innerHTML = patients.map(patient => `
-      <div class="patient-item" data-patient-id="${patient.id}" style="cursor: pointer; padding: 10px; border: 1px solid #ddd; margin-bottom: 5px; border-radius: 5px;">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <strong>${patient.name}</strong>
-            <small class="text-muted d-block"><span data-i18n="patient_selection.patient_id_label">${getTranslation('patient_selection.patient_id_label', 'ID')}</span>: ${patient.id}</small>
-            ${patient.phone ? `<small class="text-muted d-block"><span data-i18n="patient_selection.phone_label">${getTranslation('patient_selection.phone_label', '电话')}</span>: ${patient.phone}</small>` : ''}
-          </div>
-          <button class="btn btn-primary btn-sm select-patient-btn" data-patient-id="${patient.id}" data-i18n="patient_selection.select_button">
-            ${getTranslation('patient_selection.select_button', '选择')}
-          </button>
-        </div>
-      </div>
-    `).join('');
-    
-    // 绑定选择事件
-    container.querySelectorAll('.select-patient-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const patientId = btn.dataset.patientId;
-        await handlePatientSelected(patientId);
-      });
-    });
-    
-    // 绑定患者项点击事件
-    container.querySelectorAll('.patient-item').forEach(item => {
-      item.addEventListener('click', async () => {
-        const patientId = item.dataset.patientId;
-        await handlePatientSelected(patientId);
-      });
-    });
-  }
+
   
-  // 处理患者选择
-  async function handlePatientSelected(patientId) {
-    try {
-      // 关闭模态框
-      const modal = bootstrap.Modal.getInstance(document.getElementById('patientSelectionModal'));
-      modal.hide();
-      
-      // 创建合并支付管理器并显示界面
-      const mergedPaymentManager = new MergedPaymentManager();
-      const mergedPaymentInterface = await mergedPaymentManager.renderMergedPaymentInterface(patientId);
-      
-      // 清空当前容器并显示合并支付界面
-      container.innerHTML = '';
-      container.appendChild(mergedPaymentInterface);
-    } catch (error) {
-      console.error('加载合并支付界面失败:', error);
-      showNotification('加载合并支付界面失败，请重试', 'error');
-    }
-  }
+
   
-  // 处理患者搜索
-  async function handlePatientSearch(event) {
-    const searchTerm = event.target.value.trim();
-    
-    try {
-      let response;
-      if (searchTerm) {
-        // 搜索患者
-        response = await apiClient.patients.search(searchTerm);
-      } else {
-        // 获取所有患者
-        response = await apiClient.patients.getAll({ page: 1, per_page: 50 });
-      }
-      
-      const patientsListElement = document.querySelector('.patients-list');
-      if (response.success && response.data) {
-        renderPatientsList(patientsListElement, response.data);
-      } else {
-        const getTranslation = window.getTranslation || ((key, fallback) => fallback);
-        patientsListElement.innerHTML = `<p class="text-center text-muted" data-i18n="patient_selection.search_no_results">${getTranslation('patient_selection.search_no_results', '未找到匹配的患者')}</p>`;
-      }
-    } catch (error) {
-      console.error('搜索患者失败:', error);
-      const getTranslation = window.getTranslation || ((key, fallback) => fallback);
-      const patientsListElement = document.querySelector('.patients-list');
-      patientsListElement.innerHTML = `<p class="text-center text-danger" data-i18n="patient_selection.search_failed">${getTranslation('patient_selection.search_failed', '搜索失败，请重试')}</p>`;
-    }
-  }
+
   
   // 防抖函数
   function debounce(func, wait) {
@@ -1179,538 +917,11 @@ export default function renderFinanceModule(container, options = {}) {
       timeout = setTimeout(later, wait);
     };
   }
+
 
   // 初始加载账单数据
   loadBills();
 
-  // 费用收取功能相关变量
-  let selectedPatient = null;
-  let currentPaymentSession = null;
-  
-  // 防抖函数
-  function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  }
-  
-  // 费用收取功能函数
-  async function searchPatients(query) {
-    console.log('开始搜索患者:', query); // 调试日志
-    
-    const resultsContainer = container.querySelector('#patient-search-results');
-    const selectionArea = container.querySelector('#patient-selection-area');
-    
-    console.log('搜索结果容器:', resultsContainer); // 调试日志
-    console.log('选择区域:', selectionArea); // 调试日志
-    
-    if (!query.trim()) {
-      console.log('搜索查询为空，隐藏选择区域'); // 调试日志
-      if (selectionArea) {
-        selectionArea.style.display = 'none';
-      }
-      return;
-    }
-    
-    try {
-      console.log('显示搜索区域并开始搜索'); // 调试日志
-      if (selectionArea) {
-        selectionArea.style.display = 'block';
-      }
-      if (resultsContainer) {
-        resultsContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> 搜索中...</div>';
-      }
-      
-      console.log('调用API搜索患者:', query); // 调试日志
-      const response = await window.apiClient.patients.search(query);
-      console.log('搜索响应:', response); // 调试日志
-      
-      if (response && response.items && response.items.length > 0) {
-        console.log('找到患者:', response.items.length, '个'); // 调试日志
-        renderPatientSearchResults(response.items);
-      } else {
-        console.log('未找到匹配的患者'); // 调试日志
-        if (resultsContainer) {
-          resultsContainer.innerHTML = '<div class="no-results">未找到匹配的患者</div>';
-        }
-      }
-    } catch (error) {
-      console.error('搜索患者失败:', error);
-      if (resultsContainer) {
-        resultsContainer.innerHTML = '<div class="error">搜索失败，请重试</div>';
-      }
-    }
-  }
-  
-  function renderPatientSearchResults(patients) {
-    const resultsContainer = container.querySelector('#patient-search-results');
-    
-    resultsContainer.innerHTML = patients.map(patient => `
-      <div class="patient-result-item" data-patient-id="${patient.id}">
-        <div class="patient-info">
-          <div class="patient-name">${patient.name}</div>
-          <div class="patient-details">
-            <span class="patient-id">ID: ${patient.id}</span>
-            ${patient.phone ? `<span class="patient-phone">电话: ${patient.phone}</span>` : ''}
-          </div>
-        </div>
-        <button class="btn btn-primary select-patient-btn" data-patient-id="${patient.id}">
-          <i class="fas fa-check"></i> 选择
-        </button>
-      </div>
-    `).join('');
-    
-    // 绑定选择患者事件
-    resultsContainer.querySelectorAll('.select-patient-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const patientId = parseInt(btn.dataset.patientId);
-        const patient = patients.find(p => p.id === patientId);
-        await selectPatient(patient);
-      }, { signal });
-    });
-  }
-  
-  async function selectPatient(patient) {
-    selectedPatient = patient;
-    
-    // 隐藏患者选择区域
-    container.querySelector('#patient-selection-area').style.display = 'none';
-    
-    // 显示支付卡片区域
-    const paymentCardsArea = container.querySelector('#payment-cards-area');
-    paymentCardsArea.style.display = 'block';
-    
-    // 渲染选中的患者信息
-    renderSelectedPatientCard(patient);
-    
-    // 加载并渲染聚合支付卡片
-    await loadAndRenderAggregatedPaymentCard(patient.id);
-  }
-  
-  function renderSelectedPatientCard(patient) {
-    const selectedPatientCard = container.querySelector('#selected-patient-card');
-    
-    selectedPatientCard.innerHTML = `
-      <div class="patient-card">
-        <div class="patient-avatar">
-          <i class="fas fa-user"></i>
-        </div>
-        <div class="patient-info">
-          <div class="patient-name">${patient.name}</div>
-          <div class="patient-details">
-            <span class="patient-id">ID: ${patient.id}</span>
-            ${patient.phone ? `<span class="patient-phone">电话: ${patient.phone}</span>` : ''}
-            ${patient.birth_date ? `<span class="patient-birth">生日: ${patient.birth_date}</span>` : ''}
-          </div>
-        </div>
-        <button class="btn btn-secondary change-patient-btn">
-          <i class="fas fa-exchange-alt"></i> 更换患者
-        </button>
-      </div>
-    `;
-    
-    // 绑定更换患者事件
-    selectedPatientCard.querySelector('.change-patient-btn').addEventListener('click', () => {
-      resetPaymentCollection();
-    }, { signal });
-  }
-  
-  async function loadAndRenderAggregatedPaymentCard(patientId) {
-    const aggregatedCard = container.querySelector('#aggregated-payment-card');
-    
-    try {
-      aggregatedCard.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> 加载账单信息...</div>';
-      
-      // 获取患者未支付账单
-      const response = await window.apiClient.finance.getPatientUnpaidBills(patientId);
-      console.log('患者账单响应:', response); // 调试日志
-      
-      // 适配不同的响应格式
-      let bills = [];
-      if (response) {
-        if (response.items) {
-          bills = response.items;
-        } else if (Array.isArray(response)) {
-          bills = response;
-        } else if (response.data && Array.isArray(response.data)) {
-          bills = response.data;
-        }
-      }
-      
-      // 过滤出未支付的账单
-      const unpaidBills = bills.filter(bill => 
-        bill.status === 'unpaid' || bill.status === 'PENDING' || bill.status === 'pending'
-      );
-      
-      console.log('未支付账单:', unpaidBills); // 调试日志
-      
-      if (unpaidBills.length > 0) {
-        const totalAmount = unpaidBills.reduce((sum, bill) => {
-          const amount = parseFloat(bill.total_amount || bill.amount || 0);
-          return sum + amount;
-        }, 0);
-        
-        renderAggregatedPaymentCard(unpaidBills, totalAmount);
-      } else {
-        aggregatedCard.innerHTML = `
-          <div class="no-bills-card">
-            <div class="no-bills-icon">
-              <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="no-bills-message">
-              <h4>该患者暂无待支付账单</h4>
-              <p>所有账单均已结清</p>
-            </div>
-          </div>
-        `;
-      }
-    } catch (error) {
-      console.error('加载患者账单失败:', error);
-      aggregatedCard.innerHTML = '<div class="error">加载账单信息失败，请重试</div>';
-    }
-  }
-  
-  function renderAggregatedPaymentCard(bills, totalAmount) {
-    const aggregatedCard = container.querySelector('#aggregated-payment-card');
-    
-    aggregatedCard.innerHTML = `
-      <div class="payment-summary-card">
-        <div class="payment-summary-header">
-          <div class="patient-name">${selectedPatient.name}</div>
-          <div class="payment-summary-stats">
-            <div class="stat-item">
-              <div class="stat-value">${bills.length}</div>
-              <div class="stat-label">笔未结清账单</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value">¥${totalAmount.toFixed(2)}</div>
-              <div class="stat-label">应付总金额</div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="payment-summary-actions">
-          <button class="btn btn-primary btn-lg scan-pay-btn" data-bills='${JSON.stringify(bills.map(b => b.id))}'>
-            <i class="fas fa-qrcode"></i>
-            <span>扫码支付</span>
-          </button>
-          <button class="btn btn-outline-secondary view-details-btn">
-            <i class="fas fa-list"></i>
-            <span>查看明细与部分支付</span>
-          </button>
-        </div>
-      </div>
-    `;
-    
-    // 绑定扫码支付事件
-    aggregatedCard.querySelector('.scan-pay-btn').addEventListener('click', async (e) => {
-      const billIds = JSON.parse(e.currentTarget.dataset.bills);
-      await createPaymentSession(billIds, totalAmount);
-    }, { signal });
-    
-    console.log('聚合支付卡片已渲染，账单数量:', bills.length, '总金额:', totalAmount); // 调试日志
-    
-    // 绑定查看明细事件
-    aggregatedCard.querySelector('.view-details-btn').addEventListener('click', () => {
-      showBillDetails(bills);
-    }, { signal });
-  }
-  
-  function showBillDetails(bills) {
-    const billDetailsArea = container.querySelector('#bill-details-area');
-    const billDetailsList = container.querySelector('#bill-details-list');
-    
-    billDetailsArea.style.display = 'block';
-    
-    billDetailsList.innerHTML = `
-      <div class="bill-details-header">
-        <div class="select-all-container">
-          <label class="checkbox-container">
-            <input type="checkbox" id="select-all-bills" checked>
-            <span class="checkmark"></span>
-            <span class="label-text">全选</span>
-          </label>
-        </div>
-        <div class="selected-total">
-          <span>已选金额: </span>
-          <span id="selected-amount" class="amount">¥${bills.reduce((sum, bill) => sum + parseFloat(bill.total_amount || bill.amount || 0), 0).toFixed(2)}</span>
-        </div>
-      </div>
-      
-      <div class="bill-items">
-        ${bills.map(bill => `
-          <div class="bill-detail-item">
-            <label class="checkbox-container">
-              <input type="checkbox" class="bill-checkbox" data-bill-id="${bill.id}" data-amount="${bill.total_amount || bill.amount || 0}" checked>
-              <span class="checkmark"></span>
-            </label>
-            <div class="bill-info">
-              <div class="bill-header">
-                <span class="bill-number">账单号: ${bill.invoice_number || bill.id}</span>
-                <span class="bill-amount">¥${parseFloat(bill.total_amount || bill.amount || 0).toFixed(2)}</span>
-              </div>
-              <div class="bill-details">
-                <span class="bill-date">日期: ${new Date(bill.bill_date).toLocaleDateString()}</span>
-                <span class="bill-type">类型: ${bill.bill_type}</span>
-              </div>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-    
-    // 绑定全选事件
-    const selectAllCheckbox = billDetailsList.querySelector('#select-all-bills');
-    const billCheckboxes = billDetailsList.querySelectorAll('.bill-checkbox');
-    const selectedAmountEl = billDetailsList.querySelector('#selected-amount');
-    
-    selectAllCheckbox.addEventListener('change', (e) => {
-      billCheckboxes.forEach(checkbox => {
-        checkbox.checked = e.target.checked;
-      });
-      updateSelectedAmount();
-    }, { signal });
-    
-    // 绑定单个账单选择事件
-    billCheckboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', () => {
-        updateSelectedAmount();
-        
-        // 更新全选状态
-        const checkedCount = Array.from(billCheckboxes).filter(cb => cb.checked).length;
-        selectAllCheckbox.checked = checkedCount === billCheckboxes.length;
-        selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < billCheckboxes.length;
-      }, { signal });
-    });
-    
-    function updateSelectedAmount() {
-      const selectedTotal = Array.from(billCheckboxes)
-        .filter(cb => cb.checked)
-        .reduce((sum, cb) => sum + parseFloat(cb.dataset.amount), 0);
-      selectedAmountEl.textContent = `¥${selectedTotal.toFixed(2)}`;
-    }
-    
-    // 绑定生成支付按钮事件
-    container.querySelector('#generate-selected-payment-btn').addEventListener('click', async () => {
-      const selectedBillIds = Array.from(billCheckboxes)
-        .filter(cb => cb.checked)
-        .map(cb => parseInt(cb.dataset.billId));
-      
-      if (selectedBillIds.length === 0) {
-        alert('请至少选择一个账单');
-        return;
-      }
-      
-      const selectedTotal = Array.from(billCheckboxes)
-        .filter(cb => cb.checked)
-        .reduce((sum, cb) => sum + parseFloat(cb.dataset.amount), 0);
-      
-      await createPaymentSession(selectedBillIds, selectedTotal);
-    }, { signal });
-    
-    // 绑定取消按钮事件
-    container.querySelector('#cancel-details-btn').addEventListener('click', () => {
-      billDetailsArea.style.display = 'none';
-    }, { signal });
-  }
-  
-  async function createPaymentSession(billIds, totalAmount) {
-    try {
-      // 隐藏其他区域，显示支付二维码区域
-      container.querySelector('#payment-cards-area').style.display = 'none';
-      container.querySelector('#payment-qr-area').style.display = 'block';
-      
-      // 更新支付金额显示
-      container.querySelector('#payment-amount-display').textContent = `¥${totalAmount.toFixed(2)}`;
-      container.querySelector('#payment-description').textContent = '正在生成支付二维码...';
-      
-      // 调用后端API创建合并支付会话
-      const response = await window.apiClient.finance.createMergedPaymentSession({
-        patient_id: selectedPatient.id,
-        bill_ids: billIds,
-        payment_method: 'alipay' // 默认支付宝
-      });
-      
-      if (response && response.session_id) {
-        currentPaymentSession = response;
-        
-        // 显示二维码
-        const qrCodeContainer = container.querySelector('#payment-qr-code');
-        qrCodeContainer.innerHTML = `
-          <div class="qr-code-image">
-            <img src="data:image/png;base64,${response.qr_code_image}" alt="支付二维码">
-          </div>
-        `;
-        
-        container.querySelector('#payment-description').textContent = `支付金额: ¥${totalAmount.toFixed(2)} | 会话ID: ${response.session_id}`;
-        
-        // 开始轮询支付状态
-        startPaymentStatusPolling(response.session_id);
-      } else {
-        throw new Error('创建支付会话失败');
-      }
-    } catch (error) {
-      console.error('创建支付会话失败:', error);
-      alert('创建支付会话失败，请重试');
-      
-      // 返回到支付卡片区域
-      container.querySelector('#payment-qr-area').style.display = 'none';
-      container.querySelector('#payment-cards-area').style.display = 'block';
-    }
-  }
-  
-  function startPaymentStatusPolling(sessionId) {
-    const pollInterval = setInterval(async () => {
-      try {
-        const response = await window.apiClient.finance.getMergedPaymentSessionStatus(sessionId);
-        
-        if (response && response.status === 'PAID') {
-          clearInterval(pollInterval);
-          showPaymentSuccess(response);
-        } else if (response && response.status === 'EXPIRED') {
-          clearInterval(pollInterval);
-          alert('支付已过期，请重新发起支付');
-          resetPaymentCollection();
-        }
-      } catch (error) {
-        console.error('查询支付状态失败:', error);
-      }
-    }, 3000); // 每3秒查询一次
-    
-    // 存储轮询ID以便取消
-    currentPaymentSession.pollInterval = pollInterval;
-  }
-  
-  function showPaymentSuccess(paymentResult) {
-    // 隐藏二维码区域，显示成功区域
-    container.querySelector('#payment-qr-area').style.display = 'none';
-    container.querySelector('#payment-success-area').style.display = 'block';
-    
-    // 显示支付成功详情
-    const successDetails = container.querySelector('#payment-success-details');
-    successDetails.innerHTML = `
-      <div class="success-details">
-        <div class="detail-item">
-          <span class="label">支付金额:</span>
-          <span class="value">¥${parseFloat(paymentResult.total_amount).toFixed(2)}</span>
-        </div>
-        <div class="detail-item">
-          <span class="label">支付时间:</span>
-          <span class="value">${new Date(paymentResult.paid_at).toLocaleString()}</span>
-        </div>
-        <div class="detail-item">
-          <span class="label">交易号:</span>
-          <span class="value">${paymentResult.provider_transaction_id}</span>
-        </div>
-        <div class="detail-item">
-          <span class="label">患者:</span>
-          <span class="value">${selectedPatient.name}</span>
-        </div>
-      </div>
-    `;
-    
-    // 绑定新建支付按钮事件
-    container.querySelector('#new-payment-btn').addEventListener('click', () => {
-      resetPaymentCollection();
-    }, { signal });
-  }
-  
-  function resetPaymentCollection() {
-    // 清理状态
-    selectedPatient = null;
-    currentPaymentSession = null;
-    
-    // 清理轮询
-    if (currentPaymentSession && currentPaymentSession.pollInterval) {
-      clearInterval(currentPaymentSession.pollInterval);
-    }
-    
-    // 重置界面
-    container.querySelector('#patient-search').value = '';
-    container.querySelector('#patient-selection-area').style.display = 'none';
-    container.querySelector('#payment-cards-area').style.display = 'none';
-    container.querySelector('#bill-details-area').style.display = 'none';
-    container.querySelector('#payment-qr-area').style.display = 'none';
-    container.querySelector('#payment-success-area').style.display = 'none';
-  }
-  
-  // 绑定费用收取相关事件
-  function bindPaymentCollectionEvents() {
-    console.log('绑定费用收取事件...'); // 调试日志
-    
-    // 患者搜索事件
-    const patientSearchInput = container.querySelector('#patient-search');
-    const searchPatientBtn = container.querySelector('#search-patient-btn');
-    
-    console.log('患者搜索输入框:', patientSearchInput); // 调试日志
-    console.log('搜索按钮:', searchPatientBtn); // 调试日志
-    
-    if (patientSearchInput) {
-      console.log('绑定患者搜索输入事件'); // 调试日志
-      patientSearchInput.addEventListener('input', debounce((e) => {
-        console.log('患者搜索输入:', e.target.value); // 调试日志
-        searchPatients(e.target.value);
-      }, 300), { signal });
-      
-      patientSearchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          console.log('回车搜索患者:', e.target.value); // 调试日志
-          searchPatients(e.target.value);
-        }
-      }, { signal });
-    } else {
-      console.warn('未找到患者搜索输入框元素'); // 调试日志
-    }
-    
-    if (searchPatientBtn) {
-      console.log('绑定搜索按钮事件'); // 调试日志
-      searchPatientBtn.addEventListener('click', () => {
-        const searchValue = patientSearchInput ? patientSearchInput.value : '';
-        console.log('点击搜索按钮:', searchValue); // 调试日志
-        searchPatients(searchValue);
-      }, { signal });
-    } else {
-      console.warn('未找到搜索按钮元素'); // 调试日志
-    }
-    
-    // 支付相关按钮事件
-    const refreshPaymentStatusBtn = container.querySelector('#refresh-payment-status-btn');
-    const cancelPaymentBtn = container.querySelector('#cancel-payment-btn');
-    
-    if (refreshPaymentStatusBtn) {
-      refreshPaymentStatusBtn.addEventListener('click', async () => {
-        if (currentPaymentSession) {
-          try {
-            const response = await window.apiClient.finance.getMergedPaymentSessionStatus(currentPaymentSession.session_id);
-            
-            if (response && response.status === 'PAID') {
-              showPaymentSuccess(response);
-            } else {
-              container.querySelector('#payment-description').textContent = `状态: ${response.status} | 会话ID: ${currentPaymentSession.session_id}`;
-            }
-          } catch (error) {
-            console.error('刷新支付状态失败:', error);
-            alert('刷新支付状态失败');
-          }
-        }
-      }, { signal });
-    }
-    
-    if (cancelPaymentBtn) {
-      cancelPaymentBtn.addEventListener('click', () => {
-        if (confirm('确定要取消当前支付吗？')) {
-          resetPaymentCollection();
-        }
-      }, { signal });
-    }
-  }
-  
   // 绑定标签页切换事件
   const tabBtns = container.querySelectorAll('.tab-btn');
   const tabPanes = container.querySelectorAll('.tab-pane');
@@ -1729,17 +940,9 @@ export default function renderFinanceModule(container, options = {}) {
       if (targetPane) {
         targetPane.classList.add('active');
       }
-      
-      // 如果切换到费用收取标签页，重置状态
-      if (tabId === 'payment-collection') {
-        resetPaymentCollection();
-      }
     }, { signal });
   });
-  
-  // 初始化时就绑定费用收取相关事件
-  bindPaymentCollectionEvents();
-  
+
   // 返回清理函数
   return () => {
     console.log('财务模块已卸载');

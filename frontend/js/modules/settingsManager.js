@@ -1,6 +1,7 @@
 // frontend/js/modules/settingsManager.js
 
 import apiClient from '../apiClient.js';
+import { confirmModal } from '../utils/ui.js';
 console.log('✅ settingsManager.js: 模块已成功解析，apiClient 已导入。');
 
 /**
@@ -516,7 +517,7 @@ async function handleBackupNow() {
     const message = window.getTranslation ? window.getTranslation('creating_backup', '正在创建备份...') : '正在创建备份...';
         window.showNotification(message, 'info');
     
-    const response = await apiClient.request('/api/system/backup', {
+    const response = await apiClient.request('/api/v1/system/backup', {
       method: 'POST'
     });
     
@@ -537,33 +538,104 @@ async function handleBackupNow() {
  * 处理恢复备份
  */
 async function handleRestoreBackup() {
-  const confirmed = await new Promise(resolve => {
-            if (window.showNotification) {
-                const message = window.getTranslation ? window.getTranslation('confirm_restore_backup', '确定要恢复备份吗？这将覆盖当前数据。') : '确定要恢复备份吗？这将覆盖当前数据。';
-        const title = window.getTranslation ? window.getTranslation('confirm_restore_backup_title', '确认恢复备份') : '确认恢复备份';
-        window.showNotification(message, 'confirm', title, resolve);
-            } else {
-                // 使用confirmModal替代showNotification进行确认操作
-                resolve(true);
-            }
-        });
-        
-        if (!confirmed) {
-            return;
-        }
+  try {
+    // 首先获取备份列表
+    const response = await apiClient.request('/api/v1/system/backups');
+    
+    if (!response.success || !response.backups || response.backups.length === 0) {
+      const message = window.getTranslation ? window.getTranslation('no_backups_available', '没有可用的备份文件') : '没有可用的备份文件';
+      window.showNotification(message, 'warning');
+      return;
+    }
+    
+    // 显示备份选择模态框
+    showBackupSelectionModal(response.backups);
+    
+  } catch (error) {
+    console.error('获取备份列表错误:', error);
+    const errorMessage = window.getTranslation ? window.getTranslation('get_backups_failed', '获取备份列表失败') : '获取备份列表失败';
+    window.showNotification(errorMessage, 'error');
+  }
+}
+
+/**
+ * 显示备份选择模态框
+ */
+function showBackupSelectionModal(backups) {
+  // 创建模态框HTML
+  const modalHtml = `
+    <div id="backup-selection-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>${window.getTranslation ? window.getTranslation('select_backup_to_restore', '选择要恢复的备份') : '选择要恢复的备份'}</h3>
+          <button class="modal-close" onclick="closeBackupSelectionModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="backup-list">
+            ${backups.map(backup => `
+              <div class="backup-item" data-backup-id="${backup.backup_id}">
+                <div class="backup-info">
+                  <div class="backup-name">${backup.backup_path ? backup.backup_path.split(/[\\/]/).pop() : backup.backup_id}</div>
+                  <div class="backup-date">${new Date(backup.created_at).toLocaleString()}</div>
+                  <div class="backup-size">${formatFileSize(backup.size)}</div>
+                </div>
+                <button class="btn btn-primary" onclick="restoreSelectedBackup('${backup.backup_id}')">
+                  ${window.getTranslation ? window.getTranslation('restore', '恢复') : '恢复'}
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // 添加到页面
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+/**
+ * 关闭备份选择模态框
+ */
+function closeBackupSelectionModal() {
+  const modal = document.getElementById('backup-selection-modal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+/**
+ * 恢复选定的备份
+ */
+async function restoreSelectedBackup(backupId) {
+  const title = window.getTranslation ? window.getTranslation('confirm_restore_backup_title', '确认恢复备份') : '确认恢复备份';
+  const message = window.getTranslation ? window.getTranslation('confirm_restore_backup', '确定要恢复此备份吗？这将覆盖当前数据。') : '确定要恢复此备份吗？这将覆盖当前数据。';
+  
+  const confirmed = await confirmModal(title, message, {
+    confirmText: window.getTranslation ? window.getTranslation('confirm', '确认') : '确认',
+    cancelText: window.getTranslation ? window.getTranslation('cancel', '取消') : '取消',
+    confirmClass: 'btn-danger'
+  });
+  
+  if (!confirmed) {
+    return;
+  }
   
   try {
-    const message = window.getTranslation ? window.getTranslation('restoring_backup', '正在恢复备份...') : '正在恢复备份...';
-        window.showNotification(message, 'info');
+    // 关闭选择模态框
+    closeBackupSelectionModal();
     
-    const response = await apiClient.request('/api/system/restore', {
+    const message = window.getTranslation ? window.getTranslation('restoring_backup', '正在恢复备份...') : '正在恢复备份...';
+    window.showNotification(message, 'info');
+    
+    const response = await apiClient.request(`/api/v1/system/restore/${backupId}`, {
       method: 'POST'
     });
     
     if (response.success) {
       const successMessage = window.getTranslation ? window.getTranslation('backup_restored_success', '备份恢复成功') : '备份恢复成功';
-        window.showNotification(successMessage, 'success');
-      // 可能需要刷新页面
+      window.showNotification(successMessage, 'success');
+      // 刷新页面
       setTimeout(() => {
         window.location.reload();
       }, 2000);
@@ -573,9 +645,24 @@ async function handleRestoreBackup() {
   } catch (error) {
     console.error('恢复错误:', error);
     const errorMessage = window.getTranslation ? window.getTranslation('backup_restore_failed', '备份恢复失败，请稍后重试') : '备份恢复失败，请稍后重试';
-        window.showNotification(errorMessage, 'error');
+    window.showNotification(errorMessage, 'error');
   }
 }
+
+/**
+ * 格式化文件大小
+ */
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// 将函数暴露到全局作用域
+window.closeBackupSelectionModal = closeBackupSelectionModal;
+window.restoreSelectedBackup = restoreSelectedBackup;
 
 /**
  * 保存所有设置

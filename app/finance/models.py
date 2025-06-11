@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, ForeignKey, Numeric, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Numeric, Enum, Text, Boolean
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from app.core.auditing import Auditable, register_audit_model
@@ -129,10 +129,10 @@ class Insurance(Base, Auditable):
     patient_id = Column(Integer, ForeignKey('patients.id'), nullable=False)
     
     # Audit fields
-    created_at = Column(DateTime)
-    updated_at = Column(DateTime)
-    created_by_id = Column(Integer, ForeignKey('users.id'))
-    updated_by_id = Column(Integer, ForeignKey('users.id'))
+    created_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True)
+    created_by_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    updated_by_id = Column(Integer, ForeignKey('users.id'), nullable=True)
     deleted_at = Column(DateTime, nullable=True)
 
     patient = relationship("Patient")
@@ -260,3 +260,49 @@ class MergedPaymentSessionBill(Base):
     
     merged_session = relationship("MergedPaymentSession", back_populates="bill_associations")
     bill = relationship("Bill")
+
+
+# --- 支出管理相关模型 ---
+
+class ExpenseCategory(Base, Auditable):
+    """支出分类表"""
+    __tablename__ = 'expense_categories'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False, unique=True)  # 分类名称
+    description = Column(Text, nullable=True)  # 分类描述
+    is_active = Column(Boolean, default=True, nullable=False)  # 是否启用
+    
+    # Audit fields
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+    created_by_id = Column(Integer, ForeignKey('users.id'))
+    updated_by_id = Column(Integer, ForeignKey('users.id'))
+    deleted_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    expenses = relationship("Expense", back_populates="category")
+
+
+class Expense(Base, Auditable):
+    """支出记录表"""
+    __tablename__ = 'expenses'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False)  # 支出标题
+    description = Column(Text, nullable=True)  # 支出描述
+    amount = Column(Numeric(10, 2), nullable=False)  # 支出金额
+    expense_date = Column(DateTime, nullable=False)  # 支出日期
+    category_id = Column(Integer, ForeignKey('expense_categories.id'), nullable=False)  # 支出分类
+    receipt_url = Column(String(500), nullable=True)  # 收据/发票图片URL
+    notes = Column(Text, nullable=True)  # 备注
+    
+    # Audit fields
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+    created_by_id = Column(Integer, ForeignKey('users.id'))
+    updated_by_id = Column(Integer, ForeignKey('users.id'))
+    deleted_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    category = relationship("ExpenseCategory", back_populates="expenses")

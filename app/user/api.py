@@ -55,8 +55,12 @@ async def json_login(
         db, username=login_data.username, password=login_data.password
     )
     
-    # 生成访问令牌
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    # 获取用户的会话超时设置
+    user_preferences = service.user_service.get_user_preferences(db, user.id)
+    session_timeout = user_preferences.get("sessionTimeout", 30)  # 默认30分钟
+    
+    # 生成访问令牌，使用用户设置的会话超时时间
+    access_token_expires = timedelta(minutes=session_timeout)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
@@ -78,8 +82,12 @@ async def login_for_access_token(
         db, username=form_data.username, password=form_data.password
     )
     
-    # 生成访问令牌
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    # 获取用户的会话超时设置
+    user_preferences = service.user_service.get_user_preferences(db, user.id)
+    session_timeout = user_preferences.get("sessionTimeout", 30)  # 默认30分钟
+    
+    # 生成访问令牌，使用用户设置的会话超时时间
+    access_token_expires = timedelta(minutes=session_timeout)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )

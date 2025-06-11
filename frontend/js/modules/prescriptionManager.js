@@ -366,22 +366,106 @@ window.confirmDispense = async function(prescriptionId, billPaid) {
     }
 };
 
+// 显示确认模态框
+function showConfirmModal(title, message, onConfirm) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    `;
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="
+            background-color: var(--color-bg-card);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+            overflow: hidden;
+        ">
+            <div class="modal-header" style="
+                padding: calc(var(--spacing-unit) * 2);
+                background-color: #39c5bb;
+                color: white;
+                border-bottom: 1px solid var(--color-border);
+            ">
+                <h3 style="margin: 0; font-size: 1.25rem; font-weight: 600;">${title}</h3>
+            </div>
+            <div class="modal-body" style="padding: calc(var(--spacing-unit) * 2);">
+                <p style="margin: 0; color: var(--color-text-primary);">${message}</p>
+            </div>
+            <div class="modal-footer" style="
+                padding: calc(var(--spacing-unit) * 2);
+                border-top: 1px solid var(--color-border);
+                display: flex;
+                justify-content: flex-end;
+                gap: calc(var(--spacing-unit) * 1.5);
+            ">
+                <button class="btn btn-outline cancel-btn">取消</button>
+                <button class="btn btn-primary confirm-btn">确认</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 绑定事件
+    const cancelBtn = modal.querySelector('.cancel-btn');
+    const confirmBtn = modal.querySelector('.confirm-btn');
+    
+    cancelBtn.addEventListener('click', () => {
+        modal.remove();
+    });
+    
+    confirmBtn.addEventListener('click', () => {
+        modal.remove();
+        onConfirm();
+    });
+    
+    // 点击背景关闭模态框
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    // ESC键关闭模态框
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            modal.remove();
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+}
+
 /**
  * 发药操作（保留原有函数以兼容）
  */
 window.dispensePrescription = async function(prescriptionId) {
-    if (!confirm(window.getTranslation ? window.getTranslation('confirm_dispense_prescription') : '确认要为此处方发药吗？')) {
-        return;
-    }
-    
-    try {
-        await apiClient.prescriptions.dispense(prescriptionId);
-        window.showNotification(window.getTranslation ? window.getTranslation('dispense_success') : '发药成功', 'success');
-        await loadPrescriptions();
-    } catch (error) {
-        console.error('发药失败:', error);
-        window.showNotification((window.getTranslation ? window.getTranslation('dispense_failed') : '发药失败') + ': ' + error.message, 'error');
-    }
+    showConfirmModal(
+        window.getTranslation ? window.getTranslation('confirm_dispense_title', '确认发药') : '确认发药',
+        window.getTranslation ? window.getTranslation('confirm_dispense_prescription') : '确认要为此处方发药吗？',
+        async () => {
+            try {
+                await apiClient.prescriptions.dispense(prescriptionId);
+                window.showNotification(window.getTranslation ? window.getTranslation('dispense_success') : '发药成功', 'success');
+                await loadPrescriptions();
+            } catch (error) {
+                console.error('发药失败:', error);
+                window.showNotification((window.getTranslation ? window.getTranslation('dispense_failed') : '发药失败') + ': ' + error.message, 'error');
+            }
+        }
+    );
 };
 
 /**

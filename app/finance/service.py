@@ -769,9 +769,258 @@ class MergedPaymentService:
             models.MergedPaymentSession.deleted_at.is_(None)
         ).first()
 
+class ExpenseCategoryService(BaseService[models.ExpenseCategory, schemas.ExpenseCategoryCreate, schemas.ExpenseCategoryUpdate]):
+    """支出分类管理服务类"""
+    def __init__(self):
+        super().__init__(models.ExpenseCategory)
+    
+    def get_active_categories(self, db: Session) -> List[models.ExpenseCategory]:
+        """获取所有启用的支出分类"""
+        return db.query(models.ExpenseCategory).filter(
+            models.ExpenseCategory.is_active == True,
+            models.ExpenseCategory.deleted_at.is_(None)
+        ).order_by(models.ExpenseCategory.name).all()
+    
+    def create_default_categories(self, db: Session) -> List[models.ExpenseCategory]:
+        """创建默认支出分类"""
+        default_categories = [
+            {"name": "办公用品", "description": "文具、纸张、打印耗材等办公用品支出"},
+            {"name": "医疗设备", "description": "医疗器械、设备采购和维护费用"},
+            {"name": "药品采购", "description": "药品和医疗用品采购费用"},
+            {"name": "房租水电", "description": "诊所租金、水电费、物业费等"},
+            {"name": "人员工资", "description": "员工工资、奖金、社保等人力成本"},
+            {"name": "营销推广", "description": "广告、宣传、推广活动费用"},
+            {"name": "培训学习", "description": "员工培训、学习、会议费用"},
+            {"name": "其他支出", "description": "其他未分类的支出项目"}
+        ]
+        
+        created_categories = []
+        for cat_data in default_categories:
+            # 检查是否已存在
+            existing = db.query(models.ExpenseCategory).filter(
+                models.ExpenseCategory.name == cat_data["name"],
+                models.ExpenseCategory.deleted_at.is_(None)
+            ).first()
+            
+            if not existing:
+                category = models.ExpenseCategory(**cat_data)
+                db.add(category)
+                created_categories.append(category)
+        
+        db.commit()
+        return created_categories
+
+
+class ExpenseService(BaseService[models.Expense, schemas.ExpenseCreate, schemas.ExpenseUpdate]):
+    """支出管理服务类"""
+    def __init__(self):
+        super().__init__(models.Expense)
+    
+    def get_expenses_by_date_range(
+        self, 
+        db: Session, 
+        *, 
+        start_date: datetime, 
+        end_date: datetime,
+        category_id: Optional[int] = None,
+        skip: int = 0,
+        limit: int = 100
+    ) -> Dict[str, Any]:
+        """按日期范围获取支出记录"""
+        query = db.query(models.Expense).filter(
+            models.Expense.expense_date >= start_date,
+            models.Expense.expense_date <= end_date,
+            models.Expense.deleted_at.is_(None)
+        ).options(joinedload(models.Expense.category))
+        
+        if category_id:
+            query = query.filter(models.Expense.category_id == category_id)
+        
+        total = query.count()
+        expenses = query.order_by(models.Expense.expense_date.desc()).offset(skip).limit(limit).all()
+        
+        return {
+            "items": expenses,
+            "total": total,
+            "skip": skip,
+            "limit": limit
+        }
+    
+    def get_expense_statistics(
+        self, 
+        db: Session, 
+        *, 
+        start_date: datetime, 
+        end_date: datetime
+    ) -> schemas.ExpenseStatistics:
+        """获取支出统计数据"""
+        from sqlalchemy import func, extract
+        
+        # 总支出和数量
+        total_query = db.query(
+            func.sum(models.Expense.amount).label('total_amount'),
+            func.count(models.Expense.id).label('total_count')
+        ).filter(
+            models.Expense.expense_date >= start_date,
+            models.Expense.expense_date <= end_date,
+            models.Expense.deleted_at.is_(None)
+        ).first()
+        
+        total_expenses = total_query.total_amount or Decimal('0')
+        expense_count = total_query.total_count or 0
+        
+        # 按分类统计
+        category_query = db.query(
+            models.ExpenseCategory.name.label('category_name'),
+            func.sum(models.Expense.amount).label('amount'),
+            func.count(models.Expense.id).label('count')
+        ).join(
+            models.Expense, models.ExpenseCategory.id == models.Expense.category_id
+        ).filter(
+            models.Expense.expense_date >= start_date,
+            models.Expense.expense_date <= end_date,
+            models.Expense.deleted_at.is_(None)
+        ).group_by(models.ExpenseCategory.name).all()
+        
+        category_breakdown = [
+            {
+                "category_name": row.category_name,
+                "amount": row.amount,
+                "count": row.count
+            }
+            for row in category_query
+        ]
+        
+        # 按月统计
+        monthly_query = db.query(
+            extract('year', models.Expense.expense_date).label('year'),
+            extract('month', models.Expense.expense_date).label('month'),
+            func.sum(models.Expense.amount).label('amount'),
+            func.count(models.Expense.id).label('count')
+        ).filter(
+            models.Expense.expense_date >= start_date,
+            models.Expense.expense_date <= end_date,
+            models.Expense.deleted_at.is_(None)
+        ).group_by(
+            extract('year', models.Expense.expense_date),
+            extract('month', models.Expense.expense_date)
+        ).order_by(
+            extract('year', models.Expense.expense_date),
+            extract('month', models.Expense.expense_date)
+        ).all()
+        
+        monthly_breakdown = [
+            {
+                "month": f"{int(row.year)}-{int(row.month):02d}",
+                "amount": row.amount,
+                "count": row.count
+            }
+            for row in monthly_query
+        ]
+        
+        return schemas.ExpenseStatistics(
+            total_expenses=total_expenses,
+            expense_count=expense_count,
+            category_breakdown=category_breakdown,
+            monthly_breakdown=monthly_breakdown
+        )
+
+
+class FinanceStatisticsService:
+    """财务统计服务类"""
+    
+    def get_income_statistics(
+        self, 
+        db: Session, 
+        *, 
+        start_date: datetime, 
+        end_date: datetime
+    ) -> schemas.IncomeStatistics:
+        """获取收入统计数据"""
+        from sqlalchemy import func, extract
+        
+        # 总收入和已支付账单数量
+        income_query = db.query(
+            func.sum(models.Bill.total_amount).label('total_income'),
+            func.count(models.Bill.id).label('paid_count'),
+            func.avg(models.Bill.total_amount).label('avg_amount')
+        ).filter(
+            models.Bill.status == models.BillStatus.PAID,
+            models.Bill.bill_date >= start_date,
+            models.Bill.bill_date <= end_date,
+            models.Bill.deleted_at.is_(None)
+        ).first()
+        
+        total_income = income_query.total_income or Decimal('0')
+        paid_bills_count = income_query.paid_count or 0
+        average_bill_amount = income_query.avg_amount or Decimal('0')
+        
+        # 按月统计收入
+        monthly_query = db.query(
+            extract('year', models.Bill.bill_date).label('year'),
+            extract('month', models.Bill.bill_date).label('month'),
+            func.sum(models.Bill.total_amount).label('amount'),
+            func.count(models.Bill.id).label('count')
+        ).filter(
+            models.Bill.status == models.BillStatus.PAID,
+            models.Bill.bill_date >= start_date,
+            models.Bill.bill_date <= end_date,
+            models.Bill.deleted_at.is_(None)
+        ).group_by(
+            extract('year', models.Bill.bill_date),
+            extract('month', models.Bill.bill_date)
+        ).order_by(
+            extract('year', models.Bill.bill_date),
+            extract('month', models.Bill.bill_date)
+        ).all()
+        
+        monthly_breakdown = [
+            {
+                "month": f"{int(row.year)}-{int(row.month):02d}",
+                "amount": row.amount,
+                "count": row.count
+            }
+            for row in monthly_query
+        ]
+        
+        # 按支付方式统计
+        payment_method_query = db.query(
+            models.Payment.payment_method.label('method'),
+            func.sum(models.Payment.amount).label('amount'),
+            func.count(models.Payment.id).label('count')
+        ).join(
+            models.Bill, models.Payment.bill_id == models.Bill.id
+        ).filter(
+            models.Bill.status == models.BillStatus.PAID,
+            models.Payment.payment_date >= start_date,
+            models.Payment.payment_date <= end_date,
+            models.Payment.deleted_at.is_(None)
+        ).group_by(models.Payment.payment_method).all()
+        
+        payment_method_breakdown = [
+            {
+                "method": row.method,
+                "amount": row.amount,
+                "count": row.count
+            }
+            for row in payment_method_query
+        ]
+        
+        return schemas.IncomeStatistics(
+            total_income=total_income,
+            paid_bills_count=paid_bills_count,
+            average_bill_amount=average_bill_amount,
+            monthly_breakdown=monthly_breakdown,
+            payment_method_breakdown=payment_method_breakdown
+        )
+
+
 # 创建服务实例
 insurance_service = InsuranceService()
 payment_service = PaymentService()
 billing_service = BillingService()
 merged_payment_service = MergedPaymentService()
 online_payment_service = OnlinePaymentService()
+expense_category_service = ExpenseCategoryService()
+expense_service = ExpenseService()
+finance_statistics_service = FinanceStatisticsService()

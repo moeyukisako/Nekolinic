@@ -88,7 +88,13 @@ const sidePaymentManager = {
           
           <div id="side-payment-cards-area" class="payment-cards-area" style="display: none;">
             <div class="selected-patient-info">
-              <h4 data-i18n="side_payment.selected_patient">选中患者</h4>
+              <div class="selected-patient-header">
+                <button id="side-back-to-search-btn" class="btn btn-secondary back-btn">
+                  <i class="fas fa-arrow-left"></i>
+                  <span data-i18n="side_payment.back_to_search">返回搜索</span>
+                </button>
+                <h4 data-i18n="side_payment.selected_patient">选中患者</h4>
+              </div>
               <div id="side-selected-patient-card" class="selected-patient-card">
                 <!-- 选中的患者信息将在这里显示 -->
               </div>
@@ -186,6 +192,7 @@ const sidePaymentManager = {
     const refreshStatusBtn = this.container.querySelector('#side-refresh-payment-status-btn');
     const cancelPaymentBtn = this.container.querySelector('#side-cancel-payment-btn');
     const newPaymentBtn = this.container.querySelector('#side-new-payment-btn');
+    const backToSearchBtn = this.container.querySelector('#side-back-to-search-btn');
 
     // 患者搜索
     if (searchInput) {
@@ -254,6 +261,13 @@ const sidePaymentManager = {
     if (newPaymentBtn) {
       newPaymentBtn.addEventListener('click', () => {
         this.resetPaymentCollection();
+      });
+    }
+
+    // 返回搜索按钮
+    if (backToSearchBtn) {
+      backToSearchBtn.addEventListener('click', () => {
+        this.backToSearch();
       });
     }
   },
@@ -396,6 +410,12 @@ const sidePaymentManager = {
       }
       if (selectionArea) {
         selectionArea.style.display = 'none';
+      }
+      
+      // 隐藏搜索框
+      const searchBox = this.container.querySelector('.patient-search-box');
+      if (searchBox) {
+        searchBox.style.display = 'none';
       }
       
       // 显示选中患者信息
@@ -671,6 +691,12 @@ const sidePaymentManager = {
       if (qrArea) qrArea.style.display = 'block';
       if (cardsArea) cardsArea.style.display = 'none';
       
+      // 隐藏搜索框
+      const searchBox = this.container.querySelector('.patient-search-box');
+      if (searchBox) {
+        searchBox.style.display = 'none';
+      }
+      
       // 更新支付金额显示
       const amountDisplay = this.container.querySelector('#side-payment-amount-display');
       const descriptionDisplay = this.container.querySelector('#side-payment-description');
@@ -754,7 +780,7 @@ const sidePaymentManager = {
       const response = await apiClient.finance.getMergedPaymentSessionStatus(this.state.paymentSession.sessionId);
       console.log('支付状态检查响应:', response);
       
-      if (response && response.status === 'PAID') {
+      if (response && response.status === 'paid') {
         this.stopPaymentStatusPolling();
         this.showPaymentSuccess(response);
       } else if (response && response.status === 'EXPIRED') {
@@ -826,6 +852,46 @@ const sidePaymentManager = {
     }
   },
 
+  // 返回搜索
+  backToSearch() {
+    console.log('返回搜索患者');
+    
+    // 停止轮询
+    this.stopPaymentStatusPolling();
+    
+    // 清理支付相关状态
+    this.state.unpaidBills = [];
+    this.state.selectedBills = [];
+    this.state.paymentSession = null;
+    
+    // 隐藏支付相关区域
+    const areas = [
+      '#side-payment-cards-area', 
+      '#side-payment-qr-area',
+      '#side-payment-success-area'
+    ];
+    
+    areas.forEach(selector => {
+      const area = this.container.querySelector(selector);
+      if (area) area.style.display = 'none';
+    });
+    
+    // 显示搜索框
+    const searchBox = this.container.querySelector('.patient-search-box');
+    if (searchBox) {
+      searchBox.style.display = 'flex';
+    }
+    
+    // 重新显示患者选择区域
+    const selectionArea = this.container.querySelector('#side-patient-selection-area');
+    if (selectionArea) {
+      selectionArea.style.display = 'block';
+    }
+    
+    // 重新显示所有患者
+    this.renderPatientSearchResults(this.state.allPatients);
+  },
+
   // 重置支付收取
   resetPaymentCollection() {
     console.log(i18n.t('side_payment.reset_payment_status'));
@@ -855,6 +921,12 @@ const sidePaymentManager = {
     const searchInput = this.container.querySelector('#side-patient-search');
     if (searchInput) {
       searchInput.value = '';
+    }
+    
+    // 显示搜索框
+    const searchBox = this.container.querySelector('.patient-search-box');
+    if (searchBox) {
+      searchBox.style.display = 'flex';
     }
     
     // 隐藏默认内容

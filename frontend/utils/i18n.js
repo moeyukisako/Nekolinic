@@ -382,9 +382,10 @@ const translations = {
     
     // 聚合支付管理器
     'side_payment.payment_collection': '费用收取',
-    'side_payment.search_patient': '搜索患者姓名或ID...',
-    'side_payment.search': '搜索',
-    'side_payment.start_billing': '开始收费',
+'side_payment.search_patient': '搜索患者姓名或ID...',
+'side_payment.search': '搜索',
+'side_payment.back_to_search': '返回搜索',
+'side_payment.start_billing': '开始收费',
     'side_payment.search_patient_desc': '请在上方搜索框中输入患者姓名或ID来查找患者，然后选择需要收费的账单。',
     'side_payment.quick_tips': '快速提示：',
     'side_payment.tip_search_name': '支持按患者姓名搜索',
@@ -540,6 +541,19 @@ const translations = {
     workload_statistics_report: '工作量统计报表',
     workload_statistics_desc: '医生工作量、科室效率、时间分析等',
     generate_report: '生成报表',
+    
+    // 报表模态框
+    select_report_date_range: '选择报表日期范围',
+    select_date_range_desc: '请选择要生成报表的日期范围',
+    start_date: '开始日期',
+    end_date: '结束日期',
+    recent_7_days: '最近7天',
+    recent_30_days: '最近30天',
+    recent_90_days: '最近90天',
+    recent_1_year: '最近一年',
+    date_range_invalid: '开始日期不能晚于结束日期',
+    please_select_date_range: '请选择日期范围',
+    
     report_history: '报表历史',
     clear_history: '清理历史',
     refresh_history: '刷新历史',
@@ -1110,10 +1124,11 @@ const translations = {
     'merged_payment.batch_payment': 'Batch Payment',
     
     // Side Payment Manager
-    'side_payment.payment_collection': 'Payment Collection',
-    'side_payment.search_patient': 'Search patient name or ID...',
-    'side_payment.search': 'Search',
-    'side_payment.start_billing': 'Start Billing',
+'side_payment.payment_collection': 'Payment Collection',
+'side_payment.search_patient': 'Search patient name or ID...',
+'side_payment.search': 'Search',
+'side_payment.back_to_search': 'Back to Search',
+'side_payment.start_billing': 'Start Billing',
     'side_payment.search_patient_desc': 'Please enter patient name or ID in the search box above to find patients, then select bills to charge.',
     'side_payment.quick_tips': 'Quick Tips:',
     'side_payment.tip_search_name': 'Support search by patient name',
@@ -1282,6 +1297,19 @@ const translations = {
     workload_statistics_report: 'Workload Statistics Report',
     workload_statistics_desc: 'Doctor workload, department efficiency, time analysis',
     generate_report: 'Generate Report',
+    
+    // Report Modal
+    select_report_date_range: 'Select Report Date Range',
+    select_date_range_desc: 'Please select the date range for generating the report',
+    start_date: 'Start Date',
+    end_date: 'End Date',
+    recent_7_days: 'Recent 7 Days',
+    recent_30_days: 'Recent 30 Days',
+    recent_90_days: 'Recent 90 Days',
+    recent_1_year: 'Recent 1 Year',
+    date_range_invalid: 'Start date cannot be later than end date',
+    please_select_date_range: 'Please select date range',
+    
     report_history: 'Report History',
     clear_history: 'Clear History',
     refresh_history: 'Refresh History',
@@ -1841,9 +1869,10 @@ const translations = {
     
     // サイド支払いマネージャー
     'side_payment.payment_collection': '料金徴収',
-    'side_payment.search_patient': '患者名またはIDを検索...',
-    'side_payment.search': '検索',
-    'side_payment.start_billing': '請求開始',
+'side_payment.search_patient': '患者名またはIDを検索...',
+'side_payment.search': '検索',
+'side_payment.back_to_search': '検索に戻る',
+'side_payment.start_billing': '請求開始',
     'side_payment.search_patient_desc': '上記の検索ボックスに患者名またはIDを入力して患者を検索し、請求する請求書を選択してください。',
     'side_payment.quick_tips': 'クイックヒント：',
     'side_payment.tip_search_name': '患者名での検索をサポート',
@@ -2012,6 +2041,19 @@ const translations = {
     workload_statistics_report: '作業量統計レポート',
     workload_statistics_desc: '医師作業量、部門効率、時間分析',
     generate_report: 'レポート生成',
+    
+    // レポートモーダル
+    select_report_date_range: 'レポート日付範囲選択',
+    select_date_range_desc: 'レポート生成の日付範囲を選択してください',
+    start_date: '開始日',
+    end_date: '終了日',
+    recent_7_days: '最近7日',
+    recent_30_days: '最近30日',
+    recent_90_days: '最近90日',
+    recent_1_year: '最近1年',
+    date_range_invalid: '開始日は終了日より後にできません',
+    please_select_date_range: '日付範囲を選択してください',
+    
     report_history: 'レポート履歴',
     clear_history: '履歴クリア',
     refresh_history: '履歴更新',

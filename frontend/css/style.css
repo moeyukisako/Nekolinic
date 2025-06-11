@@ -4133,6 +4133,178 @@ body .sidebar:hover + .content {
     max-width: 800px; /* 更宽的模态框，适合病历表单 */
 }
 
+/* 报表预览模态框样式 */
+.modal-overlay {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.active {
+    display: flex !important;
+    opacity: 1 !important;
+}
+
+/* 确认模态框样式 */
+.confirm-modal {
+    background-color: var(--color-bg-card);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-width: 400px;
+    width: 90%;
+    margin: 0;
+}
+
+.confirm-modal .modal-header {
+    padding: 1.5rem 1.5rem 0 1.5rem;
+    border-bottom: none;
+}
+
+.confirm-modal .modal-header h3 {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.confirm-modal .modal-body {
+    padding: 1rem 1.5rem;
+}
+
+.confirm-modal .modal-body p {
+    margin: 0;
+    color: var(--color-text-primary);
+    line-height: 1.5;
+}
+
+.confirm-modal .modal-footer {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.report-preview-modal {
+    background-color: var(--color-bg-card) !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+    max-width: 900px !important;
+    width: 90% !important;
+    max-height: 80vh !important;
+    overflow-y: auto !important;
+    margin: 0 !important;
+    padding: 1.5rem !important;
+}
+
+.report-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--color-border);
+}
+
+.report-preview-header h3 {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-size: 1.5rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-text-primary);
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.modal-close:hover {
+    background-color: var(--color-border);
+}
+
+.report-info {
+    background-color: var(--color-bg-primary);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 1.5rem;
+}
+
+.report-info p {
+    margin: 0.5rem 0;
+    color: var(--color-text-primary);
+}
+
+.report-data {
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.report-section {
+    margin-bottom: 2rem;
+}
+
+.report-section h4 {
+    color: var(--color-bar-primary);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.5rem;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+.report-table th,
+.report-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.report-table th {
+    background-color: var(--color-bg-primary);
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.report-table td {
+    color: var(--color-text-primary);
+}
+
+.report-table tr:hover {
+    background-color: var(--color-bg-primary);
+}
+
+.report-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
 /* 表单行样式，用于生命体征等多列表单 */
 .form-row {
     display: flex;
@@ -4234,6 +4406,8 @@ legend {
     animation: slideIn 0.3s ease;
     border: none;
     outline: none;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
 }
 
 .modal-header {
@@ -5332,6 +5506,42 @@ legend {
     background-color: var(--color-bg-card);
     color: var(--color-text-primary);
     border-top: 4px solid var(--color-bar-primary);
+}
+
+/* 深色主题下的报表预览模态框样式 */
+.theme-dark .report-preview-modal {
+    background-color: var(--color-bg-card);
+    color: var(--color-text-primary);
+}
+
+.theme-dark .report-info {
+    background-color: var(--color-bg-primary);
+}
+
+.theme-dark .report-data {
+    background-color: var(--color-bg-card);
+    border-color: var(--color-border);
+}
+
+.theme-dark .report-table th {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+}
+
+.theme-dark .report-table td {
+    color: var(--color-text-primary);
+}
+
+.theme-dark .report-table tr:hover {
+    background-color: var(--color-bg-primary);
+}
+
+.theme-dark .modal-close {
+    color: var(--color-text-primary);
+}
+
+.theme-dark .modal-close:hover {
+    background-color: var(--color-border);
 }
 
 .theme-dark .search-bar input {
@@ -6527,4 +6737,141 @@ legend {
     align-items: center;
 }
 
-/* ... existing code ... */
+/* ============================================= */
+/* 日期选择模态框样式 (Date Selection Modal)    */
+/* ============================================= */
+
+.date-selection-modal {
+  max-width: 500px;
+  width: 90%;
+}
+
+.date-selection-content {
+  padding: 0;
+}
+
+.report-info {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--color-bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.report-info h4 {
+  margin: 0 0 8px 0;
+  color: var(--color-bar-primary);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.report-info p {
+  margin: 0;
+  color: var(--color-text-primary);
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+.date-range-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: var(--color-text-primary);
+  font-size: 14px;
+}
+
+.form-control {
+  padding: 12px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+  font-family: var(--font-family-main);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--color-bar-primary);
+  box-shadow: 0 0 0 3px rgba(var(--color-bar-primary-rgb), 0.1);
+}
+
+.quick-select-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.quick-select-buttons .btn {
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+}
+
+.quick-select-buttons .btn.active {
+  background: var(--color-bar-primary);
+  color: var(--color-text-on-bar);
+  border-color: var(--color-bar-primary);
+}
+
+.quick-select-buttons .btn:hover {
+  background: rgba(var(--color-bar-primary-rgb), 0.1);
+  border-color: var(--color-bar-primary);
+  color: var(--color-bar-primary);
+}
+
+.quick-select-buttons .btn.active:hover {
+  background: var(--color-bar-primary);
+  opacity: 0.9;
+  color: var(--color-text-on-bar);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .date-selection-modal {
+    width: 95%;
+    max-width: none;
+  }
+  
+  .quick-select-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-group {
+    gap: 6px;
+  }
+  
+  .date-range-form {
+    gap: 16px;
+  }
+  
+  .report-info {
+    margin-bottom: 20px;
+    padding: 12px;
+  }
+  
+  .report-info h4 {
+    font-size: 16px;
+  }
+  
+  .form-control {
+    padding: 10px 12px;
+    font-size: 16px; /* 防止iOS缩放 */
+  }
+}

@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Path, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Path, Query, Request
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from decimal import Decimal
 
 from app.core.database import get_db
@@ -16,7 +16,10 @@ from .service import (
     payment_service,
     billing_service,
     online_payment_service,
-    merged_payment_service
+    merged_payment_service,
+    expense_category_service,
+    expense_service,
+    finance_statistics_service
 )
 
 router = APIRouter()
@@ -425,3 +428,205 @@ async def wechat_webhook(
     except Exception as e:
         print(f"处理微信支付回调失败: {e}")
         return {"status": "success"}
+
+
+# --- 支出分类API端点 ---
+@router.get("/expense-categories", response_model=List[schemas.ExpenseCategory])
+def get_expense_categories(
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """获取所有启用的支出分类 (需要认证)"""
+    return expense_category_service.get_active_categories(db)
+
+@router.post("/expense-categories", response_model=schemas.ExpenseCategory)
+def create_expense_category(
+    category_data: schemas.ExpenseCategoryCreate,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """创建支出分类 (需要认证)"""
+    return expense_category_service.create(db=db, obj_in=category_data)
+
+@router.put("/expense-categories/{category_id}", response_model=schemas.ExpenseCategory)
+def update_expense_category(
+    category_id: int,
+    category_data: schemas.ExpenseCategoryUpdate,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """更新支出分类 (需要认证)"""
+    category = expense_category_service.get(db=db, id=category_id)
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"支出分类ID {category_id} 不存在"
+        )
+    return expense_category_service.update(db=db, db_obj=category, obj_in=category_data)
+
+@router.delete("/expense-categories/{category_id}")
+def delete_expense_category(
+    category_id: int,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """删除支出分类 (需要认证)"""
+    category = expense_category_service.get(db=db, id=category_id)
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"支出分类ID {category_id} 不存在"
+        )
+    expense_category_service.remove(db=db, id=category_id)
+    return {"message": "支出分类删除成功"}
+
+@router.post("/expense-categories/init-defaults")
+def init_default_categories(
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """初始化默认支出分类 (需要认证)"""
+    created_categories = expense_category_service.create_default_categories(db)
+    return {
+        "message": f"成功创建 {len(created_categories)} 个默认分类",
+        "categories": created_categories
+    }
+
+
+# --- 支出管理API端点 ---
+@router.get("/expenses", response_model=schemas.PaginatedResponse[schemas.Expense])
+def get_expenses(
+    start_date: str = Query(..., description="开始日期 (YYYY-MM-DD)"),
+    end_date: str = Query(..., description="结束日期 (YYYY-MM-DD)"),
+    category_id: Optional[int] = Query(None, description="支出分类ID"),
+    skip: int = Query(0, ge=0, description="跳过记录数"),
+    limit: int = Query(100, ge=1, le=1000, description="返回记录数"),
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """获取支出记录列表 (需要认证)"""
+    from datetime import datetime
+    try:
+        start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+        end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="日期格式错误，请使用 YYYY-MM-DD 格式"
+        )
+    
+    result = expense_service.get_expenses_by_date_range(
+        db,
+        start_date=start_dt,
+        end_date=end_dt,
+        category_id=category_id,
+        skip=skip,
+        limit=limit
+    )
+    return result
+
+@router.post("/expenses", response_model=schemas.Expense)
+def create_expense(
+    expense_data: schemas.ExpenseCreate,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """创建支出记录 (需要认证)"""
+    return expense_service.create(db=db, obj_in=expense_data)
+
+@router.get("/expenses/{expense_id}", response_model=schemas.Expense)
+def get_expense(
+    expense_id: int,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """获取支出记录详情 (需要认证)"""
+    expense = expense_service.get(db=db, id=expense_id)
+    if not expense:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"支出记录ID {expense_id} 不存在"
+        )
+    return expense
+
+@router.put("/expenses/{expense_id}", response_model=schemas.Expense)
+def update_expense(
+    expense_id: int,
+    expense_data: schemas.ExpenseUpdate,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """更新支出记录 (需要认证)"""
+    expense = expense_service.get(db=db, id=expense_id)
+    if not expense:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"支出记录ID {expense_id} 不存在"
+        )
+    return expense_service.update(db=db, db_obj=expense, obj_in=expense_data)
+
+@router.delete("/expenses/{expense_id}")
+def delete_expense(
+    expense_id: int,
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """删除支出记录 (需要认证)"""
+    expense = expense_service.get(db=db, id=expense_id)
+    if not expense:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"支出记录ID {expense_id} 不存在"
+        )
+    expense_service.remove(db=db, id=expense_id)
+    return {"message": "支出记录删除成功"}
+
+
+# --- 财务统计API端点 ---
+@router.get("/statistics/expenses", response_model=schemas.ExpenseStatistics)
+def get_expense_statistics(
+    start_date: str = Query(..., description="开始日期 (YYYY-MM-DD)"),
+    end_date: str = Query(..., description="结束日期 (YYYY-MM-DD)"),
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """获取支出统计数据 (需要认证)"""
+    from datetime import datetime
+    try:
+        start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+        end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="日期格式错误，请使用 YYYY-MM-DD 格式"
+        )
+    
+    return expense_service.get_expense_statistics(
+        db,
+        start_date=start_dt,
+        end_date=end_dt
+    )
+
+@router.get("/statistics/income", response_model=schemas.IncomeStatistics)
+def get_income_statistics(
+    start_date: str = Query(..., description="开始日期 (YYYY-MM-DD)"),
+    end_date: str = Query(..., description="结束日期 (YYYY-MM-DD)"),
+    db: Session = Depends(get_db),
+    current_user: user_models.User = Depends(security.get_current_active_user)
+):
+    """获取收入统计数据 (需要认证)"""
+    from datetime import datetime
+    try:
+        start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+        end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="日期格式错误，请使用 YYYY-MM-DD 格式"
+        )
+    
+    return finance_statistics_service.get_income_statistics(
+        db,
+        start_date=start_dt,
+        end_date=end_dt
+    )

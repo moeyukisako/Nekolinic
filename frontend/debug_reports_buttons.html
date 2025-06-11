@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>报表按钮调试测试</title>
+    <style>
+        .btn { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .report-card { border: 1px solid #ddd; padding: 20px; margin: 10px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>报表按钮调试测试</h1>
+    <div class="report-card">
+        <h3>患者统计报表</h3>
+        <button class="btn btn-primary" data-report-type="patient">生成报表</button>
+    </div>
+    <div class="report-card">
+        <h3>财务统计报表</h3>
+        <button class="btn btn-primary" data-report-type="finance">生成报表</button>
+    </div>
+    
+    <script>
+        console.log("调试脚本开始执行");
+        
+        function showDateSelectionModal(reportType, reportTitle) {
+            console.log("showDateSelectionModal被调用", { reportType, reportTitle });
+            
+            const modal = document.createElement("div");
+            modal.className = "modal-overlay";
+            modal.innerHTML = `
+                <div class="modal">
+                    <h3>日期选择 - ${reportTitle}</h3>
+                    <p>报表类型: ${reportType}</p>
+                    <button onclick="this.closest('.modal-overlay').remove()">关闭</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("DOM加载完成，开始绑定事件");
+            
+            const generateBtns = document.querySelectorAll(".report-card .btn-primary");
+            console.log("找到按钮数量:", generateBtns.length);
+            
+            generateBtns.forEach((btn, index) => {
+                console.log(`绑定第${index + 1}个按钮事件`);
+                btn.addEventListener("click", (e) => {
+                    console.log("按钮被点击", e.target);
+                    
+                    const reportCard = e.target.closest(".report-card");
+                    const reportTitle = reportCard.querySelector("h3").textContent;
+                    const reportType = btn.getAttribute("data-report-type");
+                    
+                    console.log("获取到的信息:", { reportTitle, reportType });
+                    
+                    showDateSelectionModal(reportType, reportTitle);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -50,6 +50,23 @@ class UserService(BaseService[models.User, schemas.UserCreate, schemas.UserUpdat
             raise AuthenticationException(message="Inactive user")
         return user
         
+    def get_user_preferences(self, db: Session, user_id: int) -> dict:
+        """
+        获取用户的偏好设置
+        """
+        user = self.get(db, id=user_id)
+        if not user:
+            return {}
+        
+        # 从preferences JSON字段中获取设置，如果没有则返回默认值
+        preferences = user.preferences or {}
+        return {
+            "sessionTimeout": preferences.get('sessionTimeout', 30),
+            "language": preferences.get('language', 'zh'),
+            "theme": preferences.get('theme', 'light'),
+            "timezone": preferences.get('timezone', 'Asia/Shanghai')
+        }
+    
     def update_preferences(
         self, db: Session, *, user: models.User, preferences: schemas.UserPreferenceUpdate
     ) -> models.User:

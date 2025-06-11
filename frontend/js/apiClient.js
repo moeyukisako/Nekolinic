@@ -322,7 +322,54 @@ const apiClient = {
             body: JSON.stringify(data)
         }),
         // 获取合并支付会话状态
-        getMergedPaymentSessionStatus: (sessionId) => apiRequest(`/api/v1/finance/merged-payments/sessions/${sessionId}/status`)
+        getMergedPaymentSessionStatus: (sessionId) => apiRequest(`/api/v1/finance/merged-payments/sessions/${sessionId}/status`),
+        
+        // 收入统计
+        getIncomeStatistics: (params) => {
+            const queryParams = new URLSearchParams(params).toString();
+            return apiRequest(`/api/v1/finance/statistics/income?${queryParams}`);
+        },
+        
+        // 支出统计
+        getExpenseStatistics: (params) => {
+            const queryParams = new URLSearchParams(params).toString();
+            return apiRequest(`/api/v1/finance/statistics/expenses?${queryParams}`);
+        },
+        
+        // 支出分类管理
+        getExpenseCategories: () => apiRequest('/api/v1/finance/expense-categories'),
+        createExpenseCategory: (data) => apiRequest('/api/v1/finance/expense-categories', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        }),
+        updateExpenseCategory: (id, data) => apiRequest(`/api/v1/finance/expense-categories/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        }),
+        deleteExpenseCategory: (id) => apiRequest(`/api/v1/finance/expense-categories/${id}`, {
+            method: 'DELETE'
+        }),
+        initDefaultCategories: () => apiRequest('/api/v1/finance/expense-categories/init-defaults', {
+            method: 'POST'
+        }),
+        
+        // 支出管理
+        getExpenses: (params) => {
+            const queryParams = new URLSearchParams(params).toString();
+            return apiRequest(`/api/v1/finance/expenses?${queryParams}`);
+        },
+        createExpense: (data) => apiRequest('/api/v1/finance/expenses', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        }),
+        getExpenseById: (id) => apiRequest(`/api/v1/finance/expenses/${id}`),
+        updateExpense: (id, data) => apiRequest(`/api/v1/finance/expenses/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        }),
+        deleteExpense: (id) => apiRequest(`/api/v1/finance/expenses/${id}`, {
+            method: 'DELETE'
+        })
     },
     
     // 药房相关
@@ -505,6 +552,32 @@ const apiClient = {
     // 报告相关
     reports: {
         getFinancialSummary: (startDate, endDate) => apiRequest('/api/v1/reports/financial-summary', {
+            method: 'POST',
+            body: JSON.stringify({ start_date: startDate, end_date: endDate })
+        }),
+        
+        // 统计数据API
+        getPatientStatistics: (startDate, endDate) => {
+            const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
+            return apiRequest(`/api/v1/reports/statistics/patients?${params}`);
+        },
+        
+        getMedicalRecordStatistics: (startDate, endDate) => {
+            const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
+            return apiRequest(`/api/v1/reports/statistics/medical-records?${params}`);
+        },
+        
+        getMedicineStatistics: (startDate, endDate) => {
+            const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
+            return apiRequest(`/api/v1/reports/statistics/medicines?${params}`);
+        },
+        
+        getFinanceStatistics: (startDate, endDate) => {
+            const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
+            return apiRequest(`/api/v1/reports/statistics/finance?${params}`);
+        },
+        
+        downloadFinancialSummary: (startDate, endDate) => apiRequest('/api/v1/reports/financial-summary/download', {
             method: 'POST',
             body: JSON.stringify({
                 start_date: startDate,

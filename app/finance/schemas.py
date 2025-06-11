@@ -2,6 +2,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 from typing import Optional, List
 from decimal import Decimal
+from enum import Enum
+from app.core.schemas import PaginatedResponse
 
 # --- Insurance Schemas ---
 class InsuranceBase(BaseModel):
@@ -173,3 +175,73 @@ class MergedPaymentCallbackResponse(BaseModel):
     total_amount: Decimal
     processed_bills: List[dict]
     transaction_id: str
+
+
+# --- 支出管理相关 Schemas ---
+
+class ExpenseCategoryBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    is_active: bool = True
+
+class ExpenseCategoryCreate(ExpenseCategoryBase):
+    pass
+
+class ExpenseCategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class ExpenseCategory(ExpenseCategoryBase):
+    id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ExpenseBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    amount: Decimal = Field(gt=0)
+    expense_date: datetime
+    category_id: int
+    receipt_url: Optional[str] = None
+    notes: Optional[str] = None
+
+class ExpenseCreate(ExpenseBase):
+    pass
+
+class ExpenseUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    amount: Optional[Decimal] = Field(None, gt=0)
+    expense_date: Optional[datetime] = None
+    category_id: Optional[int] = None
+    receipt_url: Optional[str] = None
+    notes: Optional[str] = None
+
+class Expense(ExpenseBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    category: ExpenseCategory
+    model_config = ConfigDict(from_attributes=True)
+
+
+# --- 支出统计相关 Schemas ---
+
+class ExpenseStatistics(BaseModel):
+    total_expenses: Decimal
+    expense_count: int
+    category_breakdown: List[dict]  # [{"category_name": str, "amount": Decimal, "count": int}]
+    monthly_breakdown: List[dict]   # [{"month": str, "amount": Decimal, "count": int}]
+
+
+# --- 收入统计相关 Schemas ---
+
+class IncomeStatistics(BaseModel):
+    total_income: Decimal
+    paid_bills_count: int
+    average_bill_amount: Decimal
+    monthly_breakdown: List[dict]   # [{"month": str, "amount": Decimal, "count": int}]
+    payment_method_breakdown: List[dict]  # [{"method": str, "amount": Decimal, "count": int}]

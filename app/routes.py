@@ -13,6 +13,7 @@ from .clinic.api import router as clinic_router
 from .pharmacy.api import router as pharmacy_router
 from .finance.api import router as finance_router
 from .reports.api import router as reports_router
+from .system.api import router as system_router
 
 # 注册各模块路由
 router.include_router(user_router, prefix="/users", tags=["用户管理"])
@@ -21,3 +22,4 @@ router.include_router(clinic_router, prefix="/clinic", tags=["诊所管理"])
 router.include_router(pharmacy_router, prefix="/pharmacy", tags=["药局管理"])
 router.include_router(finance_router, prefix="/finance", tags=["财务管理"])
 router.include_router(reports_router, prefix="/reports", tags=["报告与分析"])
+router.include_router(system_router, prefix="/system", tags=["系统管理"])

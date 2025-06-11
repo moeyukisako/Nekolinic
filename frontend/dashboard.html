@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="css/prescription-manager.css">
     <link rel="stylesheet" href="css/bill-modal.css">
     <link rel="stylesheet" href="css/merged-payment.css">
+    <link rel="stylesheet" href="css/finance-module.css">
+    <link rel="stylesheet" href="css/bills-flex-table.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* 顶部导航栏样式 */
@@ -563,43 +565,39 @@
         <!-- 侧边栏 -->
         <div class="sidebar">
             <div class="sidebar-menu sidebar-nav">
-                <a href="#dashboard" class="sidebar-item active" data-module="状态">
-                    <i class="fas fa-chart-line"></i>
-                    <span data-i18n="nav_dashboard">状态</span>
+                <a href="#status" class="sidebar-item" data-module="status">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span data-i18n="nav_status">状态</span>
                 </a>
-                <a href="#patients" class="sidebar-item" data-module="患者">
+                <a href="#patients" class="sidebar-item" data-module="patients">
                     <i class="fas fa-user-md"></i>
                     <span data-i18n="nav_patients">患者</span>
                 </a>
-                <a href="#appointments" class="sidebar-item" data-module="预约">
-                    <i class="fas fa-calendar-check"></i>
-                    <span data-i18n="nav_appointments">预约</span>
-                </a>
-                <a href="#medical-records" class="sidebar-item" data-module="病历">
+                <a href="#medical-records" class="sidebar-item" data-module="medical-records">
                     <i class="fas fa-notes-medical"></i>
                     <span data-i18n="nav_medical_records">病历</span>
                 </a>
-                <a href="#pharmacy" class="sidebar-item" data-module="药品" id="medicine-management-link">
+                <a href="#pharmacy" class="sidebar-item" data-module="pharmacy" id="medicine-management-link">
                     <i class="fas fa-capsules"></i>
                     <span data-i18n="nav_pharmacy">药品</span>
                 </a>
-                <a href="#prescriptions" class="sidebar-item" data-module="处方">
+                <a href="#prescriptions" class="sidebar-item" data-module="prescriptions">
                     <i class="fas fa-prescription-bottle-alt"></i>
                     <span data-i18n="nav_prescriptions">处方</span>
                 </a>
-                <a href="#finance" class="sidebar-item" data-module="财务">
+                <a href="#finance" class="sidebar-item" data-module="finance">
                     <i class="fas fa-coins"></i>
                     <span data-i18n="nav_finance">财务</span>
                 </a>
-                <a href="#side-payment" class="sidebar-item" data-module="聚合支付">
-                    <i class="fas fa-qrcode"></i>
+                <a href="#side-payment" class="sidebar-item" data-module="side-payment">
+                    <i class="fas fa-credit-card"></i>
                     <span data-i18n="nav_side_payment">聚合支付</span>
                 </a>
-                <a href="#reports" class="sidebar-item" data-module="报表">
+                <a href="#reports" class="sidebar-item" data-module="reports">
                     <i class="fas fa-chart-pie"></i>
                     <span data-i18n="nav_reports">报表</span>
                 </a>
-                <a href="#settings" class="sidebar-item" data-module="设置">
+                <a href="#settings" class="sidebar-item" data-module="settings">
                     <i class="fas fa-sliders-h"></i>
                     <span data-i18n="nav_settings">设置</span>
                 </a>
@@ -608,27 +606,19 @@
 
         <!-- 内容区域 -->
         <div class="content main-content" id="content">
-            <!-- 默认显示仪表盘 -->
-            <div id="dashboard-section" class="content-section active">
-                <h1 data-i18n="nav_dashboard">状态</h1>
-                <p data-i18n="dashboard_welcome">欢迎使用 Nekolinic 诊所管理系统！</p>
-                <div class="dashboard-cards">
-                    <!-- 这里将来会显示统计卡片 -->
+            <!-- 状态模块 -->
+            <div id="status-section" class="content-section" style="display: none;">
+                <div id="status-container">
+                    <!-- 状态模块将由JavaScript动态渲染 -->
                 </div>
             </div>
             
             <!-- 患者管理 -->
-            <div id="patients-section" class="content-section" style="display: none;">
+            <div id="patients-section" class="content-section">
                 <div id="patients-container">
                     <!-- 这里将由JavaScript动态加载患者管理界面 -->
                     <p data-i18n="loading">正在加载患者数据...</p>
                 </div>
-            </div>
-            
-            <!-- 其他内容区域，默认隐藏 -->
-            <div id="appointments-section" class="content-section" style="display: none;">
-                <h1 data-i18n="nav_appointments">预约</h1>
-                <p>预约管理功能正在开发中...</p>
             </div>
             
             <div id="medical-records-section" class="content-section" style="display: none;">

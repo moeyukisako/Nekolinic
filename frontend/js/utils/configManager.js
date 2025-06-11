@@ -96,17 +96,27 @@ class ConfigManager {
     // 检查 apiClient 是否存在且用户已登录 (通过token判断)
     if (window.apiClient && localStorage.getItem('accessToken')) {
         try {
+            console.log('正在从服务器加载用户配置...');
             const response = await window.apiClient.request('/api/v1/users/settings');
             if (response.success && response.data) {
+                console.log('服务器配置数据:', response.data);
                 const serverConfig = this.convertServerToClientConfig(response.data);
+                console.log('转换后的客户端配置:', serverConfig);
                 this.config = this.deepMerge(this.config, serverConfig);
+                console.log('合并后的最终配置:', this.config);
+            } else {
+                console.log('服务器未返回有效配置数据，保持当前配置');
             }
         } catch (error) {
             // 如果是401等认证错误，则静默失败，因为用户可能未登录
             if (error.status !== 401) {
                 console.warn('从服务器加载配置失败:', error);
+            } else {
+                console.log('用户未登录，跳过服务器配置加载');
             }
         }
+    } else {
+        console.log('apiClient不可用或用户未登录，跳过服务器配置加载');
     }
   }
 
@@ -118,6 +128,12 @@ class ConfigManager {
     return {
       theme: serverConfig.theme || this.config.theme,
       language: serverConfig.language || this.config.language,
+      background: {
+        type: serverConfig.backgroundType || this.config.background?.type || 'default',
+        url: serverConfig.backgroundUrl || this.config.background?.url || '',
+        brightness: serverConfig.backgroundBrightness ?? this.config.background?.brightness ?? 1.0,
+        blur: serverConfig.backgroundBlur ?? this.config.background?.blur ?? 0
+      },
       notifications: {
         desktop: serverConfig.desktopNotifications ?? this.config.notifications.desktop,
         sound: serverConfig.soundNotifications ?? this.config.notifications.sound,
@@ -143,6 +159,10 @@ class ConfigManager {
     return {
       theme: clientConfig.theme,
       language: clientConfig.language,
+      backgroundType: clientConfig.background?.type,
+      backgroundUrl: clientConfig.background?.url,
+      backgroundBrightness: clientConfig.background?.brightness,
+      backgroundBlur: clientConfig.background?.blur,
       desktopNotifications: clientConfig.notifications?.desktop,
       soundNotifications: clientConfig.notifications?.sound,
       emailNotifications: clientConfig.notifications?.email,
@@ -281,11 +301,15 @@ class ConfigManager {
     const bgContainer = document.querySelector('.bg-container');
     const bgOverlay = document.querySelector('.bg-overlay');
     
+    // 定义默认背景路径
+    const defaultBgImage = 'url(assets/backgrounds/default_background.jpg)';
+    
     if (bgContainer) {
-      if (url) {
+      if (url && url !== 'none') {
         // 设置背景图片
         bgContainer.style.backgroundImage = `url('${url}')`;
-        bgContainer.style.filter = `brightness(${brightness}) blur(${blur}px)`;
+        // 移除内联filter样式，让CSS变量生效
+        bgContainer.style.filter = '';
         bgContainer.style.display = 'block';
         
         // 设置CSS变量
@@ -293,8 +317,16 @@ class ConfigManager {
         document.documentElement.style.setProperty('--bg-brightness', brightness);
         document.documentElement.style.setProperty('--bg-blur', `${blur}px`);
       } else {
-        bgContainer.style.backgroundImage = 'none';
-        document.documentElement.style.setProperty('--bg-image', 'none');
+        // 当用户设置为'none'或根本没有设置时，强制应用默认背景
+        bgContainer.style.backgroundImage = defaultBgImage;
+        // 移除内联filter样式，让CSS变量生效
+        bgContainer.style.filter = '';
+        bgContainer.style.display = 'block';
+        
+        // 设置CSS变量为默认背景
+        document.documentElement.style.setProperty('--bg-image', defaultBgImage);
+        document.documentElement.style.setProperty('--bg-brightness', '1');
+        document.documentElement.style.setProperty('--bg-blur', '10px');
       }
     }
     
@@ -318,13 +350,14 @@ class ConfigManager {
     
     if (bgContainer) {
       bgContainer.style.backgroundImage = defaultBg;
-      bgContainer.style.filter = 'brightness(1) blur(0px)';
+      // 移除内联filter样式，让CSS变量生效
+      bgContainer.style.filter = '';
       bgContainer.style.display = 'block';
       
       // 设置CSS变量
       document.documentElement.style.setProperty('--bg-image', defaultBg);
       document.documentElement.style.setProperty('--bg-brightness', '1');
-      document.documentElement.style.setProperty('--bg-blur', '0px');
+      document.documentElement.style.setProperty('--bg-blur', '10px');
     }
     
     if (bgOverlay) {

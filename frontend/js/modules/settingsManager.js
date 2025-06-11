@@ -451,6 +451,14 @@ function applyTheme(theme) {
  * 应用背景
  */
 function applyBackground(bgType) {
+  // 如果configManager已初始化，则使用configManager来处理背景
+  if (window.configManager && window.configManager.initialized) {
+    // 不直接修改body class，让configManager处理背景
+    console.log('Background management delegated to configManager');
+    return;
+  }
+  
+  // 只有在configManager未初始化时才使用传统方式
   document.body.className = document.body.className.replace(/bg-\w+/g, '');
   document.body.classList.add(`bg-${bgType}`);
 }
@@ -847,7 +855,7 @@ async function loadUserBackgroundSettingInSettings(container) {
         bgPreview.style.backgroundImage = `url(${backgroundUrl.replace('image:', '')})`;
       }
     } else {
-      const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
+      const defaultBg = 'url(../assets/backgrounds/default_background.jpg)';
       document.documentElement.style.setProperty('--bg-image', defaultBg);
       document.body.style.backgroundColor = '';
       

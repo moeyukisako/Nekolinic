@@ -5,6 +5,7 @@ const translations = {
     app_title: 'Nekolinic 诊所管理系统',
     
     // 导航菜单
+    nav_status: '状态',
     nav_dashboard: '状态',
     nav_patients: '患者',
     nav_appointments: '预约',
@@ -29,6 +30,8 @@ const translations = {
     search: '搜索',
     actions: '操作',
     created_time: '创建时间',
+    module_developing: '此模块正在开发中，敬请期待...',
+    side_payment_migrated: '聚合支付功能已迁移到独立模块',
     
     // 仪表盘
     dashboard: '仪表板',
@@ -726,6 +729,7 @@ const translations = {
     app_title: 'Nekolinic Clinic Management System',
     
     // 导航菜单
+    nav_status: 'Status',
     nav_dashboard: 'Dashboard',
     nav_patients: 'Patients',
     nav_appointments: 'Appointments',
@@ -733,6 +737,7 @@ const translations = {
     nav_pharmacy: 'Pharmacy',
     nav_prescriptions: 'Prescriptions',
     nav_finance: 'Finance',
+    nav_side_payment: 'Aggregated Payment',
     nav_reports: 'Reports',
     nav_settings: 'Settings',
     
@@ -742,6 +747,8 @@ const translations = {
     save_medical_record: 'Save Medical Record',
     cancel: 'Cancel',
     close: 'Close',
+    module_developing: 'This module is under development, please stay tuned...',
+    side_payment_migrated: 'Aggregated payment functionality has been migrated to an independent module',
       pending_dispensing: 'Pending Dispensing',
       dispensed: 'Dispensed',
       cancelled: 'Cancelled',
@@ -1462,6 +1469,7 @@ const translations = {
     app_title: 'Nekolinic クリニック管理システム',
     
     // ナビゲーションメニュー
+    nav_status: 'ステータス',
     nav_dashboard: 'ダッシュボード',
     nav_patients: '患者',
     nav_appointments: '予約',
@@ -1469,6 +1477,7 @@ const translations = {
     nav_pharmacy: '薬局',
     nav_prescriptions: '処方箋',
     nav_finance: '財務',
+    nav_side_payment: '統合決済',
     nav_reports: 'レポート',
     nav_settings: '設定',
     
@@ -1478,6 +1487,8 @@ const translations = {
     save_medical_record: '医療記録を保存',
     cancel: 'キャンセル',
     close: '閉じる',
+    module_developing: 'このモジュールは開発中です。お楽しみに...',
+    side_payment_migrated: '統合決済機能は独立したモジュールに移行されました',
     pending_dispensing: '調剤待ち',
     dispensed: '調剤済み',
     cancelled: 'キャンセル済み',

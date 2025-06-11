@@ -69,7 +69,7 @@ function initApp() {
     console.log('Stored moduleRenderers:', store.get('moduleRenderers'));
     
     // 初始加载默认模块
-    const defaultModuleName = '状态';
+    const defaultModuleName = 'status';
     switchModule(defaultModuleName);
     
     // 标记默认模块为激活状态
@@ -152,7 +152,7 @@ async function loadModuleRenderers() {
   
   // 动态导入
   const [
-    dashboardModule,
+    statusModule,
     patientModule,
     medicalRecordsModule,
     medicineModule,
@@ -162,9 +162,9 @@ async function loadModuleRenderers() {
     reportsModule,
     settingsModule
   ] = await Promise.all([
-    import('./modules/dashboard.js').catch((err) => { 
-      console.error('Failed to load dashboard module:', err); 
-      return { default: fallbackRenderer('仪表盘') }; 
+    import('./modules/status.js').catch((err) => { 
+      console.error('Failed to load status module:', err); 
+      return { default: fallbackRenderer('状态') }; 
     }),
     import('./modules/patientManager.js').catch((err) => { 
       console.error('Failed to load patientManager module:', err); 
@@ -211,15 +211,15 @@ async function loadModuleRenderers() {
   
   // 模块映射
   return {
-    '状态': dashboardModule.default,
-    '患者': patientModule.default,
-    '病历': medicalRecordsModule.default,
-    '药品': medicineModule.default,
-    '处方': prescriptionModule.default,
-    '财务': financeModule.default,
-    '聚合支付': sidePaymentModule.default,
-    '报表': reportsModule.default,
-    '设置': settingsModule.default
+    'status': statusModule.default,
+    'patients': patientModule.default,
+    'medical-records': medicalRecordsModule.default,
+    'pharmacy': medicineModule.default,
+    'prescriptions': prescriptionModule.default,
+    'finance': financeModule.default,
+    'side-payment': sidePaymentModule.default,
+    'reports': reportsModule.default,
+    'settings': settingsModule.default
   };
 }
 
@@ -249,7 +249,8 @@ async function switchModule(moduleName, payload = {}) {
   mainContent.innerHTML = '';
   
   // 显示加载状态
-  mainContent.innerHTML = '<div class="loading-module"><div class="spinner"></div><p>加载中...</p></div>';
+  const loadingText = window.t ? window.t('loading') || '正在加载...' : '正在加载...';
+  mainContent.innerHTML = `<div class="loading-module"><div class="spinner"></div><p>${loadingText}</p></div>`;
   
 
   
@@ -309,6 +310,13 @@ async function switchModule(moduleName, payload = {}) {
       
       // 触发模块加载完成事件
       eventBus.emit('module:loaded', { name: moduleName });
+      
+      // 确保翻译应用到新加载的模块
+      if (window.translatePage) {
+        setTimeout(() => {
+          window.translatePage();
+        }, 100);
+      }
     } else {
       // 没有对应渲染函数时显示提示
       mainContent.innerHTML = `<div class="module-placeholder"><h2>此模块正在开发中</h2></div>`;
@@ -345,15 +353,15 @@ function updateNavbarTitle(moduleName) {
   
   // 模块名称到i18n键的映射
   const moduleI18nMap = {
-    '状态': 'nav_dashboard',
-    '患者': 'nav_patients',
-    '预约': 'nav_appointments', 
-    '病历': 'nav_medical_records',
-    '药品': 'nav_pharmacy',
-    '处方': 'nav_prescriptions',
-    '财务': 'nav_finance',
-    '报表': 'nav_reports',
-    '设置': 'nav_settings'
+    'status': 'nav_status',
+    'patients': 'nav_patients',
+    'medical-records': 'nav_medical_records',
+    'pharmacy': 'nav_pharmacy',
+    'prescriptions': 'nav_prescriptions',
+    'finance': 'nav_finance',
+    'side-payment': 'nav_side_payment',
+    'reports': 'nav_reports',
+    'settings': 'nav_settings'
   };
   
   // 获取翻译后的模块名称
@@ -362,11 +370,8 @@ function updateNavbarTitle(moduleName) {
   
   if (i18nKey && window.getTranslation) {
     const translatedName = window.getTranslation(i18nKey, moduleName);
-    // 如果不是状态模块，添加前缀空格和模块名
-    if (moduleName !== '状态') {
-      displaySuffix = ' ' + translatedName;
-    }
-  } else if (moduleName !== '状态') {
+    displaySuffix = ' ' + translatedName;
+  } else {
     // 后备方案：如果没有翻译函数，使用原始名称
     displaySuffix = ' ' + moduleName;
   }
@@ -396,14 +401,34 @@ function updateNavbarTitle(moduleName) {
  */
 function fallbackRenderer(moduleName) {
   return (container) => {
+    // 获取翻译后的模块名称
+    const translatedModuleName = window.t ? window.t(`nav_${getModuleKey(moduleName)}`) || moduleName : moduleName;
+    const developingText = window.t ? window.t('module_developing') || '此模块正在开发中，敬请期待...' : '此模块正在开发中，敬请期待...';
+    
     container.innerHTML = `
       <div class="module-placeholder">
-        <h2>${moduleName}</h2>
-        <p>此模块正在开发中，敬请期待...</p>
+        <h2>${translatedModuleName}</h2>
+        <p>${developingText}</p>
       </div>
     `;
     return () => {}; // 空的清理函数
   };
+}
+
+// 获取模块对应的翻译键
+function getModuleKey(moduleName) {
+  const moduleKeyMap = {
+    'status': 'nav_status',
+    'patients': 'nav_patients',
+    'medical-records': 'nav_medical_records',
+    'pharmacy': 'nav_pharmacy',
+    'prescriptions': 'nav_prescriptions',
+    'finance': 'nav_finance',
+    'side-payment': 'nav_side_payment',
+    'reports': 'nav_reports',
+    'settings': 'nav_settings'
+  };
+  return moduleKeyMap[moduleName] || moduleName;
 }
 
 /**
@@ -519,7 +544,7 @@ async function loadUserBackgroundSetting(user = null) {
       if (bgPreview) bgPreview.style.backgroundImage = `url(${backgroundUrl})`;
     } else {
       // 用户未设置背景时，使用默认背景
-      const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
+      const defaultBg = 'url(../assets/backgrounds/default_background.jpg)';
       document.documentElement.style.setProperty('--bg-image', defaultBg);
       
       if (bgContainer) {
@@ -530,7 +555,7 @@ async function loadUserBackgroundSetting(user = null) {
   } catch (err) {
     console.error('加载用户背景设置失败:', err);
     // 出错时也使用默认背景
-    const defaultBg = 'url(assets/backgrounds/default_background.jpg)';
+    const defaultBg = 'url(../assets/backgrounds/default_background.jpg)';
     const bgContainer = document.querySelector('.bg-container');
     if (bgContainer) {
       bgContainer.style.backgroundImage = defaultBg;

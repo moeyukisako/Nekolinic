@@ -112,23 +112,21 @@ export default function renderFinanceModule(container, options = {}) {
                   <p>加载账单失败，请稍后重试</p>
                 </div>
                 <div class="bills-table-container">
-                  <table id="bills-table" class="bills-table">
-                    <thead class="bills-table-header">
-                      <tr>
-                        <th class="expand-column"></th>
-                        <th data-i18n="finance.table.billId">账单号</th>
-                        <th data-i18n="finance.table.invoice">发票号</th>
-                        <th data-i18n="finance.table.patient">患者</th>
-                        <th data-i18n="finance.table.status">状态</th>
-                        <th data-i18n="finance.table.date">日期</th>
-                        <th data-i18n="finance.table.amount">金额</th>
-                        <th data-i18n="finance.table.actions">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody id="bills-tbody">
+                  <div class="bills-table-flex">
+                    <div class="bills-table-header-flex">
+                      <div class="header-cell expand-header"></div>
+                      <div class="header-cell bill-id-header" data-i18n="finance.table.billId">账单号</div>
+                      <div class="header-cell invoice-header" data-i18n="finance.table.invoice">发票号</div>
+                      <div class="header-cell patient-header" data-i18n="finance.table.patient">患者</div>
+                      <div class="header-cell status-header" data-i18n="finance.table.status">状态</div>
+                      <div class="header-cell date-header" data-i18n="finance.table.date">日期</div>
+                      <div class="header-cell amount-header" data-i18n="finance.table.amount">金额</div>
+                      <div class="header-cell actions-header" data-i18n="finance.table.actions">操作</div>
+                    </div>
+                    <div id="bills-tbody" class="bills-tbody-flex">
                       <!-- 账单行将在这里动态生成 -->
-                    </tbody>
-                  </table>
+                    </div>
+                  </div>
                 </div>
                 <div id="bills-pagination" class="pagination-container"></div>
               </div>
@@ -141,7 +139,7 @@ export default function renderFinanceModule(container, options = {}) {
                 <i class="fas fa-credit-card"></i>
               </div>
               <h3 data-i18n="payment_collection">费用收取</h3>
-              <p>聚合支付功能已迁移到独立模块</p>
+              <p data-i18n="side_payment_migrated">聚合支付功能已迁移到独立模块</p>
             </div>
           </div>
           
@@ -290,75 +288,78 @@ export default function renderFinanceModule(container, options = {}) {
     const billDate = new Date(bill.bill_date).toLocaleDateString('zh-CN');
     
     return `
-      <tr class="bill-row" data-bill-id="${bill.id}">
-        <td class="expand-cell">
+      <div class="bill-row-flex" data-bill-id="${bill.id}">
+        <div class="bill-cell expand-cell">
           <button class="expand-btn" data-action="toggle-details">
             <i class="fas fa-chevron-right"></i>
           </button>
-        </td>
-        <td class="bill-id-cell">#${bill.id}</td>
-        <td class="invoice-cell"><div class="invoice-box">${bill.invoice_number || 'N/A'}</div></td>
-        <td class="patient-cell" data-patient-id="${bill.patient_id}"><div class="patient-box">${bill.patient_name || '加载中...'}</div></td>
-        <td class="status-cell">
+        </div>
+        <div class="bill-cell bill-id-cell">
+          <span class="bill-id-text">#${bill.id}</span>
+        </div>
+        <div class="bill-cell invoice-cell">
+          <span class="invoice-text">${bill.invoice_number || 'N/A'}</span>
+        </div>
+        <div class="bill-cell patient-cell" data-patient-id="${bill.patient_id}">
+          <span class="patient-text">${bill.patient_name || '加载中...'}</span>
+        </div>
+        <div class="bill-cell status-cell">
           <span class="bill-status-text ${statusClass}">
             <span data-i18n="finance.status.${bill.status}"></span>
           </span>
-        </td>
-        <td class="date-cell">${billDate}</td>
-        <td class="amount-cell"><div class="amount-box">¥${parseFloat(bill.total_amount).toFixed(2)}</div></td>
-        <td class="actions-cell">
+        </div>
+        <div class="bill-cell date-cell">
+          <span class="date-text">${billDate}</span>
+        </div>
+        <div class="bill-cell amount-cell">
+          <span class="amount-text">¥${parseFloat(bill.total_amount).toFixed(2)}</span>
+        </div>
+        <div class="bill-cell actions-cell">
           <div class="bill-actions">
             <button class="btn-text btn-text-danger" data-action="delete" title="删除" data-i18n-title="finance.actions.delete">
-                  <i class="fas fa-trash"></i>
-                  <span data-i18n="finance.actions.delete">删除</span>
-                </button>
+              <i class="fas fa-trash"></i>
+              <span data-i18n="finance.actions.delete">删除</span>
+            </button>
             ${bill.status === 'PENDING' ? `
               <button class="btn-text btn-text-success" data-action="payment" title="支付" data-i18n-title="finance.actions.payment">
-                  <i class="fas fa-credit-card"></i>
-                  <span data-i18n="finance.actions.payment">支付</span>
-                </button>
+                <i class="fas fa-credit-card"></i>
+                <span data-i18n="finance.actions.payment">支付</span>
+              </button>
             ` : ''}
           </div>
-        </td>
-      </tr>
-      <tr class="bill-details-row" data-bill-id="${bill.id}" style="display: none;">
-        <td colspan="8" class="details-cell">
-          <div class="bill-details-container">
-            <div class="details-loading" style="display: none;">
-              <i class="fas fa-spinner fa-spin"></i>
-              <span data-i18n="finance.loading">加载中...</span>
-            </div>
-            <div class="details-content" style="display: none;">
-
-              <div class="details-table-container">
-                <table class="details-table">
-                  <thead>
-                    <tr>
-                      <th data-i18n="finance.details.description">项目描述</th>
-                      <th data-i18n="finance.details.quantity">数量</th>
-                      <th data-i18n="finance.details.unitPrice">单价</th>
-                      <th data-i18n="finance.details.subtotal">小计</th>
-                    </tr>
-                  </thead>
-                  <tbody class="details-tbody">
-                    <!-- 明细项目将在这里动态加载 -->
-                  </tbody>
-                </table>
-              </div>
-              <div class="details-footer">
-                <div class="details-total">
-                  <span data-i18n="finance.details.total">总计:</span>
-                  <span class="total-amount">¥${parseFloat(bill.total_amount).toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-            <div class="details-error" style="display: none;">
-              <i class="fas fa-exclamation-triangle"></i>
-              <span data-i18n="finance.error">加载失败，请重试</span>
-            </div>
-          </div>
-        </td>
-      </tr>
+        </div>
+      </div>
+      <div class="bill-details-row-flex" data-bill-id="${bill.id}" style="display: none;">
+         <div class="bill-details-container">
+           <div class="details-loading" style="display: none;">
+             <i class="fas fa-spinner fa-spin"></i>
+             <span data-i18n="finance.loading">加载中...</span>
+           </div>
+           <table class="bill-details-table" style="display: none;">
+             <thead>
+               <tr>
+                 <th data-i18n="finance.details.description">项目描述</th>
+                 <th data-i18n="finance.details.quantity">数量</th>
+                 <th data-i18n="finance.details.unitPrice">单价</th>
+                 <th data-i18n="finance.details.subtotal">小计</th>
+               </tr>
+             </thead>
+             <tbody class="details-tbody">
+               <!-- 明细项目将在这里动态加载 -->
+             </tbody>
+             <tfoot>
+               <tr class="details-total-row">
+                 <td colspan="3" class="total-label" data-i18n="finance.details.total">总计:</td>
+                 <td class="total-amount">¥${parseFloat(bill.total_amount).toFixed(2)}</td>
+               </tr>
+             </tfoot>
+           </table>
+           <div class="details-error" style="display: none;">
+             <i class="fas fa-exclamation-triangle"></i>
+             <span data-i18n="finance.error">加载失败，请重试</span>
+           </div>
+         </div>
+       </div>
     `;
   }
 
@@ -477,7 +478,7 @@ export default function renderFinanceModule(container, options = {}) {
 
   // 绑定表格行事件
   function bindBillRowEvents() {
-    const billRows = container.querySelectorAll('.bill-row');
+    const billRows = container.querySelectorAll('.bill-row-flex');
     
     billRows.forEach(row => {
       const billId = row.dataset.billId;
@@ -505,8 +506,8 @@ export default function renderFinanceModule(container, options = {}) {
 
   // 切换账单明细显示
   async function toggleBillDetails(billId) {
-    const detailsRow = container.querySelector(`tr.bill-details-row[data-bill-id="${billId}"]`);
-    const expandBtn = container.querySelector(`tr.bill-row[data-bill-id="${billId}"] .expand-btn i`);
+    const detailsRow = container.querySelector(`.bill-details-row-flex[data-bill-id="${billId}"]`);
+    const expandBtn = container.querySelector(`.bill-row-flex[data-bill-id="${billId}"] .expand-btn i`);
     
     if (!detailsRow || !expandBtn) return;
     
@@ -518,7 +519,7 @@ export default function renderFinanceModule(container, options = {}) {
       expandBtn.className = 'fas fa-chevron-right';
     } else {
       // 展开明细
-      detailsRow.style.display = 'table-row';
+      detailsRow.style.display = 'block';
       expandBtn.className = 'fas fa-chevron-down';
       
       // 加载明细数据
@@ -528,14 +529,14 @@ export default function renderFinanceModule(container, options = {}) {
   
   // 加载账单明细
   async function loadBillDetails(billId) {
-    const detailsContainer = container.querySelector(`tr.bill-details-row[data-bill-id="${billId}"] .bill-details-container`);
+    const detailsContainer = container.querySelector(`.bill-details-row-flex[data-bill-id="${billId}"] .bill-details-container`);
     const loadingEl = detailsContainer.querySelector('.details-loading');
-    const contentEl = detailsContainer.querySelector('.details-content');
+    const tableEl = detailsContainer.querySelector('.bill-details-table');
     const errorEl = detailsContainer.querySelector('.details-error');
     
     // 显示加载状态
     if (loadingEl) loadingEl.style.display = 'flex';
-    if (contentEl) contentEl.style.display = 'none';
+    if (tableEl) tableEl.style.display = 'none';
     if (errorEl) errorEl.style.display = 'none';
     
     try {
@@ -546,12 +547,12 @@ export default function renderFinanceModule(container, options = {}) {
       // 处理不同的响应格式
       const bill = response.data ? response.data : response;
       
-      if (bill && contentEl) {
-        const detailsTbody = contentEl.querySelector('.details-tbody');
+      if (bill && tableEl) {
+        const detailsTbody = tableEl.querySelector('tbody');
         
         if (bill.items && bill.items.length > 0) {
           const itemsHtml = bill.items.map(item => `
-            <tr class="detail-item-row">
+            <tr class="bill-detail-item-row">
               <td class="item-description">${item.item_name || '未知项目'}</td>
               <td class="item-quantity">${item.quantity || 0}</td>
               <td class="item-unit-price">¥${parseFloat(item.unit_price || 0).toFixed(2)}</td>
@@ -564,9 +565,11 @@ export default function renderFinanceModule(container, options = {}) {
           if (detailsTbody) {
             detailsTbody.innerHTML = `
               <tr class="no-items-row">
-                <td colspan="4" class="no-items-cell">
-                  <i class="fas fa-inbox"></i>
-                  <span data-i18n="finance.details.noItems">暂无明细项目</span>
+                <td colspan="4" class="no-items-message">
+                  <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <span data-i18n="finance.details.noItems">暂无明细项目</span>
+                  </div>
                 </td>
               </tr>
             `;
@@ -575,7 +578,7 @@ export default function renderFinanceModule(container, options = {}) {
         
         // 显示内容
         if (loadingEl) loadingEl.style.display = 'none';
-        if (contentEl) contentEl.style.display = 'block';
+        if (tableEl) tableEl.style.display = 'table';
         
         // 翻译动态生成的内容
         if (window.translatePage) {

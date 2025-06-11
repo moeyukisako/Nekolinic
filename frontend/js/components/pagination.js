@@ -31,9 +31,14 @@ export default class Pagination {
     // 清空容器
     this.container.innerHTML = '';
     
-    if (this.totalPages === 0) {
-      return this; // 没有数据，不显示分页
+    if (this.totalPages === 0 || this.totalPages === 1) {
+      // 没有数据或只有一页时，隐藏整个分页容器
+      this.container.style.display = 'none';
+      return this;
     }
+    
+    // 显示分页容器
+    this.container.style.display = 'block';
     
     // 创建分页容器
     const paginationEl = document.createElement('div');
@@ -46,11 +51,6 @@ export default class Pagination {
     const infoText = window.t ? window.t('pagination_info').replace('{current}', this.currentPage).replace('{total}', this.totalPages) : `第 ${this.currentPage} 页，共 ${this.totalPages} 页`;
     paginationInfo.textContent = infoText;
     this.container.appendChild(paginationInfo);
-    
-    // 如果只有一页，只显示信息，不显示控件
-    if (this.totalPages === 1) {
-      return this;
-    }
     
     // 上一页按钮
     const prevButton = document.createElement('button');

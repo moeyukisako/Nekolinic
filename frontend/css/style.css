@@ -19,8 +19,8 @@
     --border-radius: 4px;
     
     /* 登录页面背景图片相关变量 */
-    --bg-image: none;
-    --bg-overlay: rgba(238, 238, 238, 0); /* 登录页面不使用遮罩层 */
+    --bg-image: url('../assets/backgrounds/default_background.jpg');
+    --bg-overlay: rgba(238, 238, 238, 0.048); /* 登录页面不使用遮罩层 */
     --bg-blur: 1px; /* 登录页面高斯模糊程度为1px */
     --bg-brightness: 1; /* 登录页面背景亮度100% */
 }
@@ -61,6 +61,17 @@ body.dashboard {
     
     /* 深色主题的背景遮罩 */
     --bg-overlay: rgba(30, 30, 30, 0.7);
+}
+
+/* 状态页面标题样式 */
+.status-title {
+    color: rgb(57, 197, 187); /* 浅色模式下使用指定颜色，透明度9% */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.114);
+}
+
+.theme-dark .status-title {
+    color: #ff9adc; /* 深色模式下使用白色，透明度9% */
+    text-shadow: 2px 2px 4px rgba(52, 52, 52, 0.132);
 }
 
 /* 深色主题下的操作链接样式 */
@@ -2730,9 +2741,6 @@ body .sidebar:hover + .content {
     max-width: 50px;
     white-space: nowrap;
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     padding: 8px !important;
 }
 
@@ -2793,16 +2801,6 @@ body .sidebar:hover + .content {
     letter-spacing: 0.5px;
     position: relative;
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-}
-
-.bill-id-cell::before {
-    content: '#';
-    opacity: 0.6;
-    margin-right: 2px;
-    flex-shrink: 0;
 }
 
 .invoice-cell {
@@ -2817,9 +2815,6 @@ body .sidebar:hover + .content {
     text-overflow: ellipsis;
     font-family: 'Courier New', monospace;
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
     position: relative;
 }
 
@@ -2848,9 +2843,6 @@ body .sidebar:hover + .content {
     transition: all 0.3s ease;
     position: relative;
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
 }
 
 .patient-cell .patient-box {
@@ -2897,17 +2889,6 @@ body .sidebar:hover + .content {
     text-overflow: ellipsis;
     font-family: 'Courier New', monospace;
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 8px;
-}
-
-.date-cell::before {
-    content: '📅';
-    font-size: 12px;
-    opacity: 0.7;
-    flex-shrink: 0;
 }
 
 .amount-cell {
@@ -2924,9 +2905,6 @@ body .sidebar:hover + .content {
     font-family: 'Courier New', monospace;
     position: relative;
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
 }
 
 .amount-cell .amount-box {
@@ -2947,6 +2925,43 @@ body .sidebar:hover + .content {
     font-size: 14px;
     opacity: 0.8;
     margin-right: 2px;
+}
+
+.status-cell {
+    width: 120px !important;
+    min-width: 120px;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.actions-cell {
+    width: 150px !important;
+    min-width: 150px;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.bill-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+}
+
+.bill-actions .btn-text {
+    padding: 4px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    min-width: auto;
 }
 
 .bill-basic-info {
@@ -3090,7 +3105,7 @@ body .sidebar:hover + .content {
     top: 0;
     left: -100%;
     width: 100%;
-    height: 100%;
+    height: 60%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
     transition: left 0.6s ease;
 }
@@ -3342,27 +3357,7 @@ body .sidebar:hover + .content {
     box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
 }
 
-/* 展开的明细行样式 */
-.bill-details-row {
-    display: none;
-    background: var(--color-bg-primary);
-}
-
-.bill-details-row.expanded {
-    display: table-row;
-    animation: fadeIn 0.3s ease;
-}
-
-.bill-details-cell {
-    padding: 0 !important;
-    border: none !important;
-}
-
-.bill-details-content {
-    padding: 20px;
-    border-top: 2px solid var(--color-border);
-    background: var(--color-bg-primary);
-}
+/* 财务模块明细行样式已移至 finance-module.css */
 
 /* 明细表格样式 - 现代化重设计 */
 .bill-items-table {
@@ -6463,6 +6458,73 @@ legend {
     .total-row:last-child .total-value {
         font-size: 16px;
     }
+}
+
+/* ============================================= */
+/* 财务账单表格样式修复 (Finance Table Fix)     */
+/* ============================================= */
+
+/* 1. 调整通用的 .table-cell 规则 */
+/* 移除通用的 flex: 1，为各列独立设置弹性行为 */
+.table-header > .table-cell,
+.table-row > .table-cell {
+    flex: 1 1 0; /* 默认允许增长和收缩，基础宽度为0 */
+    min-width: 0; /* 允许收缩 */
+    padding: 12px 10px; /* 稍微减少内边距以容纳更多内容 */
+}
+
+
+/* 2. 为每一列定义独立的宽度和行为 */
+/* 使用 nth-child 选择器，无需修改JS代码 */
+
+/* 第1列: 账单ID */
+.table-row > .table-cell:nth-child(1),
+.table-header > .table-cell:nth-child(1) {
+    flex: 0 0 100px; /* 不增长，不收缩，固定宽度100px */
+}
+
+/* 第2列: 患者姓名 */
+.table-row > .table-cell:nth-child(2),
+.table-header > .table-cell:nth-child(2) {
+    flex: 2 1 150px; /* 占据更多空间 (flex-grow: 2)，可以收缩，基础宽度150px */
+}
+
+/* 第3列: 总金额 */
+.table-row > .table-cell:nth-child(3),
+.table-header > .table-cell:nth-child(3) {
+    flex: 1 0 120px; /* 不收缩，基础宽度120px */
+    justify-content: flex-end; /* 金额右对齐 */
+    white-space: nowrap; /* 禁止换行 */
+}
+
+/* 第4列: 状态 */
+.table-row > .table-cell:nth-child(4),
+.table-header > .table-cell:nth-child(4) {
+    flex: 0 0 110px; /* 固定宽度 */
+    justify-content: center; /* 居中 */
+}
+
+/* 第5列: 截止日期 */
+.table-row > .table-cell:nth-child(5),
+.table-header > .table-cell:nth-child(5) {
+    flex: 1 0 120px; /* 不收缩 */
+    white-space: nowrap; /* 禁止换行 */
+}
+
+/* 第6列: 操作 (actions-cell) */
+/* 确保它不被其他规则影响 */
+.table-row > .actions-cell,
+.table-header > .actions-cell {
+    flex: 1 0 160px; /* 为按钮提供更宽的固定空间 */
+    justify-content: center;
+}
+
+/* 确保操作按钮本身不会被过度压缩 */
+.bill-actions {
+    display: flex;
+    flex-wrap: nowrap; /* 禁止按钮换行 */
+    gap: 8px;
+    align-items: center;
 }
 
 /* ... existing code ... */

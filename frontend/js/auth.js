@@ -1,39 +1,22 @@
+import configManager from './utils/configManager.js';
+import apiClient from './apiClient.js';
+import { initI18n, getTranslation } from '../utils/i18n.js';
+
 /**
  * 认证相关功能
  */
 
 /**
- * 初始化认证页面
- */
-function initAuth() {
-  // 检查当前页面是否为登录页面
-  if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-    // 在登录页面，初始化登录表单
-    const authContainer = document.getElementById('auth-container');
-    const token = localStorage.getItem('accessToken');
-    
-    if (token && authContainer) {
-      // 如果有token，检查并渲染用户信息
-      checkAuthAndRenderUserInfo(authContainer);
-    } else if (authContainer) {
-      // 没有token，渲染登录表单
-      renderLoginForm(authContainer);
-    }
-  }
-  
-  // 背景设置初始化已移至main.js中统一处理
-}
-
-/**
- * 检查认证并渲染用户信息
+ * 检查认证状态并决定渲染哪个视图
  * @param {HTMLElement} container 
  */
-async function checkAuthAndRenderUserInfo(container) {
+async function checkAuthAndRender(container) {
   if (!container) return;
   try {
     const user = await apiClient.auth.getCurrentUser();
     renderUserInfo(container, user);
   } catch (error) {
+    // 获取token失败或token无效，渲染登录表单
     localStorage.removeItem('accessToken');
     renderLoginForm(container);
   }
@@ -151,7 +134,7 @@ async function handleLogin(e) {
     
     // 延迟一下再跳转，让用户看到成功消息
     setTimeout(() => {
-      checkAuthAndRenderUserInfo(document.getElementById('auth-container'));
+      checkAuthAndRender(document.getElementById('auth-container'));
     }, 1000);
     
   } catch (error) {
@@ -275,11 +258,85 @@ function validateInput(input, fieldName) {
   return true;
 }
 
+/**
+ * 页面初始化函数
+ */
+async function initializePage() {
+  // 1. 初始化配置和背景
+  await configManager.init();
+
+  // 2. 初始化国际化
+  await initI18n();
+
+  // 3. 渲染认证相关的UI
+  const authContainer = document.getElementById('auth-container');
+  await checkAuthAndRender(authContainer);
+}
+
+// 语言选择框函数
+window.showLanguageSelector = function() {
+  const selector = document.getElementById('language-selector');
+  if (selector) {
+    // 更新当前语言的选中状态
+    updateLanguageSelection();
+    
+    selector.style.display = 'block';
+    requestAnimationFrame(() => {
+      selector.classList.add('show');
+    });
+    
+    // 点击外部关闭
+    setTimeout(() => {
+      document.addEventListener('click', hideLanguageSelector, { once: true });
+    }, 100);
+  }
+};
+
+window.selectLanguage = function(langCode) {
+  if (window.setLanguage) {
+    window.setLanguage(langCode);
+    hideLanguageSelector();
+  } else {
+    console.warn('Language functions not available yet');
+  }
+};
+
+window.hideLanguageSelector = function(event) {
+  const selector = document.getElementById('language-selector');
+  const toggle = document.getElementById('language-toggle');
+  
+  if (event && (selector.contains(event.target) || toggle.contains(event.target))) {
+    return;
+  }
+  
+  if (selector && selector.classList.contains('show')) {
+    selector.classList.remove('show');
+    setTimeout(() => {
+      selector.style.display = 'none';
+    }, 300);
+  }
+};
+
+function updateLanguageSelection() {
+  if (window.getCurrentLanguage) {
+    const currentLang = window.getCurrentLanguage();
+    const options = document.querySelectorAll('.language-option');
+    options.forEach(option => {
+      if (option.dataset.lang === currentLang) {
+        option.classList.add('active');
+      } else {
+        option.classList.remove('active');
+      }
+    });
+  }
+}
+
 // 导出函数给全局使用
 window.enterSystem = enterSystem;
 window.logout = logout;
 window.showFormNotification = showFormNotification;
 window.validateInput = validateInput;
+window.configManager = configManager;
 
-// 在DOM加载完成后初始化应用
-document.addEventListener('DOMContentLoaded', initAuth);
+// 启动页面初始化
+initializePage();

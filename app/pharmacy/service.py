@@ -195,6 +195,67 @@ class PrescriptionService(BaseService[models.Prescription, schemas.PrescriptionC
         db.refresh(db_obj)
         return db_obj
 
+    def remove(self, db: Session, *, id: int) -> models.Prescription:
+        """重写remove方法，删除处方时同时删除相关的账单项"""
+        from app.finance import models as finance_models
+        
+        # 首先获取处方信息
+        prescription = self.get(db, id=id)
+        if not prescription:
+            raise ValidationException(f"处方ID {id} 不存在")
+        
+        # 获取处方明细，用于匹配账单项
+        prescription_details = db.query(models.PrescriptionDetail).options(
+            joinedload(models.PrescriptionDetail.drug)
+        ).filter(
+            models.PrescriptionDetail.prescription_id == id,
+            models.PrescriptionDetail.deleted_at.is_(None)
+        ).all()
+        
+        # 查找与此处方相关的账单项
+        # 通过medical_record_id和药品信息匹配
+        for detail in prescription_details:
+            # 构建药品名称：药品名（药品规格）
+            drug_name = detail.drug.name
+            if detail.drug.specification:
+                drug_name = f"{detail.drug.name}（{detail.drug.specification}）"
+            
+            # 查找匹配的账单项
+            bill_items = db.query(finance_models.BillItem).join(
+                finance_models.Bill, finance_models.Bill.id == finance_models.BillItem.bill_id
+            ).filter(
+                finance_models.Bill.medical_record_id == prescription.medical_record_id,
+                finance_models.BillItem.item_name == drug_name,
+                finance_models.BillItem.unit_price == detail.drug.unit_price,
+                finance_models.BillItem.quantity == detail.quantity,
+                finance_models.BillItem.item_type == "药物",
+                finance_models.Bill.deleted_at.is_(None),
+                finance_models.BillItem.deleted_at.is_(None)
+            ).all()
+            
+            # 软删除匹配的账单项
+            user_id = current_user_id.get()
+            now = datetime.now(UTC)
+            
+            for bill_item in bill_items:
+                bill_item.deleted_at = now
+                bill_item.updated_at = now
+                if user_id:
+                    bill_item.updated_by_id = user_id
+                
+                # 更新账单总金额
+                bill = bill_item.bill
+                bill.total_amount -= bill_item.subtotal
+                bill.updated_at = now
+                if user_id:
+                    bill.updated_by_id = user_id
+        
+        # 调用父类的remove方法删除处方
+        result = super().remove(db, id=id)
+        
+        db.commit()
+        return result
+
     def get_with_details(self, db: Session, *, id: int) -> Optional[models.Prescription]:
         """获取处方及其所有明细，包含患者和医生信息"""
         prescription = (

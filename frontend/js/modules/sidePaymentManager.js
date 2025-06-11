@@ -571,7 +571,7 @@ const sidePaymentManager = {
             <input type="checkbox" class="bill-checkbox" data-bill-id="${bill.id}" data-amount="${bill.total_amount || 0}" checked>
             <span class="bill-id">#${bill.invoice_number || bill.id}</span>
             <span class="bill-date">${this.formatDate(bill.bill_date || bill.created_at)}</span>
-            <span class="bill-type">${bill.type || i18n.t('side_payment.medical_expenses')}</span>
+            <span class="bill-type">${bill.type || i18n.t('side_payment.medical_fee')}</span>
             <span class="bill-patient">${bill.patient_name || this.state.selectedPatient?.name || '患者'}</span>
             <span class="bill-amount">¥${parseFloat(bill.total_amount || 0).toFixed(2)}</span>
           </div>

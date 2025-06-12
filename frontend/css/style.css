@@ -6933,3 +6933,130 @@ legend {
     font-size: 16px; /* 防止iOS缩放 */
   }
 }
+
+/* 备份选择模态框样式 */
+#backup-selection-modal {
+  display: block;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  overflow: auto;
+}
+
+#backup-selection-modal .modal-content {
+  position: relative;
+  background-color: var(--color-bg-card);
+  margin: 10% auto;
+  padding: calc(var(--spacing-unit) * 4);
+  border-radius: 8px;
+  max-width: 600px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border: none;
+  outline: none;
+  border-top: 4px solid #39c5bb;
+}
+
+#backup-selection-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: calc(var(--spacing-unit) * 3);
+  padding-bottom: calc(var(--spacing-unit) * 2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+#backup-selection-modal .modal-header h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+#backup-selection-modal .modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+#backup-selection-modal .modal-close:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+#backup-selection-modal .modal-body {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+#backup-selection-modal .backup-list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing-unit) * 2);
+}
+
+#backup-selection-modal .backup-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(var(--spacing-unit) * 2);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-bg-secondary);
+  transition: all 0.2s ease;
+}
+
+#backup-selection-modal .backup-item:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-bg-hover);
+}
+
+#backup-selection-modal .backup-info {
+  flex: 1;
+}
+
+#backup-selection-modal .backup-name {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: calc(var(--spacing-unit) / 2);
+}
+
+#backup-selection-modal .backup-date {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin-bottom: calc(var(--spacing-unit) / 2);
+}
+
+#backup-selection-modal .backup-size {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* 暗色主题支持 */
+[data-theme="dark"] #backup-selection-modal .modal-content {
+  background-color: var(--color-bg-card);
+  border-top-color: #39c5bb;
+}
+
+[data-theme="dark"] #backup-selection-modal .backup-item {
+  background-color: var(--color-bg-secondary);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] #backup-selection-modal .backup-item:hover {
+  background-color: var(--color-bg-hover);
+  border-color: var(--color-primary);
+}

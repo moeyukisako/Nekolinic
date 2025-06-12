@@ -48,6 +48,8 @@ a = Analysis(
         'reportlab',
         'qrcode',
         'passlib',
+        'passlib.handlers',
+        'passlib.handlers.bcrypt',
         'jose',
         'bcrypt',
         'app.user.models',
@@ -75,7 +77,7 @@ exe = EXE(
     [],
     exclude_binaries=True,
     name='Nekolinic',
-    debug=False,
+    debug=True,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
@@ -85,7 +87,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='frontend/assets/icons/app.ico' if os.path.exists('frontend/assets/icons/app.ico') else None,
+    icon='frontend/assets/icons/app.ico',
 )
 
 coll = COLLECT(

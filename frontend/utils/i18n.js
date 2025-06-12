@@ -2,7 +2,7 @@
 const translations = {
   'zh-CN': {
     // 应用标题
-    app_title: 'Nekolinic 诊所管理系统',
+    app_title: 'Nekolinic 轻量级医疗系统',
     
     // 导航菜单
     nav_status: '状态',
@@ -62,7 +62,7 @@ const translations = {
     overview: '概览',
     welcome_to_nekolinic: '欢迎使用 Nekolinic 系统',
     select_module_from_menu: '请从左侧菜单选择一个模块开始操作',
-    dashboard_welcome: '欢迎使用 Nekolinic 诊所管理系统！',
+    dashboard_welcome: '欢迎使用 Nekolinic 轻量级医疗系统！',
     
     // 患者管理
     patient_id: 'ID',
@@ -746,7 +746,7 @@ const translations = {
     'theme_saved': '主题设置已保存',
 
     // Index Page
-    'index_welcome_title': '欢迎使用 Nekolinic 诊所管理系统',
+    'index_welcome_title': '欢迎使用 Nekolinic 轻量级医疗系统',
     'index_loading': '加载中...',
     'index_copyright': 'Nekolinic Version <span class="version-code">alpha0.1.3</span>, Copyright moeyukisako 2025.',
     
@@ -877,7 +877,7 @@ const translations = {
     overview: 'Overview',
     welcome_to_nekolinic: 'Welcome to Nekolinic System',
     select_module_from_menu: 'Please select a module from the left menu to start',
-    dashboard_welcome: 'Welcome to Nekolinic Clinic Management System!',
+    dashboard_welcome: 'Welcome to Nekolinic Lightweight Medical System!',
     
     // 患者管理
     patient_id: 'ID',
@@ -1505,7 +1505,7 @@ const translations = {
     'theme_saved': 'Theme settings saved',
 
     // Index Page
-    'index_welcome_title': 'Welcome to Nekolinic Clinic Management System',
+    'index_welcome_title': 'Welcome to Nekolinic Lightweight Medical System',
     'index_loading': 'Loading...',
     'index_copyright': 'Nekolinic Version <span class="version-code">alpha0.1.3</span>, Copyright moeyukisako 2025.',
     
@@ -1679,7 +1679,7 @@ const translations = {
     overview: '概要',
     welcome_to_nekolinic: 'Nekolinicシステムへようこそ',
     select_module_from_menu: '左側のメニューからモジュールを選択して開始してください',
-    dashboard_welcome: 'Nekolinicクリニック管理システムへようこそ！',
+    dashboard_welcome: 'Nekolinic軽量級医療システムへようこそ！',
     
     // 患者管理
     patient_id: 'ID',
@@ -2294,7 +2294,7 @@ const translations = {
     'theme_saved': 'テーマ設定が保存されました',
 
     // インデックスページ
-    'index_welcome_title': 'Nekolinicクリニック管理システムへようこそ',
+    'index_welcome_title': 'Nekolinic軽量級医療システムへようこそ',
     'index_loading': '読み込み中...',
     'index_copyright': 'Nekolinic Version <span class="version-code">alpha0.1.3</span>, Copyright moeyukisako 2025.',
     

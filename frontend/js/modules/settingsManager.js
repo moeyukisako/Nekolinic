@@ -219,7 +219,7 @@ export default function renderSettingsModule(container, options = {}) {
               <h3 data-i18n="system_info">系统信息</h3>
               <div class="info-item">
                 <span class="info-label" data-i18n="system_name">系统名称：</span>
-                <span class="info-value">Nekolinic 医疗管理系统</span>
+                <span class="info-value">Nekolinic 轻量级医疗系统</span>
               </div>
               <div class="info-item">
                 <span class="info-label" data-i18n="version">版本：</span>
@@ -227,7 +227,7 @@ export default function renderSettingsModule(container, options = {}) {
               </div>
               <div class="info-item">
                 <span class="info-label" data-i18n="build_date">构建日期：</span>
-                <span class="info-value">2024-01-01</span>
+                <span class="info-value">2025-06-12</span>
               </div>
             </div>
           </div>

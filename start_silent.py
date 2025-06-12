@@ -34,8 +34,8 @@ def init_database():
         
         # 初始化默认用户数据
         try:
-            from app.user.init_data import init_default_users
-            init_default_users()
+            from app.user.init_data import init_admin_user
+            init_admin_user()
             print("默认用户数据初始化完成")
         except Exception as e:
             print(f"初始化默认用户数据时出错: {e}")

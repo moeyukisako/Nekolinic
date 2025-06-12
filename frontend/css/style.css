@@ -4130,7 +4130,63 @@ body .sidebar:hover + .content {
 
 /* 大型模态框样式 */
 .modal-content.large {
-    max-width: 800px; /* 更宽的模态框，适合病历表单 */
+    max-width: 800px !important; /* 更宽的模态框，适合病历表单 */
+    width: 90% !important;
+}
+
+/* PDF预览模态框专用样式 */
+.modal-large .modal-content,
+.modal.modal-large .modal-content {
+    max-width: 90vw !important;
+    width: 90vw !important;
+    max-height: 90vh !important;
+    height: 90vh !important;
+    margin: 5vh auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.modal-large .modal-body {
+    flex: 1 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.pdf-preview-container {
+    height: 100% !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.pdf-preview-container iframe {
+    flex: 1 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    border-radius: 4px !important;
+}
+
+/* 修复模态框显示问题 - 确保PDF预览模态框能正确显示 */
+/* 使用更高的特异性来覆盖prescription-manager.css中的样式 */
+body .modal.modal-large {
+    display: none !important;
+    position: fixed !important;
+    z-index: 1001 !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+body .modal.modal-large.active {
+    display: flex !important;
+    opacity: 1 !important;
 }
 
 /* 报表预览模态框样式 */
@@ -4385,10 +4441,12 @@ legend {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     animation: fadeIn 0.3s ease;
+    align-items: center;
+    justify-content: center;
 }
 
 .modal.active {
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
 }

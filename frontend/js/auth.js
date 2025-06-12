@@ -60,11 +60,11 @@ function renderLoginForm(container) {
       <form id="login-form">
         <div class="form-group">
           <label for="username" data-i18n="login_username">用户名</label>
-          <input type="text" id="username" name="username" data-i18n-placeholder="login_username_placeholder" placeholder="请输入用户名 (测试账号: admin)">
+          <input type="text" id="username" name="username" data-i18n-placeholder="login_username_placeholder" placeholder="请输入用户名">
         </div>
         <div class="form-group">
           <label for="password" data-i18n="login_password">密码</label>
-          <input type="password" id="password" name="password" data-i18n-placeholder="login_password_placeholder" placeholder="请输入密码 (测试密码: password)">
+          <input type="password" id="password" name="password" data-i18n-placeholder="login_password_placeholder" placeholder="请输入密码">
         </div>
         <button type="submit" class="btn btn-primary login-button" data-i18n="login_button">登录</button>
       </form>

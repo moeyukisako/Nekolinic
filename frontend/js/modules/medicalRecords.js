@@ -530,6 +530,7 @@ async function renderMedicalRecordEditor(patientId, signal, recordId = null) {
           </div>
           
           <div class="form-actions">
+            <button type="button" class="btn btn-info" onclick="previewMedicalRecordPDF(${latestRecord?.id || 'null'})" data-i18n="pdf_preview" ${!latestRecord?.id ? 'disabled' : ''}>PDF预览</button>
             <button type="submit" class="btn btn-primary" data-i18n="save_medical_record">保存病历</button>
           </div>
         </form>

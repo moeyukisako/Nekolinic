@@ -124,7 +124,7 @@ function handleTableAction(e) {
     case 'view-records':
       // 直接调用全局的模块切换函数，并传递 patientId
       if (window.switchModule) {
-        window.switchModule('病历', { patientId: id });
+        window.switchModule('medical-records', { patientId: id });
       } else {
         console.error('switchModule function is not available.');
       }

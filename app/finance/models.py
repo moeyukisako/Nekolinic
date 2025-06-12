@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Numeric, Enum, Text, Boolean
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Numeric, Enum, Boolean
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from app.core.auditing import Auditable, register_audit_model

@@ -1,17 +1,18 @@
-import uvicorn
-import webbrowser
-import threading
-import time
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+静默启动脚本
+自动初始化数据库并启动服务器，无浏览器弹出
+"""
+
 import os
 import sys
 import uvicorn
-from app.app import app
+from pathlib import Path
 
-def open_browser():
-    """在应用启动后打开浏览器"""
-    time.sleep(1)  # 等待服务器启动
-    # 始终打开 index.html
-    webbrowser.open("http://localhost:8000/index.html")
+# 添加项目根目录到Python路径
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
 
 def init_database():
     """初始化数据库"""
@@ -43,39 +44,44 @@ def init_database():
         print(f"数据库初始化失败: {e}")
         sys.exit(1)
 
-if __name__ == "__main__":
-    # 检查命令行参数
-    silent_mode = '--silent' in sys.argv or '-s' in sys.argv
-    
-    print("Nekolinic 医疗管理系统")
+def main():
+    """主函数"""
+    print("Nekolinic 医疗管理系统 - 静默启动模式")
     print("版本: alpha0.1.3")
-    print("="*40)
+    print("="*50)
     
     # 初始化数据库
     init_database()
     
-    # 检查前端目录是否存在
-    frontend_dir = os.path.join(os.path.dirname(__file__), "frontend")
-    print(f"前端目录路径: {frontend_dir}")
-    print(f"前端目录是否存在: {os.path.exists(frontend_dir)}")
-    if os.path.exists(frontend_dir):
-        files = os.listdir(frontend_dir)
-        print(f"前端目录中的文件数量: {len(files)}")
-    
-    if not silent_mode:
-        # 启动一个线程来打开浏览器
-        threading.Thread(target=open_browser).start()
-        print("浏览器将自动打开...")
+    # 检查前端目录
+    frontend_dir = project_root / "frontend"
+    if not frontend_dir.exists():
+        print(f"警告: 前端目录不存在 - {frontend_dir}")
     else:
-        print("静默模式启动，不会打开浏览器")
-        print("访问地址: http://localhost:8000/index.html")
-    
-    print("正在启动服务器...")
-    print("按 Ctrl+C 停止服务器")
-    print("="*40)
+        print(f"前端目录: {frontend_dir}")
     
     # 启动服务器
+    print("正在启动服务器...")
+    print("服务器地址: http://localhost:8000")
+    print("前端访问: http://localhost:8000/index.html")
+    print("管理面板: http://localhost:8000/dashboard.html")
+    print("按 Ctrl+C 停止服务器")
+    print("="*50)
+    
     try:
-        uvicorn.run(app, host="0.0.0.0", port=8000)
+        from app.app import app
+        uvicorn.run(
+            app, 
+            host="0.0.0.0", 
+            port=8000,
+            log_level="info",
+            access_log=True
+        )
     except KeyboardInterrupt:
         print("\n服务器已停止")
+    except Exception as e:
+        print(f"启动服务器时出错: {e}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()

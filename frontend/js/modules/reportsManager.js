@@ -4,6 +4,7 @@
 
 import { showNotification } from '../utils/ui.js';
 import { i18n } from '../../utils/i18n.js';
+import Modal from '../components/modal.js';
 
 export default function renderReportsModule(container, options = {}) {
   const { signal } = options;
@@ -287,55 +288,32 @@ export default function renderReportsModule(container, options = {}) {
   
   // 显示统计数据模态框
   function showStatisticsModal(title, data, type) {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay active';
-    modal.innerHTML = `
-      <div class="modal statistics-modal">
-        <div class="modal-header">
-          <h3>${title}</h3>
-          <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+    const modal = new Modal({
+      title: title,
+      content: `
+        <div class="statistics-content">
+          ${generateStatisticsHTML(data, type)}
         </div>
-        <div class="modal-body">
-          <div class="statistics-content">
-            ${generateStatisticsHTML(data, type)}
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-outline" onclick="this.closest('.modal-overlay').remove()">关闭</button>
-          <button class="btn btn-primary" onclick="exportStatistics('${type}', '${title}')">导出数据</button>
-        </div>
-      </div>
-    `;
+      `,
+      size: 'large',
+      showFooter: true,
+      confirmText: '导出数据',
+      cancelText: '关闭',
+      onConfirm: () => {
+        exportStatistics(type, title);
+        return false; // 不关闭模态框
+      },
+      onCancel: () => {
+        // 关闭模态框
+      }
+    });
     
-    console.log('报表模块：将模态框添加到DOM');
-    document.body.appendChild(modal);
+    modal.render();
     
     // 翻译新创建的模态框内容
     if (window.translatePage) {
       window.translatePage();
     }
-    
-    // 模态框已经在创建时添加了active类
-    console.log('报表模块：模态框已激活显示');
-    
-    console.log('报表模块：模态框已添加到DOM，当前body子元素数量:', document.body.children.length);
-    console.log('报表模块：模态框元素信息', {
-      className: modal.className,
-      innerHTML: modal.innerHTML.substring(0, 200) + '...',
-      style: modal.style.cssText,
-      offsetWidth: modal.offsetWidth,
-      offsetHeight: modal.offsetHeight,
-      display: getComputedStyle(modal).display,
-      visibility: getComputedStyle(modal).visibility,
-      zIndex: getComputedStyle(modal).zIndex
-    });
-    
-    // 点击背景关闭模态框
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.remove();
-      }
-    });
   }
   
   // 生成统计数据HTML
@@ -511,26 +489,26 @@ export default function renderReportsModule(container, options = {}) {
     return `
       <div class="statistics-summary">
         <div class="stat-card">
-          <h4>总收入</h4>
+          <h4 data-i18n="total_revenue">${window.getTranslation ? window.getTranslation('total_revenue', '总收入') : '总收入'}</h4>
           <div class="stat-value text-success">¥${parseFloat(data.total_revenue).toFixed(2)}</div>
         </div>
         <div class="stat-card">
-          <h4>总支出</h4>
+          <h4 data-i18n="total_expenses">${window.getTranslation ? window.getTranslation('total_expenses', '总支出') : '总支出'}</h4>
           <div class="stat-value text-danger">¥${parseFloat(data.total_expenses).toFixed(2)}</div>
         </div>
         <div class="stat-card">
-          <h4>净利润</h4>
+          <h4 data-i18n="net_profit">${window.getTranslation ? window.getTranslation('net_profit', '净利润') : '净利润'}</h4>
           <div class="stat-value ${parseFloat(data.net_profit) >= 0 ? 'text-success' : 'text-danger'}">¥${parseFloat(data.net_profit).toFixed(2)}</div>
         </div>
         <div class="stat-card">
-          <h4>账单数量</h4>
+          <h4 data-i18n="bill_count">${window.getTranslation ? window.getTranslation('bill_count', '账单数量') : '账单数量'}</h4>
           <div class="stat-value">${data.bill_count}</div>
         </div>
       </div>
       
       <div class="statistics-charts">
         <div class="chart-section">
-          <h4>支付方式分布</h4>
+          <h4 data-i18n="payment_method_distribution">${window.getTranslation ? window.getTranslation('payment_method_distribution', '支付方式分布') : '支付方式分布'}</h4>
           <div class="chart-data">
             ${data.payment_methods.map(item => `
               <div class="chart-item">
@@ -545,15 +523,15 @@ export default function renderReportsModule(container, options = {}) {
         </div>
         
         <div class="chart-section">
-          <h4>月度收支趋势</h4>
+          <h4 data-i18n="monthly_revenue_trend">${window.getTranslation ? window.getTranslation('monthly_revenue_trend', '月度收支趋势') : '月度收支趋势'}</h4>
           <div class="chart-data">
             ${data.monthly_revenue.slice(-6).map(item => `
               <div class="chart-item">
                 <span class="chart-label">${item.month}</span>
                 <div class="chart-details">
-                  <div>收入: ¥${parseFloat(item.revenue).toFixed(2)}</div>
-                  <div>支出: ¥${parseFloat(item.expenses).toFixed(2)}</div>
-                  <div>净利: ¥${(parseFloat(item.revenue) - parseFloat(item.expenses)).toFixed(2)}</div>
+                  <div>${window.getTranslation ? window.getTranslation('revenue', '收入') : '收入'}: ¥${parseFloat(item.revenue).toFixed(2)}</div>
+                  <div>${window.getTranslation ? window.getTranslation('expenses', '支出') : '支出'}: ¥${parseFloat(item.expenses).toFixed(2)}</div>
+                  <div>${window.getTranslation ? window.getTranslation('net_profit', '净利') : '净利'}: ¥${(parseFloat(item.revenue) - parseFloat(item.expenses)).toFixed(2)}</div>
                 </div>
               </div>
             `).join('')}
@@ -565,21 +543,26 @@ export default function renderReportsModule(container, options = {}) {
   
   // 生成财务报表CSV内容
   function generateFinanceCSV(data) {
-    let csv = '财务统计报表\n\n';
+    const reportTitle = window.getTranslation ? window.getTranslation('finance_statistics', '财务统计报表') : '财务统计报表';
+    let csv = reportTitle + '\n\n';
     
     // 基本统计信息
-    csv += '统计项目,金额\n';
-    csv += `总收入,¥${parseFloat(data.total_revenue || 0).toFixed(2)}\n`;
-    csv += `总支出,¥${parseFloat(data.total_expenses || 0).toFixed(2)}\n`;
-    csv += `净利润,¥${(parseFloat(data.total_revenue || 0) - parseFloat(data.total_expenses || 0)).toFixed(2)}\n`;
-    csv += `账单数量,${data.bill_count || 0}\n`;
-    csv += `已支付账单,${data.paid_bills || 0}\n`;
-    csv += `未支付账单,${data.unpaid_bills || 0}\n\n`;
+    const statisticsItem = window.getTranslation ? window.getTranslation('statistics_item', '统计项目') : '统计项目';
+    const amount = window.getTranslation ? window.getTranslation('amount', '金额') : '金额';
+    csv += `${statisticsItem},${amount}\n`;
+    csv += `${window.getTranslation ? window.getTranslation('total_revenue', '总收入') : '总收入'},¥${parseFloat(data.total_revenue || 0).toFixed(2)}\n`;
+    csv += `${window.getTranslation ? window.getTranslation('total_expenses', '总支出') : '总支出'},¥${parseFloat(data.total_expenses || 0).toFixed(2)}\n`;
+    csv += `${window.getTranslation ? window.getTranslation('net_profit', '净利润') : '净利润'},¥${(parseFloat(data.total_revenue || 0) - parseFloat(data.total_expenses || 0)).toFixed(2)}\n`;
+    csv += `${window.getTranslation ? window.getTranslation('bill_count', '账单数量') : '账单数量'},${data.bill_count || 0}\n`;
+    csv += `${window.getTranslation ? window.getTranslation('paid_bills', '已支付账单') : '已支付账单'},${data.paid_bills || 0}\n`;
+    csv += `${window.getTranslation ? window.getTranslation('unpaid_bills', '未支付账单') : '未支付账单'},${data.unpaid_bills || 0}\n\n`;
     
     // 收入分类
     if (data.revenue_by_category && data.revenue_by_category.length > 0) {
-      csv += '收入分类统计\n';
-      csv += '分类,金额,占比\n';
+      csv += `${window.getTranslation ? window.getTranslation('revenue_by_category', '收入分类统计') : '收入分类统计'}\n`;
+      const category = window.getTranslation ? window.getTranslation('category', '分类') : '分类';
+      const percentage = window.getTranslation ? window.getTranslation('percentage', '占比') : '占比';
+      csv += `${category},${amount},${percentage}\n`;
       data.revenue_by_category.forEach(item => {
         csv += `${item.category},¥${parseFloat(item.amount).toFixed(2)},${item.percentage}%\n`;
       });
@@ -588,11 +571,15 @@ export default function renderReportsModule(container, options = {}) {
     
     // 月度收支趋势
     if (data.monthly_revenue && data.monthly_revenue.length > 0) {
-      csv += '月度收支趋势\n';
-      csv += '月份,收入,支出,净利润\n';
+      csv += `${window.getTranslation ? window.getTranslation('monthly_revenue_trend', '月度收支趋势') : '月度收支趋势'}\n`;
+      const month = window.getTranslation ? window.getTranslation('month', '月份') : '月份';
+      const revenue = window.getTranslation ? window.getTranslation('revenue', '收入') : '收入';
+      const expenses = window.getTranslation ? window.getTranslation('expenses', '支出') : '支出';
+      const netProfit = window.getTranslation ? window.getTranslation('net_profit', '净利润') : '净利润';
+      csv += `${month},${revenue},${expenses},${netProfit}\n`;
       data.monthly_revenue.forEach(item => {
-        const netProfit = parseFloat(item.revenue) - parseFloat(item.expenses);
-        csv += `${item.month},¥${parseFloat(item.revenue).toFixed(2)},¥${parseFloat(item.expenses).toFixed(2)},¥${netProfit.toFixed(2)}\n`;
+        const netProfitValue = parseFloat(item.revenue) - parseFloat(item.expenses);
+        csv += `${item.month},¥${parseFloat(item.revenue).toFixed(2)},¥${parseFloat(item.expenses).toFixed(2)},¥${netProfitValue.toFixed(2)}\n`;
       });
     }
     
@@ -602,71 +589,24 @@ export default function renderReportsModule(container, options = {}) {
   // 显示确认模态框
   function showConfirmModal(title, message, onConfirm) {
     console.log('报表模块：showConfirmModal被调用', { title, message });
-    // 创建模态框
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay active';
-    modal.innerHTML = `
-      <div class="modal confirm-modal">
-        <div class="modal-header">
-          <h3>${title}</h3>
-        </div>
-        <div class="modal-body">
-          <p>${message}</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-outline cancel-btn">取消</button>
-          <button class="btn btn-danger confirm-btn">确认</button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
+    
+    const modal = new Modal({
+      title: title,
+      content: `<p>${message}</p>`,
+      confirmText: i18n.t('confirm') || '确认',
+      cancelText: i18n.t('cancel') || '取消',
+      onConfirm: () => {
+        console.log('报表模块：确认操作被执行');
+        onConfirm();
+        return true; // 允许关闭模态框
+      },
+      onCancel: () => {
+        console.log('报表模块：取消操作被执行');
+      }
+    });
+    
+    modal.render();
     console.log('报表模块：模态框已显示');
-    
-    // 绑定事件
-    const cancelBtn = modal.querySelector('.cancel-btn');
-    const confirmBtn = modal.querySelector('.confirm-btn');
-    
-    cancelBtn.addEventListener('click', () => {
-      modal.remove();
-    });
-    
-    confirmBtn.addEventListener('click', () => {
-      modal.remove();
-      onConfirm();
-    });
-    
-    // 模态框关闭函数
-    const closeModal = () => {
-      modal.classList.remove('active');
-      setTimeout(() => {
-        modal.remove();
-        console.log('报表模块：模态框已关闭并移除');
-      }, 300); // 等待动画完成
-    };
-    
-    // 更新关闭按钮的onclick事件
-    const closeButtons = modal.querySelectorAll('[onclick*="remove"]');
-    closeButtons.forEach(btn => {
-      btn.removeAttribute('onclick');
-      btn.addEventListener('click', closeModal);
-    });
-    
-    // 点击背景关闭模态框
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        closeModal();
-      }
-    });
-    
-    // ESC键关闭模态框
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') {
-        closeModal();
-        document.removeEventListener('keydown', handleEscape);
-      }
-    };
-    document.addEventListener('keydown', handleEscape);
   }
   
   // 导出统计数据
@@ -713,11 +653,6 @@ export default function renderReportsModule(container, options = {}) {
   function showDateSelectionModal(reportType, reportTitle) {
     console.log('报表模块：showDateSelectionModal被调用', { reportType, reportTitle });
     
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    
-    console.log('报表模块：创建模态框元素', modal);
-    
     // 设置默认日期范围（最近30天）
     const endDate = new Date();
     const startDate = new Date();
@@ -726,167 +661,93 @@ export default function renderReportsModule(container, options = {}) {
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
     
-    modal.innerHTML = `
-      <div class="modal date-selection-modal">
-        <div class="modal-header">
-          <h3 data-i18n="select_report_date_range">${i18n.t('select_report_date_range')}</h3>
-          <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="date-selection-content">
-            <div class="report-info">
-              <h4>${reportTitle}</h4>
-              <p data-i18n="select_date_range_desc">${i18n.t('select_date_range_desc')}</p>
+    const modal = new Modal({
+      title: i18n.t('select_report_date_range'),
+      content: `
+        <div class="date-selection-content">
+          <div class="report-info">
+            <h4>${reportTitle}</h4>
+            <p data-i18n="select_date_range_desc">${i18n.t('select_date_range_desc')}</p>
+          </div>
+          
+          <div class="date-range-form">
+            <div class="form-group">
+              <label for="start-date" data-i18n="start_date">${i18n.t('start_date')}：</label>
+              <input type="date" id="start-date" class="form-control" value="${startDateStr}" max="${endDateStr}">
             </div>
             
-            <div class="date-range-form">
-              <div class="form-group">
-                <label for="start-date" data-i18n="start_date">${i18n.t('start_date')}：</label>
-                <input type="date" id="start-date" class="form-control" value="${startDateStr}" max="${endDateStr}">
-              </div>
-              
-              <div class="form-group">
-                <label for="end-date" data-i18n="end_date">${i18n.t('end_date')}：</label>
-                <input type="date" id="end-date" class="form-control" value="${endDateStr}" max="${endDateStr}">
-              </div>
-              
-              <div class="quick-select-buttons">
-                <button type="button" class="btn btn-outline btn-sm" data-days="7" data-i18n="recent_7_days">${i18n.t('recent_7_days')}</button>
-                <button type="button" class="btn btn-outline btn-sm" data-days="30" data-i18n="recent_30_days">${i18n.t('recent_30_days')}</button>
-                <button type="button" class="btn btn-outline btn-sm" data-days="90" data-i18n="recent_90_days">${i18n.t('recent_90_days')}</button>
-                <button type="button" class="btn btn-outline btn-sm" data-days="365" data-i18n="recent_1_year">${i18n.t('recent_1_year')}</button>
-              </div>
+            <div class="form-group">
+              <label for="end-date" data-i18n="end_date">${i18n.t('end_date')}：</label>
+              <input type="date" id="end-date" class="form-control" value="${endDateStr}" max="${endDateStr}">
+            </div>
+            
+            <div class="quick-select-buttons">
+              <button type="button" class="btn btn-outline btn-sm" data-days="7" data-i18n="recent_7_days">${i18n.t('recent_7_days')}</button>
+              <button type="button" class="btn btn-outline btn-sm" data-days="30" data-i18n="recent_30_days">${i18n.t('recent_30_days')}</button>
+              <button type="button" class="btn btn-outline btn-sm" data-days="90" data-i18n="recent_90_days">${i18n.t('recent_90_days')}</button>
+              <button type="button" class="btn btn-outline btn-sm" data-days="365" data-i18n="recent_1_year">${i18n.t('recent_1_year')}</button>
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-outline" onclick="this.closest('.modal-overlay').remove()" data-i18n="cancel">${i18n.t('cancel')}</button>
-          <button class="btn btn-primary" id="generate-report-btn" data-i18n="generate_report">${i18n.t('generate_report')}</button>
-        </div>
-      </div>
-    `;
-    
-    document.body.appendChild(modal);
-    
-    // 添加调试信息和激活模态框
-    setTimeout(() => {
-      modal.classList.add('active');
-      // 强制设置样式确保显示
-      modal.style.setProperty('display', 'flex', 'important');
-      modal.style.setProperty('opacity', '1', 'important');
-      modal.style.setProperty('z-index', '1000', 'important');
-      // 确保内部modal元素也正确显示并居中
-       const innerModal = modal.querySelector('.modal');
-       if (innerModal) {
-         innerModal.style.setProperty('display', 'block', 'important');
-         innerModal.style.setProperty('position', 'fixed', 'important');
-         innerModal.style.setProperty('top', '50%', 'important');
-         innerModal.style.setProperty('left', '50%', 'important');
-         innerModal.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-         innerModal.style.setProperty('background', 'var(--color-bg-card)', 'important');
-         innerModal.style.setProperty('color', 'var(--color-text-primary)', 'important');
-         innerModal.style.setProperty('border', '1px solid var(--color-border)', 'important');
-         innerModal.style.setProperty('border-radius', '12px', 'important');
-         innerModal.style.setProperty('box-shadow', '0 10px 30px rgba(0, 0, 0, 0.3)', 'important');
-         innerModal.style.setProperty('max-height', '90vh', 'important');
-         innerModal.style.setProperty('overflow-y', 'auto', 'important');
-       }
-      console.log('报表模块：模态框已激活显示');
-      console.log('报表模块：强制设置样式后的状态', {
-        display: getComputedStyle(modal).display,
-        opacity: getComputedStyle(modal).opacity,
-        zIndex: getComputedStyle(modal).zIndex
-      });
-    }, 10);
-    
-    console.log('报表模块：模态框已添加到DOM，当前body子元素数量:', document.body.children.length);
-    console.log('报表模块：模态框元素信息', {
-      className: modal.className,
-      innerHTML: modal.innerHTML.substring(0, 200) + '...',
-      style: modal.style.cssText,
-      offsetWidth: modal.offsetWidth,
-      offsetHeight: modal.offsetHeight,
-      display: getComputedStyle(modal).display,
-      visibility: getComputedStyle(modal).visibility,
-      zIndex: getComputedStyle(modal).zIndex
+      `,
+      size: 'medium',
+      showFooter: true,
+      confirmText: i18n.t('generate_report'),
+      cancelText: i18n.t('cancel'),
+      onConfirm: () => {
+        const startDateInput = document.getElementById('start-date');
+        const endDateInput = document.getElementById('end-date');
+        
+        if (startDateInput && endDateInput) {
+          const selectedStartDate = startDateInput.value;
+          const selectedEndDate = endDateInput.value;
+          
+          if (selectedStartDate && selectedEndDate) {
+            generateReportWithDateRange(reportType, reportTitle, selectedStartDate, selectedEndDate);
+            return true; // 关闭模态框
+          }
+        }
+        return false; // 不关闭模态框
+      }
     });
+    
+    modal.render();
     
     // 快速选择按钮事件
-    const quickSelectBtns = modal.querySelectorAll('.quick-select-buttons .btn');
-    quickSelectBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const days = parseInt(btn.getAttribute('data-days'));
-        const newEndDate = new Date();
-        const newStartDate = new Date();
-        newStartDate.setDate(newEndDate.getDate() - days);
+    setTimeout(() => {
+      const modalElement = document.querySelector('.modal.active');
+      if (modalElement) {
+        modalElement.querySelectorAll('.quick-select-buttons button').forEach(button => {
+          button.addEventListener('click', function() {
+            const days = parseInt(this.dataset.days);
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(endDate.getDate() - days);
+            
+            document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
+            document.getElementById('end-date').value = endDate.toISOString().split('T')[0];
+            
+            // 更新按钮状态
+            modalElement.querySelectorAll('.quick-select-buttons button').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+          });
+        });
         
-        modal.querySelector('#start-date').value = newStartDate.toISOString().split('T')[0];
-        modal.querySelector('#end-date').value = newEndDate.toISOString().split('T')[0];
+        // 日期输入验证
+        const startDateInput = modalElement.querySelector('#start-date');
+        const endDateInput = modalElement.querySelector('#end-date');
         
-        // 更新按钮状态
-        quickSelectBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-      });
-    });
-    
-    // 日期验证
-    const startDateInput = modal.querySelector('#start-date');
-    const endDateInput = modal.querySelector('#end-date');
-    
-    function validateDates() {
-      const startDate = new Date(startDateInput.value);
-      const endDate = new Date(endDateInput.value);
-      const generateBtn = modal.querySelector('#generate-report-btn');
-      
-      if (startDate > endDate) {
-        generateBtn.disabled = true;
-        generateBtn.textContent = i18n.t('date_range_invalid');
-      } else {
-        generateBtn.disabled = false;
-        generateBtn.textContent = i18n.t('generate_report');
+        if (startDateInput && endDateInput) {
+          startDateInput.addEventListener('change', function() {
+            endDateInput.min = this.value;
+          });
+          
+          endDateInput.addEventListener('change', function() {
+            startDateInput.max = this.value;
+          });
+        }
       }
-    }
-    
-    startDateInput.addEventListener('change', validateDates);
-    endDateInput.addEventListener('change', validateDates);
-    
-    // 生成报表按钮事件
-    modal.querySelector('#generate-report-btn').addEventListener('click', () => {
-      const startDate = startDateInput.value;
-      const endDate = endDateInput.value;
-      
-      if (!startDate || !endDate) {
-        window.showNotification(i18n.t('please_select_date_range'), 'warning');
-        return;
-      }
-      
-      if (new Date(startDate) > new Date(endDate)) {
-        window.showNotification(i18n.t('date_range_invalid'), 'warning');
-        return;
-      }
-      
-      // 关闭模态框
-      modal.remove();
-      
-      // 生成报表
-      generateReportWithDateRange(reportType, reportTitle, startDate, endDate);
-    });
-    
-    // 点击背景关闭模态框
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.remove();
-      }
-    });
-    
-    // ESC键关闭模态框
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') {
-        modal.remove();
-        document.removeEventListener('keydown', handleEscape);
-      }
-    };
-    document.addEventListener('keydown', handleEscape);
+    }, 100);
   }
   
   // 绑定报表生成按钮事件
@@ -932,8 +793,8 @@ export default function renderReportsModule(container, options = {}) {
     clearBtn.addEventListener('click', () => {
       console.log('报表模块：清理按钮被点击');
       showConfirmModal(
-        '确认清理',
-        '确定要清理所有报表历史吗？此操作不可撤销。',
+        i18n.t('confirm_clear_history_title') || '确认清理',
+        i18n.t('confirm_clear_history') || '确定要清理所有报表历史吗？此操作不可撤销。',
         () => {
           console.log('报表模块：确认清理操作');
           reportsHistory = [];
@@ -1012,14 +873,148 @@ export default function renderReportsModule(container, options = {}) {
     }
   };
 
+  // 全局函数：PDF预览报表
+  window.previewReportPDF = async function(reportId) {
+    console.log('报表模块：previewReportPDF被调用，reportId:', reportId);
+    const report = reportsHistory.find(r => r.id === reportId);
+    if (!report || report.status !== 'completed') {
+      const warningMessage = window.getTranslation ? window.getTranslation('report_not_ready', '报表尚未生成完成') : '报表尚未生成完成';
+      window.showNotification(warningMessage, 'warning');
+      return;
+    }
+
+    try {
+      // 显示加载提示
+      const loadingMessage = window.getTranslation ? window.getTranslation('generating_pdf', '正在生成PDF...') : '正在生成PDF...';
+      window.showNotification(loadingMessage, 'info');
+
+      // 根据报表类型调用相应的PDF生成API
+      let pdfUrl;
+      const dateRange = report.dateRange;
+      const requestData = {
+        start_date: dateRange.startDate,
+        end_date: dateRange.endDate
+      };
+
+      switch (report.type) {
+        case 'patient':
+          pdfUrl = await generatePDFUrl('/api/v1/reports/statistics/patients/download', requestData);
+          break;
+        case 'medical_record':
+          pdfUrl = await generatePDFUrl('/api/v1/reports/statistics/medical-records/download', requestData);
+          break;
+        case 'medicine':
+          pdfUrl = await generatePDFUrl('/api/v1/reports/statistics/medicines/download', requestData);
+          break;
+        case 'finance':
+          pdfUrl = await generatePDFUrl('/api/v1/reports/statistics/finance/download', requestData);
+          break;
+        case 'financial_summary':
+          pdfUrl = await generatePDFUrl('/api/v1/reports/financial-summary/download', requestData);
+          break;
+        default:
+          throw new Error('不支持的报表类型');
+      }
+
+      // 使用模态框显示PDF预览
+      showPDFPreviewModal(report, pdfUrl);
+
+    } catch (error) {
+      console.error('PDF预览失败:', error);
+      const errorMessage = window.getTranslation ? window.getTranslation('pdf_preview_failed', 'PDF预览失败') : 'PDF预览失败';
+      window.showNotification(errorMessage + ': ' + error.message, 'error');
+    }
+  };
+
+  // 显示PDF预览模态框
+  function showPDFPreviewModal(report, pdfUrl) {
+    const modal = new Modal({
+      title: `${window.getTranslation ? window.getTranslation('preview_pdf', 'PDF预览') : 'PDF预览'} - ${report.name}`,
+      content: `
+        <div class="pdf-preview-container" style="height: 70vh; width: 100%;">
+          <iframe 
+            src="${pdfUrl}" 
+            style="width: 100%; height: 100%; border: none; border-radius: 4px;"
+            title="PDF预览">
+          </iframe>
+        </div>
+      `,
+      size: 'large',
+      showFooter: true,
+      confirmText: window.getTranslation ? window.getTranslation('download', '下载') : '下载',
+      cancelText: window.getTranslation ? window.getTranslation('close', '关闭') : '关闭',
+      onConfirm: () => {
+        // 下载PDF
+        const a = document.createElement('a');
+        a.href = pdfUrl;
+        a.download = `${report.name}_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        return false; // 不关闭模态框
+      },
+      onCancel: () => {
+        // 清理URL
+        URL.revokeObjectURL(pdfUrl);
+      }
+    });
+    
+    modal.render();
+    
+    // 手动添加large样式到modal-content
+    const modalContent = modal.element.querySelector('.modal-content');
+    if (modalContent) {
+      modalContent.classList.add('large');
+    }
+    
+    // 当模态框关闭时清理URL
+    const originalClose = modal.close.bind(modal);
+    modal.close = function() {
+      URL.revokeObjectURL(pdfUrl);
+      originalClose();
+    };
+  }
+
+  // 生成PDF URL
+  async function generatePDFUrl(endpoint, requestData) {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      throw new Error('未找到认证令牌');
+    }
+
+    // 获取当前语言设置
+    const currentLanguage = window.configManager ? window.configManager.get('language', 'zh-CN') : 'zh-CN';
+    
+    // 在URL中添加language参数
+    const urlWithLanguage = `${endpoint}?language=${encodeURIComponent(currentLanguage)}`;
+
+    const response = await fetch(urlWithLanguage, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(requestData)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
+    // 创建Blob URL用于预览
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
+  }
+
   // 全局函数：删除报表
   window.deleteReport = function(reportId) {
     console.log('报表模块：deleteReport被调用，reportId:', reportId);
     const report = reportsHistory.find(r => r.id === reportId);
     if (report) {
       showConfirmModal(
-        '确认删除',
-        `确定要删除报表 "${report.name}" 吗？此操作不可撤销。`,
+        i18n.t('confirm_delete_report_title') || '确认删除',
+        i18n.t('confirm_delete_report', `确定要删除报表 "${report.name}" 吗？此操作不可撤销。`).replace('{name}', report.name),
         () => {
           reportsHistory = reportsHistory.filter(r => r.id !== reportId);
           localStorage.setItem('reportsHistory', JSON.stringify(reportsHistory));
@@ -1036,36 +1031,45 @@ export default function renderReportsModule(container, options = {}) {
   
   // 显示报表预览模态框
   function showReportPreviewModal(report) {
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
-    modal.innerHTML = `
-      <div class="modal-content report-preview-modal">
-        <div class="modal-header">
-          <h3 data-i18n="report_preview">报表预览</h3>
-          <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+    const modal = new Modal({
+      title: i18n.t('report_preview'),
+      content: `
+        <div class="report-info">
+          <h4>${report.name}</h4>
+          <p><strong data-i18n="report_type">报表类型:</strong> <span data-i18n="${report.type}_report">${getReportTypeText(report.type)}</span></p>
+          <p><strong data-i18n="generation_time">生成时间:</strong> ${formatDateTime(report.generationTime)}</p>
+          <p><strong data-i18n="file_size">文件大小:</strong> ${formatFileSize(report.fileSize)}</p>
         </div>
-        <div class="modal-body">
-          <div class="report-info">
-            <h4>${report.name}</h4>
-            <p><strong data-i18n="report_type">报表类型:</strong> <span data-i18n="${report.type}_report">${getReportTypeText(report.type)}</span></p>
-            <p><strong data-i18n="generation_time">生成时间:</strong> ${formatDateTime(report.generationTime)}</p>
-            <p><strong data-i18n="file_size">文件大小:</strong> ${formatFileSize(report.fileSize)}</p>
-          </div>
-          <div class="report-data-container">
-            <h5 data-i18n="report_data">报表数据:</h5>
-            <div class="report-data-content">
-              ${formatReportDataForPreview(report.data, report.type)}
-            </div>
+        <div class="report-data-container">
+          <h5 data-i18n="report_data">报表数据:</h5>
+          <div class="report-data-content">
+            ${formatReportDataForPreview(report.data, report.type)}
           </div>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-outline" onclick="downloadReport('${report.id}')" data-i18n="download">下载</button>
-          <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()" data-i18n="close">关闭</button>
-        </div>
-      </div>
-    `;
+      `,
+      size: 'large',
+      showFooter: false
+    });
     
-    document.body.appendChild(modal);
+    modal.render();
+    
+    // 添加自定义按钮
+    setTimeout(() => {
+      const modalElement = document.querySelector('.modal.active');
+      if (modalElement) {
+        const modalBody = modalElement.querySelector('.modal-body');
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'modal-footer';
+        buttonContainer.innerHTML = `
+           <button class="btn btn-primary" onclick="previewReportPDF('${report.id}')" data-i18n="preview_pdf">${i18n.t('preview_pdf')}</button>
+           <button class="btn btn-outline" onclick="downloadReport('${report.id}')" data-i18n="download">${i18n.t('download')}</button>
+           <button class="btn btn-secondary" onclick="window.currentModal && window.currentModal.close()" data-i18n="close">${i18n.t('close')}</button>
+         `;
+        modalElement.appendChild(buttonContainer);
+        window.currentModal = modal;
+      }
+    }, 100);
+    
     console.log('报表模块：预览模态框已显示');
     
     // 重新翻译

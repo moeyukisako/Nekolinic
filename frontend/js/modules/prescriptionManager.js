@@ -1293,6 +1293,7 @@ function showPrescriptionDetailsModal(prescription) {
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="previewPrescriptionPDF(${prescription.id})" data-i18n="pdf_preview">PDF预览</button>
                     <button type="button" class="btn btn-secondary" onclick="closePrescriptionDetailsModal()" data-i18n="close">关闭</button>
                     ${prescription.dispensing_status === 'PENDING' ? 
                         `<button type="button" class="btn btn-success" onclick="dispensePrescription(${prescription.id}); closePrescriptionDetailsModal();" data-i18n="dispense">发药</button>` : 

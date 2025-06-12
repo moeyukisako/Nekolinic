@@ -223,7 +223,7 @@ export default function renderSettingsModule(container, options = {}) {
               </div>
               <div class="info-item">
                 <span class="info-label" data-i18n="version">版本：</span>
-                <span class="info-value">v1.0.0</span>
+                <span class="info-value">alpha0.1.3</span>
               </div>
               <div class="info-item">
                 <span class="info-label" data-i18n="build_date">构建日期：</span>

@@ -75,6 +75,34 @@ class ReportService:
         
         # 2. 将数据传递给PDF渲染工具
         return pdf_generator.create_financial_report_pdf(summary_data)
+    
+    def generate_patient_statistics_pdf(
+        self, db: Session, *, start_date: date, end_date: date
+    ) -> BytesIO:
+        """生成患者统计报告的PDF文件流。"""
+        statistics_data = self.get_patient_statistics(db=db, start_date=start_date, end_date=end_date)
+        return pdf_generator.create_patient_statistics_pdf(statistics_data)
+    
+    def generate_medical_record_statistics_pdf(
+        self, db: Session, *, start_date: date, end_date: date
+    ) -> BytesIO:
+        """生成病历统计报告的PDF文件流。"""
+        statistics_data = self.get_medical_record_statistics(db=db, start_date=start_date, end_date=end_date)
+        return pdf_generator.create_medical_record_statistics_pdf(statistics_data)
+    
+    def generate_medicine_statistics_pdf(
+        self, db: Session, *, start_date: date, end_date: date
+    ) -> BytesIO:
+        """生成药品统计报告的PDF文件流。"""
+        statistics_data = self.get_medicine_statistics(db=db, start_date=start_date, end_date=end_date)
+        return pdf_generator.create_medicine_statistics_pdf(statistics_data)
+    
+    def generate_finance_statistics_pdf(
+        self, db: Session, *, start_date: date, end_date: date, language: str = 'zh-CN'
+    ) -> BytesIO:
+        """生成财务统计报告的PDF文件流。"""
+        statistics_data = self.get_finance_statistics(db=db, start_date=start_date, end_date=end_date)
+        return pdf_generator.create_finance_statistics_pdf(statistics_data, language)
 
     def get_patient_statistics(
         self, db: Session, *, start_date: date, end_date: date
@@ -157,6 +185,7 @@ class ReportService:
     ) -> schemas.MedicalRecordStatistics:
         """获取病历统计数据"""
         from datetime import datetime, time
+        from app.patient import models as patient_models
         from app.clinic import models as clinic_models
         from app.user import models as user_models
         
@@ -267,32 +296,32 @@ class ReportService:
         end_datetime = datetime.combine(end_date, time.max)
         
         # 总药品数
-        total_medicines = db.query(func.count(pharmacy_models.Medicine.id)).scalar() or 0
+        total_medicines = db.query(func.count(pharmacy_models.Drug.id)).scalar() or 0
         
         # 低库存药品数（库存小于最小库存量）
-        low_stock_count = db.query(func.count(pharmacy_models.Medicine.id)).filter(
-            pharmacy_models.Medicine.stock_quantity < pharmacy_models.Medicine.min_stock_level
-        ).scalar() or 0
+        # Note: Drug model doesn't have stock_quantity and min_stock_level fields
+        # This should be calculated from InventoryTransaction records
+        low_stock_count = 0  # TODO: Implement proper stock calculation
         
         # 过期药品数
-        expired_count = db.query(func.count(pharmacy_models.Medicine.id)).filter(
-            pharmacy_models.Medicine.expiry_date < func.current_date()
-        ).scalar() or 0
+        # Note: Drug model doesn't have expiry_date field
+        # This should be tracked separately or added to Drug model
+        expired_count = 0  # TODO: Implement expiry tracking
         
         # 最常用药品（基于处方记录）
         most_used_stats = db.query(
-            pharmacy_models.Medicine.name,
-            func.count(pharmacy_models.PrescriptionItem.id).label('usage_count')
+            pharmacy_models.Drug.name,
+            func.count(pharmacy_models.PrescriptionDetail.id).label('usage_count')
         ).join(
-            pharmacy_models.PrescriptionItem, 
-            pharmacy_models.Medicine.id == pharmacy_models.PrescriptionItem.medicine_id
+            pharmacy_models.PrescriptionDetail, 
+            pharmacy_models.Drug.id == pharmacy_models.PrescriptionDetail.drug_id
         ).join(
             pharmacy_models.Prescription,
-            pharmacy_models.PrescriptionItem.prescription_id == pharmacy_models.Prescription.id
+            pharmacy_models.PrescriptionDetail.prescription_id == pharmacy_models.Prescription.id
         ).filter(
             pharmacy_models.Prescription.created_at.between(start_datetime, end_datetime)
-        ).group_by(pharmacy_models.Medicine.name).order_by(
-            func.count(pharmacy_models.PrescriptionItem.id).desc()
+        ).group_by(pharmacy_models.Drug.name).order_by(
+            func.count(pharmacy_models.PrescriptionDetail.id).desc()
         ).limit(10).all()
         
         total_usage = sum(count for _, count in most_used_stats)
@@ -305,23 +334,14 @@ class ReportService:
         ]
         
         # 药品分类分布
-        category_stats = db.query(
-            pharmacy_models.Medicine.category,
-            func.count(pharmacy_models.Medicine.id).label('count')
-        ).group_by(pharmacy_models.Medicine.category).all()
-        
-        category_distribution = [
-            schemas.StatisticsItem(
-                name=category or "未分类", 
-                count=count, 
-                percentage=round((count / total_medicines * 100) if total_medicines > 0 else 0, 2)
-            ) for category, count in category_stats
-        ]
+        # Note: Drug model doesn't have category field
+        # This should be added to Drug model or tracked separately
+        category_distribution = []  # TODO: Implement category tracking
         
         # 库存总价值
-        stock_value = db.query(
-            func.sum(pharmacy_models.Medicine.stock_quantity * pharmacy_models.Medicine.unit_price)
-        ).scalar() or Decimal('0')
+        # Note: Stock value should be calculated from InventoryTransaction records
+        # since Drug model doesn't have stock_quantity field
+        stock_value = Decimal('0')  # TODO: Calculate from inventory transactions
         
         return schemas.MedicineStatistics(
             start_date=start_date,
@@ -461,4 +481,65 @@ class ReportService:
         return str(file_path)
 
 # 实例化服务
+    def generate_prescription_pdf(self, db: Session, *, prescription_id: int, language: str = 'zh-CN') -> BytesIO:
+        """生成单个处方的PDF文件"""
+        from app.pharmacy import models as pharmacy_models
+        from app.patient import models as patient_models
+        
+        # 获取处方信息
+        prescription = db.query(pharmacy_models.Prescription).filter(
+            pharmacy_models.Prescription.id == prescription_id
+        ).first()
+        
+        if not prescription:
+            raise ValueError(f"处方 {prescription_id} 不存在")
+        
+        # 获取关联的病历和患者信息
+        medical_record = db.query(patient_models.MedicalRecord).filter(
+            patient_models.MedicalRecord.id == prescription.medical_record_id
+        ).first()
+        
+        patient = db.query(patient_models.Patient).filter(
+            patient_models.Patient.id == medical_record.patient_id
+        ).first() if medical_record else None
+        
+        # 生成PDF
+        return pdf_generator.generate_prescription_pdf(
+            prescription=prescription,
+            medical_record=medical_record,
+            patient=patient,
+            language=language
+        )
+    
+    def generate_medical_record_pdf(self, db: Session, *, record_id: int, language: str = 'zh-CN') -> BytesIO:
+        """生成单个病历的PDF文件"""
+        from app.patient import models as patient_models
+        from app.pharmacy import models as pharmacy_models
+        
+        # 获取病历信息
+        medical_record = db.query(patient_models.MedicalRecord).filter(
+            patient_models.MedicalRecord.id == record_id
+        ).first()
+        
+        if not medical_record:
+            raise ValueError(f"病历 {record_id} 不存在")
+        
+        # 获取患者信息
+        patient = db.query(patient_models.Patient).filter(
+            patient_models.Patient.id == medical_record.patient_id
+        ).first()
+        
+        # 获取关联的处方
+        prescriptions = db.query(pharmacy_models.Prescription).filter(
+            pharmacy_models.Prescription.medical_record_id == record_id
+        ).all()
+        
+        # 生成PDF
+        return pdf_generator.generate_medical_record_pdf(
+            medical_record=medical_record,
+            patient=patient,
+            prescriptions=prescriptions,
+            language=language
+        )
+
 report_service = ReportService()

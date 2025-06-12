@@ -1,6 +1,6 @@
 {
-  "theme": "dark",
-  "language": "en-US",
+  "theme": "light",
+  "language": "zh-CN",
   "background": {
     "type": "default",
     "url": "",
@@ -15,7 +15,7 @@
   "preferences": {
     "autoSave": true,
     "showTooltips": true,
-    "sessionTimeout": 99
+    "sessionTimeout": 30
   },
   "backup": {
     "autoBackup": false,

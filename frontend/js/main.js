@@ -10,6 +10,11 @@ import('./utils/moduleAnimations.js').catch((err) => {
     console.error('❌ 加载动画工具失败:', err);
 });
 
+// 导入PDF预览模块
+import('./modules/pdfPreview.js').catch((err) => {
+    console.error('❌ 加载PDF预览模块失败:', err);
+});
+
 // 稍后导入模块
 // import renderDashboard from './modules/dashboard.js';
 // import renderPatientModule from './modules/patientManager.js';

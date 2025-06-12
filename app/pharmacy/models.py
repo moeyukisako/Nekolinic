@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Numeric, Enum
+from sqlalchemy import Column, Integer, String, Text, Numeric, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 from app.core.auditing import Auditable, register_audit_model
@@ -8,6 +8,7 @@ from datetime import datetime
 # Import related models for relationships
 from app.patient.models import MedicalRecord
 from app.clinic.models import Doctor
+from app.user.models import User
 
 # --- History Models (for auditable tables) ---
 
